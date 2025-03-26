@@ -2,7 +2,7 @@ import json
 import numpy as np
 from control.matlab import lqr
 
-# checking 
+
 wheel_circ = 0.8        # in meters
 pulse_per_rotation = 11 # number of pulses in a wheel rotation
 
