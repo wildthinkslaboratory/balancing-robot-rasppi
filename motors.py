@@ -1,50 +1,66 @@
-from gpiozero import Motor, PWMOutputDevice, DigitalOutputDevice, Button
+from gpiozero import Robot, PWMOutputDevice, DigitalOutputDevice, Button
 from time import sleep
 
+ENCODER1_C1 = 23
+ENCODER1_C2 = 24
 ENCODER2_C1 = 27
 ENCODER2_C2 = 22
 
+PWMA = 12
 PWMB = 18
-AIN1 = 13
-AIN2 = 19
+AIN1 = 5
+AIN2 = 6
 BIN1 = 13
 BIN2 = 19
 STBY = 26
 
-pulses = 0
+pulses_per_rotation = 11
+wheel_circ = 0.35
 
-# robot = Robot((AIN1, AIN2), (BIN1, BIN2))
-motor = Motor(BIN1, BIN2)
+class BRMotors:
+	def __init__(self):
+		self.motors = Robot((AIN1, AIN2), (BIN1, BIN2))
+		self.pulses = 0
+		self.pwmA = PWMOutputDevice(PWMA)
+		self.pwmB = PWMOutputDevice(PWMB)
+		self.standby = DigitalOutputDevice(STBY)
+		self.encoder1C1 = Button(ENCODER1_C1)
+		self.encoder1C2 = Button(ENCODER1_C2)
+		self.encoder2C1 = Button(ENCODER2_C1)
+		self.encoder2C2 = Button(ENCODER2_C2)
+		self.standby.off()
 
-pwmB = PWMOutputDevice(PWMB)
+	def encoder1_rising(self):
+		self.pulses +=1
 
-standby = DigitalOutputDevice(STBY)
-standby.off()
+	def get_position(self):
+		return self.pulses / pulses_per_rotation * wheel_circ
 
-encoder1 = Button(ENCODER2_C1)
-encoder2 = Button(ENCODER2_C2)
+	def cleanup(self):
+		self.motors.stop()
+		self.pwmA.close()
+		self.pwmB.close()
+		self.standby.close()
 
-def encoder1_rising():
-	pulses+=1
+	def run(self, speed):
+		self.standby.on()
+		if speed > 0:
+			self.motors.forward()
+		if speed <= 0:
+			self.motors.backward()
+		self.pwmA.value = abs(speed)
+		self.pwmB.value = abs(speed)
+		
+	def stop(self):
+		self.motors.stop()
 
-def get_pulses():
-	return pulses
-
-
-def cleanup():
-    motor.stop()
-    pwmB.close()
-    standby.close()
-    print("Cleanup complete")
-    
 def main():
 	try:
-		standby.on()
-		motor.forward()
-		pwmB.value = 0.5
+		my_motors = BRMotors()
+		my_motors.run(0.5)
 		sleep(2)
 	finally:
-		cleanup()
+		my_motors.cleanup()
 
 if __name__ == "__main__":
     main()
