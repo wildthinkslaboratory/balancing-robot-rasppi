@@ -15,7 +15,7 @@ BIN2 = 19
 STBY = 26
 
 pulses_per_rotation = 11
-wheel_circ = 0.35
+wheel_circ = 0.21
 
 class BRMotors:
 	def __init__(self):

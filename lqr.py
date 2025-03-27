@@ -3,9 +3,6 @@ import numpy as np
 from control.matlab import lqr
 
 
-wheel_circ = 0.8        # in meters
-pulse_per_rotation = 11 # number of pulses in a wheel rotation
-
 def distance(pulses):
     return pulses/pulse_per_rotation * wheel_circ
 
