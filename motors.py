@@ -1,5 +1,6 @@
 from gpiozero import Robot, PWMOutputDevice, DigitalOutputDevice, Button
 from time import sleep
+import time
 
 ENCODER1_C1 = 23
 ENCODER1_C2 = 24
@@ -38,8 +39,22 @@ class BRMotors:
 	def inc_counts(self):
 		self.counts += self.count_inc
 		  
-	def position(self):
-		return self.counts * distance_per_count
+	def position_data(self):
+		position = self.counts * distance_per_count
+		current_time = time()
+		dt = current_time - self.last_time
+
+		if dt > 0.1:
+			current_position = self.position()
+			self.velocity_value = (current_position - self.last_position) / dt
+
+			self.last_position = current_position
+			self.last_time = current_time
+
+			position = self.counts * distance_per_count
+
+		return self.counts * distance_per_count, velocity
+
 
 	def cleanup(self):
 		self.motors.stop()
