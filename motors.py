@@ -3,9 +3,6 @@ from time import sleep
 import time
 
 ENCODER1_C1 = 23
-ENCODER1_C2 = 24
-ENCODER2_C1 = 27
-ENCODER2_C2 = 22
 
 PWMA = 12
 PWMB = 18
@@ -28,13 +25,12 @@ class BRMotors:
 		self.pwmB = PWMOutputDevice(PWMB)
 		self.standby = DigitalOutputDevice(STBY)
 		self.encoder1C1 = Button(ENCODER1_C1)
-		self.encoder1C2 = Button(ENCODER1_C2)
-		self.encoder2C1 = Button(ENCODER2_C1)
-		self.encoder2C2 = Button(ENCODER2_C2)
 		self.standby.off()
 		self.encoder1C1.when_pressed = self.inc_counts
 		self.counts = 0
 		self.count_inc = 1
+		self.last_position = 0
+		self.velocity = 0
 
 	def inc_counts(self):
 		self.counts += self.count_inc
@@ -45,15 +41,10 @@ class BRMotors:
 		dt = current_time - self.last_time
 
 		if dt > 0.1:
-			current_position = self.position()
-			self.velocity_value = (current_position - self.last_position) / dt
-
-			self.last_position = current_position
+			self.velocity = (position - self.last_position) / dt
 			self.last_time = current_time
 
-			position = self.counts * distance_per_count
-
-		return self.counts * distance_per_count, velocity
+		return position, self.velocity
 
 
 	def cleanup(self):
