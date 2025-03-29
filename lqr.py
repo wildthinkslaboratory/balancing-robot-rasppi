@@ -63,7 +63,7 @@ motors = BRMotors()
 run_data = list()
 
 try:
-    for i in range(100):
+    for i in range(1000):
         (a, av) = imu_sensor.angle_data()
         a = convert_angle(a)
         av = av * np.pi / 180
@@ -80,9 +80,8 @@ except KeyboardInterrupt:
     print("Program Interrupted")
 
 # Serializing json
-# json_object = json.dumps(run_data, indent=4)
+json_object = json.dumps(run_data, indent=4)
  
 # Writing to sample.json
-with open("data.txt", "w") as outfile:
-    for data in run_data:
-        outfile.write(str(data) + '\n')
+with open("data.json", "w") as outfile:
+    outfile.write(json_object)
