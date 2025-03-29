@@ -31,18 +31,20 @@ class BRMotors:
 		self.count_inc = 1
 		self.last_position = 0
 		self.velocity = 0
+		self.last_time = time.time()
 
 	def inc_counts(self):
 		self.counts += self.count_inc
 		  
 	def position_data(self):
 		position = self.counts * distance_per_count
-		current_time = time()
+		current_time = time.time()
 		dt = current_time - self.last_time
 
 		if dt > 0.1:
 			self.velocity = (position - self.last_position) / dt
 			self.last_time = current_time
+			self.last_position = position
 
 		return position, self.velocity
 
@@ -74,7 +76,7 @@ def main():
 		sleep(1)
 		my_motors.run(-0.25)
 		sleep(1)
-		print(my_motors.position())
+		print(my_motors.position_data())
 	finally:
 		my_motors.cleanup()
 

@@ -6,19 +6,21 @@ from imu import ImuSensor
 
 imu_sensor = ImuSensor()
 
+alpha = 0.8
+
 last_error = 0
 integral = 0
 
-Kp = 18
-Ki = 2
-Kd = 1
+Kp = 10
+Ki = 1
+Kd = 5
 
 motors = BRMotors()
 
 try:
     while True:
         (angle, angle_v) = imu_sensor.angle_data()
-        error = - 2 + angle
+        error = -1.4 + angle
         integral += error
         derivative = error - last_error
 
@@ -27,6 +29,11 @@ try:
             output = 100
         elif output < -100:
             output = -100
+        elif (output > 0) and (5 > output):
+            output = 5
+        elif (output > -5) and (0 > output):
+            output = -5
+
 
         motors.run(output / 100)
         last_error = error

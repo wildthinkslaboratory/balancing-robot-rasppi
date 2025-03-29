@@ -22,18 +22,21 @@ def generateK():
 
     B = np.array([0,1/M,0,b/(M*L)]).reshape((4,1))
 
-    Q = np.eye(4)
+    Q = np.array([[1,0,0,0],\
+                [0,1,0,0],\
+                [0,0,5,0],\
+                [0,0,0,5]])
     R = 0.1
     return lqr(A,B,Q,R)[0]
 
 
 
 x0 = np.array([0,0,np.pi,0])      # Initial condition
-wr = np.array([0,0,np.pi,0])      # Reference position
+wr = np.array([0,0,np.pi + (1.7*(np.pi/180)),0])      # Reference position
 
 K = generateK() 
 
-k1 = 1
+k1 = -4
 k2 = 0
 
 def get_output(state):
@@ -43,18 +46,30 @@ def get_output(state):
         output = 100.0 if output > 0 else -100.0
     return output
 
+def convert_angle(a):
+    # convert to radian and shift 180 degrees
+    radian = (a * np.pi / 180) + np.pi
+    if (radian >= 2 * np.pi):
+        radian -= 2 * np.pi
+    return radian
+
 imu_sensor = ImuSensor()
 motors = BRMotors()
+
+# s = np.array([0,0,np.pi - 0.1,0])
+# print (s, get_output(s))
+
 
 try:
     while True:
         (a, av) = imu_sensor.angle_data()
+        a = convert_angle(a)
+        av = av * np.pi / 180
         (x,v) = motors.position_data()
         state = np.array([x, v, a, av])
         output = get_output(state)
-
         motors.run(output / 100)
-        time.sleep(0.01)
+        sleep(0.01)
 
 
 except KeyboardInterrupt:
