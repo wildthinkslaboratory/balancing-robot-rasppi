@@ -1,3 +1,4 @@
+import json
 import numpy as np
 from control.matlab import lqr
 from time import sleep
@@ -40,11 +41,11 @@ k1 = -4
 k2 = 0
 
 def get_output(state):
-    u = -K@(state - wr)
+    u = (-K@(state - wr))[0]
     output = k1*u + k2
     if abs(output) > 100.0:
         output = 100.0 if output > 0 else -100.0
-    return output
+    return u, output
 
 def convert_angle(a):
     # convert to radian and shift 180 degrees
@@ -59,18 +60,29 @@ motors = BRMotors()
 # s = np.array([0,0,np.pi - 0.1,0])
 # print (s, get_output(s))
 
+run_data = list()
 
 try:
-    while True:
+    for i in range(100):
         (a, av) = imu_sensor.angle_data()
         a = convert_angle(a)
         av = av * np.pi / 180
         (x,v) = motors.position_data()
         state = np.array([x, v, a, av])
-        output = get_output(state)
+        u, output = get_output(state)
+        run_data.append([x,v,a,av,u,output])
+
         motors.run(output / 100)
         sleep(0.01)
 
 
 except KeyboardInterrupt:
     print("Program Interrupted")
+
+# Serializing json
+# json_object = json.dumps(run_data, indent=4)
+ 
+# Writing to sample.json
+with open("data.txt", "w") as outfile:
+    for data in run_data:
+        outfile.write(str(data) + '\n')
