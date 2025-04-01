@@ -41,10 +41,9 @@ class BRMotors:
 		current_time = time.time()
 		dt = current_time - self.last_time
 
-		if dt > 0.1:
-			self.velocity = (position - self.last_position) / dt
-			self.last_time = current_time
-			self.last_position = position
+		self.velocity = (position - self.last_position) / dt
+		self.last_time = current_time
+		self.last_position = position
 
 		return position, self.velocity
 
@@ -69,6 +68,17 @@ class BRMotors:
 	def stop(self):
 		self.motors.stop()
 
+
+def find_dead_level():
+	my_motors = BRMotors()
+	for speed in range(0,1000):
+
+		my_motors.run(speed/10)
+		sleep(0.01)
+		print(speed/10)
+		if my_motors.counts > 2:
+			break
+
 def main():
 	try:
 		my_motors = BRMotors()
@@ -81,5 +91,5 @@ def main():
 		my_motors.cleanup()
 
 if __name__ == "__main__":
-    main()
+	main()
 

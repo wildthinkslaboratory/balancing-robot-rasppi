@@ -6,14 +6,14 @@ from imu import ImuSensor
 
 imu_sensor = ImuSensor()
 
-alpha = 0.8
+alpha = 0.98
 
 last_error = 0
 integral = 0
 
-Kp = 10
-Ki = 1
-Kd = 5
+Kp = 20
+Ki = 0
+Kd = 0
 
 motors = BRMotors()
 
@@ -36,6 +36,7 @@ try:
 
 
         motors.run(output / 100)
+        print(output)
         last_error = error
         time.sleep(0.01)
 

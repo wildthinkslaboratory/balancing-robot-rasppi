@@ -25,8 +25,8 @@ def generateK():
 
     Q = np.array([[1,0,0,0],\
                 [0,1,0,0],\
-                [0,0,5,0],\
-                [0,0,0,5]])
+                [0,0,1,0],\
+                [0,0,0,1]])
     R = 0.1
     return lqr(A,B,Q,R)[0]
 
@@ -37,7 +37,7 @@ wr = np.array([0,0,np.pi + (1.7*(np.pi/180)),0])      # Reference position
 
 K = generateK() 
 
-k1 = -4
+k1 = -40
 k2 = 0
 
 def get_output(state):
@@ -63,7 +63,7 @@ motors = BRMotors()
 run_data = list()
 
 try:
-    for i in range(1000):
+    for i in range(5000):
         (a, av) = imu_sensor.angle_data()
         a = convert_angle(a)
         av = av * np.pi / 180

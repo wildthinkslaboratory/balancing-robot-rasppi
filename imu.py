@@ -1,6 +1,9 @@
 from mpu6050 import mpu6050 
 import time
 import math
+import json
+
+window_size = 1
 
 class ImuSensor:
 
@@ -19,6 +22,8 @@ class ImuSensor:
         self.last_angle = 0.0
         self.angle_v = 0.0
         self.alpha = 0.98
+        self.avg_angle = 0
+        self.avg_gyro_rate = 0
         print("gyro x bias: ", self.bias_x)
 
 
@@ -34,15 +39,12 @@ class ImuSensor:
         gyro_rate = data['x'] - self.bias_x
         accel_angle = self.get_accel_angle()   
         self.angle = self.alpha * (self.angle + gyro_rate *dt) + (1 - self.alpha) * accel_angle
+        self.avg_angle = ((window_size - 1) * self.avg_angle + self.angle) / window_size 
+
+        self.avg_gyro_rate = ((window_size - 1) * self.avg_gyro_rate + gyro_rate) / window_size 
         # print(self.angle + gyro_rate *dt, accel_angle, self.angle)
-        
-
-        if v_dt > 0.1:
-            self.angle_v = (self.angle - self.last_angle) / v_dt
-            self.last_angle = self.angle
-            self.v_update_time = current_time
-
-        return (self.angle, self.angle_v)
+    
+        return (self.avg_angle, self.avg_gyro_rate)
 
     
     def get_accel_angle(self):
@@ -57,12 +59,31 @@ def main():
     imu = ImuSensor()  
     counter = 0  
     while True:
+        # print(angle)
         angle, vel = imu.angle_data()
         # if counter % 100 == 0:
-            # print(angle, vel)
+        #     print(angle, vel)
         time.sleep(0.01)
         counter += 1
 
+def output_data():
+    imu = ImuSensor()  
+    counter = 0  
+    run_data = []
+    for i in range(500):
+        angle, vel = imu.angle_data()
+        run_data.append([angle,vel,imu.avg_angle, imu.avg_gyro_rate])
+        time.sleep(0.01)
+    
+    # Serializing json
+    json_object = json.dumps(run_data, indent=4)
+ 
+    # Writing to sample.json
+    with open("gyro.json", "w") as outfile:
+        outfile.write(json_object)
+
+
 if __name__ == "__main__":
-    main()
+    #main()
+    output_data()
 
