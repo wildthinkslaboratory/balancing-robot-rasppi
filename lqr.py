@@ -36,6 +36,7 @@ x0 = np.array([0,0,np.pi,0])      # Initial condition
 wr = np.array([0,0,np.pi,0])      # Reference position
 
 K = generateK() 
+vK = K[0]
 
 k1 = -15
 k2 = 0
@@ -61,6 +62,7 @@ motors = BRMotors()
 # print (s, get_output(s))
 
 run_data = list()
+k_data = list()
 
 try:
     for i in range(500):
@@ -71,6 +73,8 @@ try:
         state = np.array([x, v, a, av])
         u, output = get_output(state)
         run_data.append([x,v,a,av,u,output])
+
+        k_data.append([vK[0]*x, vK[1]*v, vK[2]*a, vK[3]*av, 100*vK[3]*av/u])
 
         motors.run(output / 100)
         sleep(0.01)
@@ -84,4 +88,11 @@ json_object = json.dumps(run_data, indent=4)
  
 # Writing to sample.json
 with open("data.json", "w") as outfile:
+    outfile.write(json_object)
+
+# Serializing json
+json_object = json.dumps(k_data, indent=4)
+ 
+# Writing to sample.json
+with open("kdata.json", "w") as outfile:
     outfile.write(json_object)
