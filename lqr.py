@@ -74,7 +74,7 @@ try:
         u, output = get_output(state)
         run_data.append([x,v,a,av,u,output])
 
-        k_data.append([vK[0]*x, vK[1]*v, vK[2]*a, vK[3]*av, 100*vK[3]*av/u])
+        k_data.append([vK[0]*x, vK[1]*v, vK[2]*a - np.pi, vK[3]*av, 100*vK[3]*av/u])
 
         motors.run(output / 100)
         sleep(0.01)
