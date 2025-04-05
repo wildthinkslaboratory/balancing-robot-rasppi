@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import json
 
 datafile = 'data.json'
-indexes_to_plot = [5]
+indexes_to_plot = [3]
 
 # Open and read the JSON file
 with open('data.json', 'r') as file:
