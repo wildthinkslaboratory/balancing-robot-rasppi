@@ -30,7 +30,9 @@ class BRMotors:
 		self.counts = 0
 		self.count_inc = 1
 		self.last_position = 0
+		self.gamma = 0.98
 		self.velocity = 0
+		self.filtered_velocity = 0
 		self.last_time = time.time()
 
 	def inc_counts(self):
@@ -38,11 +40,14 @@ class BRMotors:
 		  
 	def position_data(self):
 		position = self.counts * distance_per_count
-		current_time = time.time()
-		dt = current_time - self.last_time
 
-		self.velocity = (position - self.last_position) / dt
+		current_time = time.time()
+		dt = current_time - self.last_time if self.last_time else 1e-3
 		self.last_time = current_time
+		
+		self.velocity = (position - self.last_position) / dt
+		# self.filtered_velocity = self.gamma * self.filtered_velocity + (1 - self.gamma) * self.velocity
+
 		self.last_position = position
 
 		return position, self.velocity

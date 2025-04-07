@@ -36,7 +36,6 @@ try:
 
 
         motors.run(output / 100)
-        print(output)
         last_error = error
         time.sleep(0.01)
 

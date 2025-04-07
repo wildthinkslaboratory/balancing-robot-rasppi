@@ -10,7 +10,7 @@ def generateK():
 
     m = 0.29        # kilograms
     M = 0.765       # kilograms
-    L = 0.14     # meters
+    L = 0.16     # meters
     g = -9.81    # meters / sec^2
     d = 0        # d is a damping factor
     
@@ -25,7 +25,7 @@ def generateK():
 
     Q = np.array([[1,0,0,0],\
                 [0,1,0,0],\
-                [0,0,1,0],\
+                [0,0,50,0],\
                 [0,0,0,1]])
     R = 0.1
     return lqr(A,B,Q,R)[0]
@@ -33,12 +33,12 @@ def generateK():
 
 
 x0 = np.array([0,0,np.pi,0])      # Initial condition
-wr = np.array([0,0,np.pi,0])      # Reference position
+wr = np.array([0,0,np.pi+(2.5*np.pi/180),0])      # Reference position
 
 K = generateK() 
 vK = K[0]
 
-k1 = -15
+k1 = -18
 k2 = 0
 
 def get_output(state):
@@ -58,26 +58,24 @@ def convert_angle(a):
 imu_sensor = ImuSensor()
 motors = BRMotors()
 
-# s = np.array([0,0,np.pi - 0.1,0])
-# print (s, get_output(s))
-
 run_data = list()
 k_data = list()
 
 try:
-    for i in range(500):
-        (a, av) = imu_sensor.angle_data()
-        a = convert_angle(a)
-        av = av * np.pi / 180
+    for i in range(2000):
+        (a_deg, av_deg) = imu_sensor.angle_data()
+        a = convert_angle(a_deg)
+        av = av_deg * np.pi / 180
         (x,v) = motors.position_data()
         state = np.array([x, v, a, av])
         u, output = get_output(state)
-        run_data.append([x,v,a,av,u,output])
+        run_data.append([x,v,a_deg,av_deg,u,output])
+        u_abs = (abs(vK[0]*x)+abs(vK[1]*v)+abs(vK[2]*(a-np.pi))+abs(vK[3]*av))
 
-        k_data.append([vK[0]*x, vK[1]*v, vK[2]*a - np.pi, vK[3]*av, 100*vK[3]*av/u])
+        k_data.append([vK[0]*x, vK[1]*v, vK[2]*(a - np.pi), vK[3]*av, 100*vK[3]*av/u_abs])
 
         motors.run(output / 100)
-        sleep(0.01)
+        sleep(0.003)
 
 
 except KeyboardInterrupt:
