@@ -5,6 +5,7 @@ from time import sleep
 from motors import BRMotors
 from imu import ImuSensor
 
+debug = False
 
 def generateK():
 
@@ -36,7 +37,6 @@ x0 = np.array([0,0,np.pi,0])      # Initial condition
 wr = np.array([0,0,np.pi+(2.5*np.pi/180),0])      # Reference position
 
 K = generateK() 
-vK = K[0]
 
 k1 = -18
 k2 = 0
@@ -59,7 +59,6 @@ imu_sensor = ImuSensor()
 motors = BRMotors()
 
 run_data = list()
-k_data = list()
 
 try:
     for i in range(2000):
@@ -69,11 +68,10 @@ try:
         (x,v) = motors.position_data()
         state = np.array([x, v, a, av])
         u, output = get_output(state)
-        run_data.append([x,v,a_deg,av_deg,u,output])
-        u_abs = (abs(vK[0]*x)+abs(vK[1]*v)+abs(vK[2]*(a-np.pi))+abs(vK[3]*av))
-
-        k_data.append([vK[0]*x, vK[1]*v, vK[2]*(a - np.pi), vK[3]*av, 100*vK[3]*av/u_abs])
-
+        
+        if debug:
+            run_data.append([x,v,a_deg,av_deg,u,output])
+    
         motors.run(output / 100)
         sleep(0.003)
 
@@ -81,16 +79,11 @@ try:
 except KeyboardInterrupt:
     print("Program Interrupted")
 
-# Serializing json
-json_object = json.dumps(run_data, indent=4)
- 
-# Writing to sample.json
-with open("data.json", "w") as outfile:
-    outfile.write(json_object)
+if debug:
+    # Serializing json
+    json_object = json.dumps(run_data, indent=4)
+    
+    # Writing to sample.json
+    with open("data.json", "w") as outfile:
+        outfile.write(json_object)
 
-# Serializing json
-json_object = json.dumps(k_data, indent=4)
- 
-# Writing to sample.json
-with open("kdata.json", "w") as outfile:
-    outfile.write(json_object)
