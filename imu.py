@@ -62,14 +62,14 @@ def output_data():
     run_data = []
     for i in range(500):
         angle, vel = imu.angle_data()
-        run_data.append([angle,vel,imu.avg_angle, imu.avg_gyro_rate])
+        run_data.append([angle * math.pi/180,vel* math.pi/180])
         time.sleep(0.01)
     
     # Serializing json
     json_object = json.dumps(run_data, indent=4)
  
     # Writing to sample.json
-    with open("gyro.json", "w") as outfile:
+    with open("data.json", "w") as outfile:
         outfile.write(json_object)
 
 
