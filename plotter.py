@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import json
 
 datafile = 'data.json'
-indexes_to_plot = [0,1]
 
+indexes_to_plot = [4]
 # Open and read the JSON file
 with open(datafile, 'r') as file:
     data = json.load(file)
