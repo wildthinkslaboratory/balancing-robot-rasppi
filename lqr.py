@@ -10,6 +10,8 @@ from InterruptTimer import InterruptTimer
 debug = False
 output_data_to_file = True
 
+dT = 1
+
 # generate our K matrix for LQR
 def generateK():
 
@@ -38,23 +40,25 @@ K = generateK()[0]                                # K (gain vector)
 x0 = np.array([0,0,np.pi,0])                      # Initial condition
 wr = np.array([0,0,np.pi+(2.5*np.pi/180),0])      # Reference position
 
-imu_sensor = ImuSensor()                          
-motors = BRMotors()
+imu_sensor = ImuSensor(dT)                          
+motors = BRMotors(dT)
 
 x = 0.0              # store the state in some file level variables
 v = 0.0
 a = np.pi
 av = 0.0
+u = 0.0
 duty_coeff = -40
 
 
 def update_motors():
     u = K[0]*x + K[1]*v + K[2]*a + K[3]*av
-    motors.run(u * duty_coeff / 100)
+    # motors.run(u * duty_coeff / 100)
     
 
 def update_state():
     a, av = imu_sensor.complementary_filter()
+    print(a)
     a = convert_angle(a)
     x, v = motors.position_data()
 
@@ -67,8 +71,9 @@ def convert_angle(a):
         radian -= 2 * np.pi
     return radian
 
-timer1 = InterruptTimer(0.01, update_motors)
-timer2 = InterruptTimer(0.01, update_state)
+
+timer1 = InterruptTimer(dT, update_motors)
+timer2 = InterruptTimer(dT, update_state)
 
 
 timer1.start()
@@ -77,7 +82,7 @@ timer2.start()
 run_data = list()
 
 try:
-    for i in range(800):
+    for i in range(5):
         imu_sensor.get_raw_data()
         if output_data_to_file:
             run_data.append([x,v,a,av,u])

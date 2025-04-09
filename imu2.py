@@ -6,7 +6,7 @@ import json
 class ImuSensor:
 
     # create a gyro sensor and calibrate it
-    def __init__(self):
+    def __init__(self,dT):
         self.sensor = mpu6050(0x68)
         self.calibrate_gyro(500)
 
@@ -25,7 +25,8 @@ class ImuSensor:
         self.angle = 0.0
         self.angular_velocity = 0
 
-        self.dT = 0.005
+        self.dT = dT
+
         cutoff_frequency = 5
         tau = 1/(2*math.pi*cutoff_frequency)
         self.alpha = tau / (tau + self.dT)

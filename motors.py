@@ -33,7 +33,7 @@ distance_per_count = wheel_circ / count_per_rotation
 
 
 class BRMotors:
-	def __init__(self):
+	def __init__(self, dT):
 		self.motors = Robot((AIN1, AIN2), (BIN1, BIN2))
 		self.pwmA = PWMOutputDevice(PWMA)
 		self.pwmB = PWMOutputDevice(PWMB)
@@ -46,6 +46,7 @@ class BRMotors:
 		self.last_position = 0
 		self.gamma = 0.98
 		self.velocity = 0
+		self.dT = dT
 		self.filtered_velocity = 0
 		self.last_time = time.time()
 
@@ -53,15 +54,8 @@ class BRMotors:
 		self.counts += self.count_inc
 		  
 	def position_data(self):
-		position = self.counts * distance_per_count
-
-		current_time = time.time()
-		dt = current_time - self.last_time if self.last_time else 1e-3
-		self.last_time = current_time
-		
-		self.velocity = (position - self.last_position) / dt
-		# self.filtered_velocity = self.gamma * self.filtered_velocity + (1 - self.gamma) * self.velocity
-
+		position = self.counts * distance_per_count		
+		self.velocity = (position - self.last_position) / self.dT
 		self.last_position = position
 
 		return position, self.velocity
