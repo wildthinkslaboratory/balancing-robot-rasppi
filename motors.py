@@ -2,6 +2,20 @@ from gpiozero import Robot, PWMOutputDevice, DigitalOutputDevice, Button
 from time import sleep
 import time
 
+# some helper functions we will need
+def constrain(value, min, max):
+       if value < min:
+               return min
+       if value > max:
+               return max
+       return value
+
+def scale(value, low, high, target_low, target_high):
+       percent = (value - low) / (high - low)
+       return target_low + percent * (target_high - target_low)
+
+
+
 ENCODER1_C1 = 23
 
 PWMA = 12
@@ -61,6 +75,7 @@ class BRMotors:
 		self.standby.close()
 
 	def run(self, speed):
+		speed = constrain(speed, -1, 1)
 		self.standby.on()
 		if speed > 0:
 			self.count_inc = 1
