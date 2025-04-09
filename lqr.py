@@ -3,11 +3,11 @@ import numpy as np
 from control.matlab import lqr
 from time import sleep
 from motors import BRMotors
-from imu import ImuSensor
+from imu2 import ImuSensor
 
 
 debug = False
-output_data_to_file = False
+output_data_to_file = True
 
 # generate our K matrix for LQR
 def generateK():
@@ -62,7 +62,7 @@ wr = np.array([0,0,np.pi+(2.5*np.pi/180),0])      # Reference position
 
 K = generateK()
 
-k1 = -18
+k1 = -40
 k2 = 0
 
 def get_output(state):
@@ -74,7 +74,7 @@ def get_output(state):
 
 def convert_angle(a):
     # convert to radian and shift 180 degrees
-    radian = (a * np.pi / 180) + np.pi
+    radian = a + np.pi
     if (radian >= 2 * np.pi):
         radian -= 2 * np.pi
     return radian
@@ -85,16 +85,18 @@ motors = BRMotors()
 run_data = list()
 
 try:
-    for i in range(2000):
-        (a_deg, av_deg) = imu_sensor.angle_data()
-        a = convert_angle(a_deg)
-        av = av_deg * np.pi / 180
+    for i in range(800):
+        imu_sensor.get_raw_data()
+        a, av = imu_sensor.complementary_filter()
+        # (a_deg, av_deg) = imu_sensor.angle_data()
+        a = convert_angle(a)
+        # av = av_deg * np.pi / 180
         (x,v) = motors.position_data()
         state = np.array([x, v, a, av])
         u, output = get_output(state)
         
         if output_data_to_file:
-            run_data.append([x,v,a_deg,av_deg,u,output])
+            run_data.append([x,v,a,av,u,output])
     
         motors.run(output / 100)
         sleep(0.003)
