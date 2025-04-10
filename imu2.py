@@ -2,12 +2,15 @@ from mpu6050 import mpu6050
 import time
 import math
 import json
+from time import perf_counter
 
 class ImuSensor:
 
     # create a gyro sensor and calibrate it
     def __init__(self,dT):
         self.sensor = mpu6050(0x68)
+
+        self.bias_x = 0.0
         self.calibrate_gyro(500)
 
         self.ax_raw = 0.0
@@ -22,12 +25,14 @@ class ImuSensor:
         self.ay_low_pass = 0.0
         self.az_low_pass = 0.0
 
+        self.angle_previous = 0.0
+
         self.angle = 0.0
         self.angular_velocity = 0
 
         self.dT = dT
 
-        cutoff_frequency = 5
+        cutoff_frequency = 10
         tau = 1/(2*math.pi*cutoff_frequency)
         self.alpha = tau / (tau + self.dT)
         self.beta = 0.02
@@ -35,6 +40,7 @@ class ImuSensor:
         self.angle_nogyro = 0.0
 
     def get_raw_data(self):
+        
         accelerometer_data = self.sensor.get_accel_data()
         gyro_data = self.sensor.get_gyro_data()
         
@@ -42,7 +48,7 @@ class ImuSensor:
         self.ay_raw = accelerometer_data['y']
         self.az_raw = accelerometer_data['z']
 
-        self.gy_raw = gyro_data["y"]
+        self.gx_raw = gyro_data["x"] - self.bias_x
 
     def calibrate_gyro(self, samples):
         cum_bias_x = 0
@@ -61,31 +67,44 @@ class ImuSensor:
 
     
     def high_pass(self):
-        self.g_high_pass = (1 - self.alpha) * self.g_high_pass + (1 - self.alpha) * (self.gy_raw - self.g_previous)
+        self.g_high_pass = (1 - self.alpha) * self.g_high_pass + (self.alpha) * (self.g_previous - self.gy_raw)
 
-        self.g_previous = self.gy_raw
+        self.g_previous = self.gx_raw
         return self.g_high_pass
 
     def complementary_filter(self):
         self.angle_previous = self.angle
         self.low_pass()
         self.high_pass()
-        gyro_angle = self.angle - self.g_high_pass * self.dT
+        gyro_angle = self.angle + self.g_high_pass * self.dT
         accelerometer_angle = math.atan2(self.ay_low_pass, math.sqrt(self.ax_low_pass**2 + self.az_low_pass**2))
         accelerometer_angle = accelerometer_angle * 180 / math.pi  
         self.angle = (1 - self.beta) * gyro_angle + (self.beta)*(accelerometer_angle)
         self.angular_velocity = (self.angle - self.angle_previous) / self.dT
-        return self.angle * math.pi / 180, self.angular_velocity * math.pi / 180
+        # return self.angle * math.pi / 180, self.angular_velocity * math.pi / 180
+        return self.angle, self.angular_velocity, accelerometer_angle, gyro_angle
 
+from InterruptTimer import InterruptTimer
+
+imu2 = ImuSensor(0.01) 
+run_data = []
+
+def callback():
+    global imu2, run_data
+    imu2.get_raw_data()
+    angle2, angular_velocity2, accelerometer_angle, gyro_angle = imu2.complementary_filter()
+    run_data.append([accelerometer_angle, angular_velocity2, angle2, gyro_angle, imu2.g_high_pass])
+    
+
+timer = InterruptTimer(0.01, callback, 5)
+timer.start()
 def output_data():
-    imu2 = ImuSensor() 
+    imu2 = ImuSensor(0.01) 
     run_data = []
-    for i in range(500):
+    for i in range(5000):
         imu2.get_raw_data()
-        angle2, angular_velocity2 = imu2.complementary_filter()
-        run_data.append([angle2, angular_velocity2])
-
-        time.sleep(0.01)
+        angle2, angular_velocity2, accelerometer_angle, gyro_angle = imu2.complementary_filter()
+        run_data.append([accelerometer_angle, angular_velocity2, angle2, gyro_angle, imu2.g_high_pass])
     
     # Serializing json
     json_object = json.dumps(run_data, indent=4)
