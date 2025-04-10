@@ -44,7 +44,6 @@ class ImuSensor:
 
         self.gy_raw = gyro_data["y"]
 
-
     def calibrate_gyro(self, samples):
         cum_bias_x = 0
         for _ in range(samples):
@@ -65,7 +64,6 @@ class ImuSensor:
         self.g_high_pass = (1 - self.alpha) * self.g_high_pass + (1 - self.alpha) * (self.gy_raw - self.g_previous)
 
         self.g_previous = self.gy_raw
-
         return self.g_high_pass
 
     def complementary_filter(self):

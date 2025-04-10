@@ -58,7 +58,6 @@ def update_motors():
 
 def update_state():
     a, av = imu_sensor.complementary_filter()
-    print(a)
     a = convert_angle(a)
     x, v = motors.position_data()
 
@@ -71,22 +70,25 @@ def convert_angle(a):
         radian -= 2 * np.pi
     return radian
 
+run_data = list()
+
 def update_output_data():
     run_data.append([x,v,a,av,u])
 
-timer1 = InterruptTimer(dT, update_motors, 5)
-timer2 = InterruptTimer(dT, update_state, 5)
-timer3 = InterruptTimer(0.01 , update_output_data, 5)
+timer1 = InterruptTimer(dT, update_motors, 2)
+timer2 = InterruptTimer(dT, update_state, 2)
+timer3 = InterruptTimer(0.01 , update_output_data, 2)
 
 timer1.start()
 timer2.start()
+
 if output_data_to_file: 
     timer3.start()
 
-run_data = list()
+quitTime = perf_counter() + 2
 
 try:
-    for i in range():
+    while perf_counter() < quitTime:
         imu_sensor.get_raw_data()
         
 except KeyboardInterrupt:
