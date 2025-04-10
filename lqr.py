@@ -52,11 +52,13 @@ duty_coeff = -40
 
 
 def update_motors():
+    global u
     u = K[0]*x + K[1]*v + K[2]*a + K[3]*av
     # motors.run(u * duty_coeff / 100)
     
 
 def update_state():
+    global a, av, x, v
     a, av = imu_sensor.complementary_filter()
     a = convert_angle(a)
     x, v = motors.position_data()
@@ -73,6 +75,7 @@ def convert_angle(a):
 run_data = list()
 
 def update_output_data():
+    global run_data
     run_data.append([x,v,a,av,u])
 
 timer1 = InterruptTimer(dT, update_motors, 2)
