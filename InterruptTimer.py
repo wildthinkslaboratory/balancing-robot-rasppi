@@ -2,16 +2,28 @@ from threading import Timer
 from time import perf_counter
 
 class InterruptTimer:
-    def __init__(self, dt, callback_function):
+    def __init__(self, dt, callback_function, timeout):
         self.dt = dt
         self.callback_function = callback_function
+        self.timeout = perf_counter() + timeout
   
     def work(self, target_time):
         t0 = perf_counter()
         self.callback_function()
-        Timer(target_time - t0, self.work, args=[target_time + self.dt]).start()
+        if self.timeout < t0:
+            return
+        else: 
+            Timer(target_time - t0, self.work, args=[target_time + self.dt]).start()
 
     def start(self):
         target_time = perf_counter() + self.dt
         self.work(target_time)
 
+
+########### test timer ############
+def my_callback():
+    print("called callback")
+
+if __name__ == "__main__":
+    timer = InterruptTimer(4, my_callback, 20)
+    timer.start()

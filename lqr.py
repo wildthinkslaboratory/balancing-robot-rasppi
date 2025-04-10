@@ -10,7 +10,7 @@ from InterruptTimer import InterruptTimer
 debug = False
 output_data_to_file = True
 
-dT = 1
+dT = 0.005
 
 # generate our K matrix for LQR
 def generateK():
@@ -71,21 +71,24 @@ def convert_angle(a):
         radian -= 2 * np.pi
     return radian
 
+def update_output_data():
+    run_data.append([x,v,a,av,u])
 
-timer1 = InterruptTimer(dT, update_motors)
-timer2 = InterruptTimer(dT, update_state)
-
+timer1 = InterruptTimer(dT, update_motors, 5)
+timer2 = InterruptTimer(dT, update_state, 5)
+timer3 = InterruptTimer(0.01 , update_output_data, 5)
 
 timer1.start()
 timer2.start()
+if output_data_to_file: 
+    timer3.start()
 
 run_data = list()
 
 try:
-    for i in range(5):
+    for i in range():
         imu_sensor.get_raw_data()
-        if output_data_to_file:
-            run_data.append([x,v,a,av,u])
+        
 except KeyboardInterrupt:
     print("Program Interrupted")
 
