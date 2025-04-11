@@ -39,7 +39,7 @@ def generateK():
 
 K = generateK()[0]                                # K (gain vector)
 x0 = np.array([0,0,np.pi,0])                      # Initial condition
-wr = np.array([0,0,np.pi+(2.5*np.pi/180),0])      # Reference position
+wr = np.array([0,0,np.pi+(0*np.pi/180),0])      # Reference position
 
 imu_sensor = ImuSensor(dT)                          
 motors = BRMotors(dT)
@@ -83,7 +83,7 @@ run_data = list()
 
 def update_output_data():
     global run_data
-    run_data.append([x,v,3*(a - np.pi),av,u])
+    run_data.append([x,v,(a - np.pi)*180/np.pi,av,u])
 
 timer1 = InterruptTimer(dT, update_motors, time)
 timer2 = InterruptTimer(dT, update_state, time)

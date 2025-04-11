@@ -17,7 +17,7 @@ class ImuSensor:
         self.ay_raw = 0.0
         self.az_raw = 0.0
 
-        self.gy_raw = 0.0
+        self.gx_raw = 0.0
         self.g_previous = 0.0
         self.g_high_pass = 0.0
 
@@ -32,10 +32,11 @@ class ImuSensor:
 
         self.dT = dT
 
-        cutoff_frequency = 10
+        cutoff_frequency = 5
         tau = 1/(2*math.pi*cutoff_frequency)
         self.alpha = tau / (tau + self.dT)
         self.beta = 0.02
+        self.gamma = 0.9
 
         self.angle_nogyro = 0.0
 
@@ -67,10 +68,11 @@ class ImuSensor:
 
     
     def high_pass(self):
-        self.g_high_pass = (1 - self.alpha) * self.g_high_pass + (self.alpha) * (self.g_previous - self.gy_raw)
-
-        self.g_previous = self.gx_raw
+        self.g_high_pass = (1 - self.alpha) * self.g_high_pass + (self.alpha) * (self.gx_raw)
+        self.g_previous = self.g_high_pass
         return self.g_high_pass
+    
+
 
     def complementary_filter(self):
         self.angle_previous = self.angle
@@ -81,36 +83,37 @@ class ImuSensor:
         accelerometer_angle = accelerometer_angle * 180 / math.pi  
         self.angle = (1 - self.beta) * gyro_angle + (self.beta)*(accelerometer_angle)
         self.angular_velocity = (self.angle - self.angle_previous) / self.dT
+        # self.angular_velocity = (1 - self.gamma) * self.angular_velocity + self.gamma * self.g_high_pass
         # return self.angle * math.pi / 180, self.angular_velocity * math.pi / 180
-        return self.angle, self.angular_velocity, accelerometer_angle, gyro_angle
+        return self.angle * math.pi / 180, 0
+        # return self.angle * math.pi / 180, self.angular_velocity * math.pi / 180, self.g_high_pass * math.pi / 180
 
-from InterruptTimer import InterruptTimer
 
-imu2 = ImuSensor(0.01) 
+# from InterruptTimer import InterruptTimer
+
+# imu2 = ImuSensor(0.01) 
 run_data = []
 
-def callback():
-    global imu2, run_data
-    imu2.get_raw_data()
-    angle2, angular_velocity2, accelerometer_angle, gyro_angle = imu2.complementary_filter()
-    run_data.append([accelerometer_angle, angular_velocity2, angle2, gyro_angle, imu2.g_high_pass])
+# def callback():
+#     global imu2
+#     global run_data
+#     imu2.get_raw_data()
+#     angle2, angular_velocity2, accelerometer_angle, gyro_angle = imu2.complementary_filter()
+#     run_data.append([accelerometer_angle, angular_velocity2, angle2, imu2.gx_raw, imu2.g_high_pass])
     
 
-timer = InterruptTimer(0.01, callback, 5)
-timer.start()
+# timer = InterruptTimer(0.01, callback, 5)
+# timer.start()
 def output_data():
     imu2 = ImuSensor(0.01) 
-    run_data = []
     for i in range(5000):
         imu2.get_raw_data()
         angle2, angular_velocity2, accelerometer_angle, gyro_angle = imu2.complementary_filter()
-        run_data.append([accelerometer_angle, angular_velocity2, angle2, gyro_angle, imu2.g_high_pass])
-    
-    # Serializing json
-    json_object = json.dumps(run_data, indent=4)
- 
-    # Writing to sample.json
-    with open("data.json", "w") as outfile:
-        outfile.write(json_object)
-
+        run_data.append([accelerometer_angle, angular_velocity2, angle2, imu2.gx_raw, imu2.g_high_pass])
 # output_data()
+# Serializing json
+json_object = json.dumps(run_data, indent=4)
+
+# Writing to sample.json
+with open("data.json", "w") as outfile:
+    outfile.write(json_object)
