@@ -28,7 +28,7 @@ state = np.array([0,0,np.pi,0])                # this is our estimated state
 wr = np.array([0,0,np.pi,0])                    # Reference position / Goal state
 u = 0.0                                         # our control variable for motor torque
 duty_coeff = 0.18
-dT = 0.1
+dT = 0.01
 timeout = 0.5       
 
 
@@ -49,7 +49,6 @@ def loop_iteration():
     # estimate the state
     dstate = (A@(state - wr) + (B*u).transpose() + Kf@(y - C@state))[0]  
     state = state + dstate*dT
-    print(state)
 
     run_data.append([state[0], state[1], state[2], state[3], u, y[0], y[1]])
 
