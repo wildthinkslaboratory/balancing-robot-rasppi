@@ -24,10 +24,12 @@ class InterruptTimer:
 
 
 ########### test timer ############
-def my_callback():
-    print("called callback")
+
 
 if __name__ == "__main__":
+    def my_callback():
+        print("called callback")
+
     timer = InterruptTimer(4, my_callback, 5)
     timer.start()
     while timer.running:
