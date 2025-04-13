@@ -4,7 +4,7 @@ from InterruptTimer import InterruptTimer
 from model import A, K, B, Kf, C
 import json
 from motors import BRMotors
-from imu2 import ImuSensor
+from imu3 import ImuSensor
 
 
 debug = False
@@ -28,8 +28,8 @@ state = np.array([0,0,np.pi,0])                # this is our estimated state
 wr = np.array([0,0,np.pi,0])                    # Reference position / Goal state
 u = 0.0                                         # our control variable for motor torque
 duty_coeff = 0.18
-dT = 0.01
-timeout = 10.0       
+dT = 0.1
+timeout = 0.5       
 
 
 ############################################
@@ -37,8 +37,10 @@ timeout = 10.0
 # 
 ############################################
 
-imu_sensor = ImuSensor(dT)      # mpu6050 gyro/accelorometer access                    
+imu_sensor = ImuSensor()      # mpu6050 gyro/accelorometer access                    
 motors = BRMotors(dT)           # DC motors with encoder
+
+run_data = list()  
 
 def loop_iteration():
     global state
@@ -47,10 +49,14 @@ def loop_iteration():
     # estimate the state
     dstate = (A@(state - wr) + (B*u).transpose() + Kf@(y - C@state))[0]  
     state = state + dstate*dT
+    print(state)
+
+    run_data.append([state[0], state[1], state[2], state[3], u, y[0], y[1]])
+
    
     # compute the control value u, and update motor duty cycle
-    u = K[0]*(x-wr[0]) + K[1]*(v-wr[1]) + K[2]*(a-wr[2]) + K[3]*(av-wr[3])
-    motors.run(u * duty_coeff)
+    u = -K@(state - wr)  
+    # motors.run(u * duty_coeff)
     
 
 def read_sensors():
@@ -62,7 +68,7 @@ def read_sensors():
 # the main functions are called in timers that
 # keep strict time deltas between calls
 loop_timer = InterruptTimer(dT, loop_iteration, timeout)
-sensor_timer = InterruptTimer(0.01 , read_sensors, timeout)
+sensor_timer = InterruptTimer(dT , read_sensors, timeout)
 
 loop_timer.start()
 sensor_timer.start()
@@ -70,10 +76,8 @@ sensor_timer.start()
 
 # collect runtime data and output it to file
 if output_data_to_file:
-    run_data = list()  
     while loop_timer.running:
-        run_data.append([state[0], state[1], state[2], state[3], u, y[0], y[1]])
-        sleep(0.1)
+        sleep(dT)
     output_data(run_data)
 
 

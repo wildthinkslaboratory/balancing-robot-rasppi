@@ -50,7 +50,7 @@ Vd = np.eye(4) * 0.001
 # This is our sensor noise matrix
 # it contains the variance for our position and gyro sensors
 Vn = np.array([[0.001, 0], \
-               [0, 0.02]])     
+               [0, 0.0000026]])
 Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
 
@@ -73,7 +73,7 @@ def test_Kfilter():
         u = -K@(x-wr)  
         dx = (A@(x - wr) + (B*u).transpose() + Kf@(y - C@x))[0]  
         x = x + dx*dt
-        y = C@x + np.array([np.random.normal(0.0, 0.001), np.random.normal(0.0,0.02)])
+        y = C@x + np.array([np.random.normal(0.0, 0.001), np.random.normal(0.0,0.0000026)])
 
         for i in range(4):             # collect data
             state_data[i].append(x[i])
