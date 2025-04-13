@@ -1,10 +1,10 @@
 import json
 import numpy as np
-from control.matlab import lqr
 from time import sleep, perf_counter
 from motors import BRMotors
 from imu2 import ImuSensor
 from InterruptTimer import InterruptTimer
+from model import K
 
 
 debug = False
@@ -13,31 +13,6 @@ output_data_to_file = True
 dT = 0.006
 time = 10
 
-# generate our K matrix for LQR
-def generateK():
-
-    m = 0.29        # kilograms
-    M = 0.765       # kilograms
-    L = 0.16        # meters
-    g = -9.81       # meters / sec^2
-    d = 0           # d is a damping factor
-
-    A = np.array([[0,1,0,0],\
-                [0,-d/M,m*g/M,0],\
-                [0,0,0,1],\
-                [0,-d/(M*L),-(m+M)*g/(M*L),0]])
-
-    B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
-
-    Q = np.array([[1,0,0,0],\
-                [0,1,0,0],\
-                [0,0,1,0],\
-                [0,0,0,1]])
-    R = 1
-    return lqr(A,B,Q,R)[0]
-
-
-K = generateK()[0]                                # K (gain vector)
 x0 = np.array([0,0,np.pi,0])                      # Initial condition
 wr = np.array([0,0,np.pi+(0*np.pi/180),0])      # Reference position
 

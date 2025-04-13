@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 from scipy import integrate
 import numpy as np
 from control.matlab import lqr
-
+import model
+import json
 
 ## ODE RHS Function Definition
 def pendcart(x,t,m,M,L,g,d,uf):
@@ -19,29 +20,9 @@ def pendcart(x,t,m,M,L,g,d,uf):
     
     return dx
 
-
+# this function just runs an LQR simulation
+# and plots the resulting state curves
 def run_simulation():
-
-    m = 0.29        # kilograms
-    M = 0.765       # kilograms
-    L = 0.16        # meters
-    g = -9.81       # meters / sec^2
-    d = 0           # d is a damping factor
-
-    A = np.array([[0, 1, 0, 0],\
-                [0, -d/M, m*g/M, 0],\
-                [0, 0, 0, 1],\
-                [0, -d/(M*L), -(m+M)*g/(M*L), 0]])
-
-    B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
-
-    Q = np.array([[1,0,0,0],\
-                [0,1,0,0],\
-                [0,0,1,0],\
-                [0,0,0,1]])
-    R = 1
-    K = lqr(A,B,Q,R)[0][0]
-
 
     plt.rcParams['figure.figsize'] = [8, 8]
     plt.rcParams.update({'font.size': 18})
@@ -51,10 +32,10 @@ def run_simulation():
     tspan = np.arange(0,10,0.01)
     x0 = np.array([1,0,np.pi,0]) # Initial condition
     wr = np.array([0,0,np.pi,0])      # Reference position
-    u = lambda x: -K@(x-wr)           # Control law
+    u = lambda x: -(model.K)@(x-wr)           # Control law
 
 
-    x = integrate.odeint(pendcart,x0,tspan,args=(m,M,L,g,d,u))
+    x = integrate.odeint(pendcart,x0,tspan,args=(model.m,model.M,model.L,model.g,model.d,u))
 
     plot_labels = ('x','v','theta','omega')
     [plt.plot(tspan,x[:,j],linewidth=2,label=plot_labels[j]) for j in range(4)]
@@ -65,4 +46,55 @@ def run_simulation():
     plt.show()
 
 
+def compare_state_data():
+
+    # read in run data from file
+    datafile = 'data.json'
+
+    # Open and read the JSON file
+    with open(datafile, 'r') as file:
+        data = json.load(file)
+
+
+
+    # convert the data to columns so we can plot it
+    # this assumes 5 columns, x, v, a , av, and u
+    input_data = [[],[],[],[],[]]
+    for record in data:
+        for i in range(5):
+            input_data[i].append(record[i])
+
+    # now we use the u data to build state data with the pendcart function
+    m = 0.29        # kilograms
+    M = 0.765       # kilograms
+    L = 0.16        # meters
+    g = -9.81       # meters / sec^2
+    d = 0           # d is a damping factor
+
+    
+    dt = 0.01  # we need to know the time window for the generated data
+    x = data[0][:4] # starting state
+
+    sim_data = [[],[],[],[]]
+    for record in data:
+        uf = lambda x: record[4]
+        print("record",record) 
+        t = 0.0 # this is a dummy parameter, needed for ode call
+        dx = pendcart(x,t,m,M,L,g,d,uf)
+        x = x + dx*dt
+        print("state", x)
+        for i in range(4):
+            sim_data[i].append(x[i])
+
+    plot_labels = ('u','x_input','x_sim')
+    plt.plot(input_data[4])
+    plt.plot(input_data[0])
+    plt.plot(sim_data[0])
+    plt.xlabel('Time')
+    plt.ylabel('state')
+
+    plt.legend()
+    plt.show()
+
 run_simulation()
+    

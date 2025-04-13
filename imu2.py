@@ -40,6 +40,13 @@ class ImuSensor:
 
         self.angle_nogyro = 0.0
 
+    def raw_angular_velocity_rad(self):
+        gyro_data = self.sensor.get_gyro_data()
+        return  (gyro_data["x"] - self.bias_x)* math.pi / 180 
+
+    
+
+
     def get_raw_data(self):
         
         accelerometer_data = self.sensor.get_accel_data()
