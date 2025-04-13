@@ -60,7 +60,8 @@ class BRMotors:
 
 		return position, self.velocity
 
-
+	def position(self):
+		return self.counts * distance_per_count	
 
 	def cleanup(self):
 		self.motors.stop()
