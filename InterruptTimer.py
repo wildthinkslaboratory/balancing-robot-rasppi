@@ -1,5 +1,5 @@
 from threading import Timer
-from time import perf_counter
+from time import perf_counter, sleep
 
 class InterruptTimer:
     def __init__(self, dt, callback_function, timeout):
@@ -28,5 +28,9 @@ def my_callback():
     print("called callback")
 
 if __name__ == "__main__":
-    timer = InterruptTimer(4, my_callback, 20)
+    timer = InterruptTimer(4, my_callback, 5)
     timer.start()
+    while timer.running:
+        print("active")
+        sleep(0.2)
+    print("timer timed out")
