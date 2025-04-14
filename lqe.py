@@ -4,6 +4,7 @@ from InterruptTimer import InterruptTimer
 from model import A, K, B, Kf, C
 from motors import BRMotors
 from imu3 import ImuSensor
+from utilities import output_data
 
 
 debug = False
