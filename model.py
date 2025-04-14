@@ -49,8 +49,8 @@ Vd = np.eye(4) * 0.001
 
 # This is our sensor noise matrix
 # it contains the variance for our position and gyro sensors
-Vn = np.array([[0.001, 0], \
-               [0, 0.0000026]])
+Vn = np.array([[0.0001, 0], \
+               [0, 0.00000026]])     
 Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
 
@@ -68,19 +68,22 @@ def test_Kfilter():
     state_data = [[], [], [], []]
     u_data = []
     sensor_data = [[], []]
+    run_data = []
 
     for i in range(1000):              # simulate 
         u = -K@(x-wr)  
-        dx = (A@(x - wr) + (B*u).transpose() + Kf@(y - C@x))[0]  
+        dx = (A@(x - wr) + (B*u).transpose() + Kf@(y - C@x))[0] 
         x = x + dx*dt
-        y = C@x + np.array([np.random.normal(0.0, 0.001), np.random.normal(0.0,0.0000026)])
+        y = C@x + np.array([np.random.normal(0.0, 0.0001), np.random.normal(0.0,0.0000026)])
 
         for i in range(4):             # collect data
             state_data[i].append(x[i])
         u_data.append(u)
         for i in range(2):
             sensor_data[i].append(y[i])
+        run_data.append([x[0], x[1], x[2], x[3], u, y[0], y[1]])
 
+    output_data(run_data, "filter_test.json")
     plot_labels = ['x','v','a','av', 'x dat', 'av dat']
     [plt.plot(sensor_data[j], label=plot_labels[j + 4]) for j in range(2)]
     [plt.plot(state_data[j], label=plot_labels[j]) for j in range(4)]
@@ -94,4 +97,5 @@ def test_Kfilter():
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+    from utilities import output_data
     test_Kfilter()

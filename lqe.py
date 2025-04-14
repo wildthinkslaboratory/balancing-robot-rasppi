@@ -2,22 +2,12 @@ import numpy as np
 from time import sleep
 from InterruptTimer import InterruptTimer
 from model import A, K, B, Kf, C
-import json
 from motors import BRMotors
 from imu3 import ImuSensor
 
 
 debug = False
 output_data_to_file = True
-
-def output_data(run_data):
-    # Serializing json
-    json_object = json.dumps(run_data, indent=4)
-    
-    # Writing to sample.json
-    with open("data.json", "w") as outfile:
-        outfile.write(json_object)
-
 
 ############################################
 # These are all our loop variables 
