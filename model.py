@@ -71,8 +71,9 @@ def test_Kfilter():
     run_data = []
 
     for i in range(1000):              # simulate 
-        u = -K@(x-wr)  
-        dx = (A@(x - wr) + (B*u).transpose() + Kf@(y - C@x))[0] 
+        u = -K@(x - wr)
+        dx = (A@x + (B*u).transpose() + Kf@(y - C@x))[0] 
+
         x = x + dx*dt
         y = C@x + np.array([np.random.normal(0.0, 0.0001), np.random.normal(0.0,0.0000026)])
 

@@ -9,8 +9,9 @@ def output_data(data, filename):
         outfile.write(json_object)
 
 
-def import_data(data, filename):
+def import_data(filename):
     # Open and read the JSON file
+    data = {}
     with open(filename, 'r') as file:
         data = json.load(file)
     return data
