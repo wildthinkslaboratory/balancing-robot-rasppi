@@ -18,6 +18,44 @@
 \newcommand{\by}{\boldsymbol{y}}
 \newcommand{\bu}{\boldsymbol{u}}
 
+
+% this is a bunch of stuff that allows python style code snippits
+% Default fixed font does not support bold face
+\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{10} % for bold
+\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{10}  % for normal
+% Custom colors
+\usepackage{color}
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+
+\usepackage{listings}
+
+% Python style for highlighting
+\newcommand\pythonstyle{\lstset{
+		language=Python,
+		basicstyle=\ttm,
+		morekeywords={self},              % Add keywords here
+		keywordstyle=\ttb\color{deepblue},
+		emph={MyClass,__init__},          % Custom highlighting
+		emphstyle=\ttb\color{deepred},    % Custom highlighting style
+		stringstyle=\color{deepgreen},
+		frame=tb,                         % Any extra options here
+		showstringspaces=false,
+		tabsize=4
+}}
+
+% Python environment
+\lstnewenvironment{python}[1][]
+{
+	\pythonstyle
+	\lstset{#1}
+}
+{}
+
+% Python for inline
+\newcommand\pythoninline[1]{{\pythonstyle\lstinline!#1!}}
+
 \title{Balancing Robot}
 \author{Izzy Mones and Heidi Dixon}
 %\date{}
@@ -42,24 +80,57 @@ where $x$ is the cart position, $v$ is the velocity, $\theta$ is the pendulum an
 
 
 \subsection*{Linearization}
+To build a control system for our model we will linearize our system of equations around a fixed point $x_r$ where $x_r$ is the position where the robot is vertical, unmoving and positioned at the origin.  
+
+The nonlinear system of differential equations
+\begin{equation}
+		\frac{d}{dt} \bx = f(\bx).
+\end{equation}
+can be represented as a Taylor series expansion around the point $\bx_r$.
+\begin{equation}
+	 f(\bx) = f(\bx_r) +\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}(\bx -\bx_r) + \left. \frac{\boldsymbol{d}^2\boldsymbol{f}}{\boldsymbol{dx}^2} \right|_{x_r}(\bx -\bx_r)^2 + \cdots
+\end{equation}
+Because $\bx_r$ is a fixed point, we know that $f(\bx_r) = 0$. Additionally, we assume the value of $(\bx -\bx_r)$ is small, so higher order terms of this series will go to zero. So a fair estimate of our system is
+\begin{equation}
+	\frac{d}{dt} \bx \simeq \left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}(\bx -\bx_r) 
+\end{equation}
+where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jacobian matrix for our system of equations $f(\bx)$.
+
+	\begin{equation}
+	\begin{bmatrix}
+		0 & 1              & 0                          & 0 \\
+		0 & -\frac{d}{M}      & \frac{mg}{M}                 & 0 \\
+		0 & 0              & 0                          & 1 \\
+		0 & -\frac{d}{ML} & -\frac{(m+M)g}{ML} & 0
+	\end{bmatrix}
+\end{equation}
 
 \subsection*{LQR}
 \subsection*{LQG}
+ I'm just testing out how to include code in our document. This is how you do inline code text. \pythoninline{class MyClass} And next is a full code snippet.
+ 
+ 
+\begin{python}
+def loop_iteration():
+	global u
+	global x
+
+	# estimate state
+	dx = (A@(x - xr) + (B*u).transpose() + Kf@(y - C@(x-xr)))[0]  
+	x = x + dx*dT
+
+	# compute the control value u, and update motor duty cycle
+	u = -K@(x - xr)  
+	motors.run(u * duty_coeff)
+\end{python}
+
 \section*{Experiments}
 
 \section*{Conclusions}
 	
-	\begin{equation}
-	\begin{bmatrix}
-		1 & 0 & 0 \\
-		0 & 1 & 0 \\
-		0 & 0 & 1
-	\end{bmatrix}
-	\end{equation}
 
-\begin{equation}
-	\frac{d}{dt} \bx = A \bx + B \bu
-\end{equation}
+
+
 
 \begin{equation}
 	\bu = -K \bx
