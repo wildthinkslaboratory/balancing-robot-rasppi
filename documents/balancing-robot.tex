@@ -1,0 +1,72 @@
+\documentclass[]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{multicol}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{bm}
+
+% this just sets up the page size and margins
+\setlength{\topmargin}{0pt}
+\setlength{\oddsidemargin}{0pt}
+\setlength{\evensidemargin}{0pt}
+\setlength{\textwidth}{6.5in}
+\setlength{\textheight}{8.5in}
+\setlength{\headheight}{0pt}
+
+% create some short cut commands
+\newcommand{\bx}{\boldsymbol{x}}
+\newcommand{\by}{\boldsymbol{y}}
+\newcommand{\bu}{\boldsymbol{u}}
+
+\title{Balancing Robot}
+\author{Izzy Mones and Heidi Dixon}
+%\date{}
+
+\begin{document}
+	\maketitle
+
+\section*{Robot Design}
+
+
+\section*{Model}
+\subsection*{System Description (Lagrange's Method)}
+Derive the equations here
+
+\begin{eqnarray}
+	\dot{x} & = & v \\
+	\ddot{x}          & = & \frac{-m^2L^2g \cos(\theta)\sin(\theta) + mL^2(mL\omega^2 \sin(\theta)-\delta v)+mL^2u }{mL^2(M+m(1-\cos(\theta)^2))} \\
+	\dot{\theta}  &= & \omega \\
+	\dot{\omega}  &= & \frac{(m+M)mgL\sin(\theta)-mL\cos(\theta)(mL\omega^2\sin(\theta)-\delta v)+mL\cos(\theta)u}{mL^2(M+m(1-\cos(\theta)^2))}
+\end{eqnarray}
+where $x$ is the cart position, $v$ is the velocity, $\theta$ is the pendulum angle, $\omega$ is the angular velocity, $m$ is the pendulum mass, $M$ is the cart mass, $L$ is the pendulum arm length, $g$ is the gravitational acceleration, $\delta$ is a friction damping on the cart, and $u$ is the control force applied to the cart.
+
+
+\subsection*{Linearization}
+
+\subsection*{LQR}
+\subsection*{LQG}
+\section*{Experiments}
+
+\section*{Conclusions}
+	
+	\begin{equation}
+	\begin{bmatrix}
+		1 & 0 & 0 \\
+		0 & 1 & 0 \\
+		0 & 0 & 1
+	\end{bmatrix}
+	\end{equation}
+
+\begin{equation}
+	\frac{d}{dt} \bx = A \bx + B \bu
+\end{equation}
+
+\begin{equation}
+	\bu = -K \bx
+\end{equation}
+
+	
+
+
+	
+\end{document}
