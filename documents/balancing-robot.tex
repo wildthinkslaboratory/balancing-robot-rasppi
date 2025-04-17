@@ -64,7 +64,7 @@
 	\maketitle
 
 \section*{Robot Design}
-
+Should have list of all the components. Maybe a picture. Do we need to show circuit stuff?
 
 \section*{Model}
 \subsection*{System Description (Lagrange's Method)}
@@ -90,13 +90,14 @@ can be represented as a Taylor series expansion around the point $\bx_r$.
 \begin{equation}
 	 f(\bx) = f(\bx_r) +\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}(\bx -\bx_r) + \left. \frac{\boldsymbol{d}^2\boldsymbol{f}}{\boldsymbol{dx}^2} \right|_{x_r}(\bx -\bx_r)^2 + \cdots
 \end{equation}
-Because $\bx_r$ is a fixed point, we know that $f(\bx_r) = 0$. Additionally, we assume the value of $(\bx -\bx_r)$ is small, so higher order terms of this series will go to zero. So a fair estimate of our system is
+Because $\bx_r$ is a fixed point, we know that $f(\bx_r) = 0$. Additionally, this approximation is only accurate in a small neighborhood around $\bx_r$.  In this neighborhood, we can assume that the value of $(\bx -\bx_r)$ is small, so higher order terms of this series will go to zero. So a fair estimate of our system is
 \begin{equation}
 	\frac{d}{dt} \bx \simeq \left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}(\bx -\bx_r) 
 \end{equation}
-where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jacobian matrix for our system of equations $f(\bx)$.
+where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jacobian matrix for our system of equations $f(\bx)$ evaluated at the fixed point $\bx_r$. The Jacobian matrix for our system of equations evaluated at $\bx_r = [0\; 0\; \pi \; 0]$ is 
 
 	\begin{equation}
+		A = 
 	\begin{bmatrix}
 		0 & 1              & 0                          & 0 \\
 		0 & -\frac{d}{M}      & \frac{mg}{M}                 & 0 \\
@@ -105,6 +106,9 @@ where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jac
 	\end{bmatrix}
 \end{equation}
 
+\begin{equation*}
+	\frac{d}{dt} \bx \simeq A(\bx -\bx_r)
+\end{equation*}
 \subsection*{LQR}
 \subsection*{LQG}
  I'm just testing out how to include code in our document. This is how you do inline code text. \pythoninline{class MyClass} And next is a full code snippet.
@@ -130,13 +134,6 @@ def loop_iteration():
 	
 
 
-
-
-\begin{equation}
-	\bu = -K \bx
-\end{equation}
-
-	
 
 
 	
