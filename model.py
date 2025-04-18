@@ -1,8 +1,3 @@
-# note: to Izzy
-# I put the model in a seperate file because we need to 
-# access it in multiple places. If we ever need to edit
-# the model we wouldn't be able to keep it all synched.
-
 import numpy as np
 from control.matlab import lqr, lqe
 
@@ -54,8 +49,7 @@ Vn = np.array([[1, 0], \
 
 Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
-Kf_off = np.zeros_like(Kf)
-
+# These are our A,B,C,D matrices for the Kalman Filter system
 A_kf = A - (Kf @ C)    
 B_kf = np.concatenate((B, Kf), axis=1)
 C_kf = np.eye(4)

@@ -11,12 +11,6 @@ import math
 
 
 #########################################################
-# 1. Is Kf(y-yhat) small? It should be if there is very 
-#    little noise
-# 2.
-#########################################################
-
-#########################################################
 # this function returns the change in state of the robot
 # based on the full differential equations
 #########################################################
@@ -173,9 +167,6 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
         plt.ylabel('State')
         plt.legend()
         plt.show()
-
-
-
 
 
 
