@@ -195,14 +195,74 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
 
 
 
+def run_comparison():
+    tspan = np.arange(0,10,0.01)
+    x0 = np.array([1,0,np.pi,0]) # Initial condition
+    xr = np.array([0,0,np.pi,0])      # Reference position 
 
-tspan = np.arange(0,10,0.01)
-x0 = np.array([1,0,np.pi,0]) # Initial condition
-xr = np.array([0,0,np.pi,0])      # Reference position 
+    method1 = Method(ode_sim)
+    method2 = Method(kf_sim_with_noise)
 
-method1 = Method(ode_sim)
-method2 = Method(kf_sim_with_noise)
-
-compare_solution_methods(method1, method2, tspan, x0, xr)
+    compare_solution_methods(method1, method2, tspan, x0, xr)
 
 
+def kf_comparison_plot():
+    tspan = np.arange(0,10,0.01)
+    x0 = np.array([1,0,np.pi,0]) # Initial condition
+    xr = np.array([0,0,np.pi,0])      # Reference position 
+    dt = tspan[1]-tspan[0]
+
+    run_data_noise = np.empty([len(tspan),4])
+    run_data_kf = np.empty([len(tspan),4])
+    run_data_true = np.empty([len(tspan),4])
+
+    run_data_noise[0] = x0
+    run_data_kf[0] = x0
+    run_data_true[0] = x0
+    
+    x_noise = x0
+    x_kf = x0
+    x_true = x0
+
+    u_kf = 0.0
+    uy = np.array([u_kf,1,0])
+    u_noise = 0.0
+    u_true = 0.0
+
+    
+    for i in range(len(tspan)):
+        noise = np.random.normal(0.0,math.sqrt(md.av_var))
+
+        dx_true = (md.A@(x_true-xr) + (md.B*u_true).transpose())[0]
+        x_true = x_true + dx_true*dt
+        u_true = -md.K@(x_true - xr)
+        run_data_true[i] = x_true
+
+        x_noise[3] += noise  
+        dx_noise = (md.A@(x_noise-xr) + (md.B*u_noise).transpose())[0]
+        x_noise = x_noise + dx_noise*dt
+        u_noise = -md.K@(x_noise - xr)
+        run_data_noise[i] = x_noise
+
+        dx_kf = (md.A_kf@(x_kf-xr) + (md.B_kf@uy).transpose())[0]
+        x_kf = x_kf + dx_kf*dt
+        u_kf = -md.K@(x_kf - xr)
+        uy = np.array([u_kf, x_kf[0], x_kf[3] + noise]).reshape((3,1))
+        run_data_kf[i] = x_kf
+       
+
+    plt.rcParams['figure.figsize'] = [8, 8]
+    plt.rcParams.update({'font.size': 18})
+    
+    i = 3
+    plt.plot(tspan,run_data_noise[:,i],linewidth=2,label='av measured')
+    plt.plot(tspan,run_data_kf[:,i],linewidth=2,label='av k filter')
+    plt.plot(tspan,run_data_true[:,i],linewidth=2,label='av true')
+    plt.xlabel('Time')
+    plt.ylabel('State')
+    plt.legend()
+    plt.show()
+    
+
+
+kf_comparison_plot()
