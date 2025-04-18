@@ -9,6 +9,13 @@ import json
 from utilities import import_data
 import math
 
+
+#########################################################
+# 1. Is Kf(y-yhat) small? It should be if there is very 
+#    little noise
+# 2.
+#########################################################
+
 #########################################################
 # this function returns the change in state of the robot
 # based on the full differential equations
@@ -39,12 +46,12 @@ def equations_of_motion(x,t,m,M,L,g,d,uf):
 
 # use the odeint function and the true equations of motion 
 # to simulate the system
-def ode_simulation(tspan, x0, xr):
+def ode_sim(tspan, x0, xr):
     u = lambda x: -(model.K)@(x-xr) 
     return integrate.odeint(equations_of_motion,x0,tspan,args=(model.m,model.M,model.L,model.g,model.d,u))
 
-# use true equations of motion but with discrete time steps to simulate the system
-def discrete_ode_simulation(tspan, x0, xr):
+# use true equations of motion to iteratively move the state forward
+def it_ode_sim(tspan, x0, xr):
     run_data = np.empty([len(tspan),4])
     x = x0
     y = np.array([0.0, 0.0])
@@ -57,9 +64,9 @@ def discrete_ode_simulation(tspan, x0, xr):
 
     return run_data
 
-# simulate the system using a discrete linear system
+# iterative linear system simulation
 # Ax + Bu. 
-def discrete_ls_simulation(tspan, x0, xr):
+def it_ls_sim(tspan, x0, xr):
     
     run_data = np.empty([len(tspan),4])
     run_data[0] = x0
@@ -75,14 +82,14 @@ def discrete_ls_simulation(tspan, x0, xr):
 
     return run_data
 
-# simulate the system using a discrete linear system
+# iterative linear system simulation with added noise
 # Ax + Bu. 
-def discrete_ls_noise_simulation(tspan, x0, xr):
+def it_ls_sim_with_noise(tspan, x0, xr):
     
     run_data = np.empty([len(tspan),4])
     run_data[0] = x0
     x = x0
-    y = np.array([0.0, 0.0])
+    y = np.array([1.0, 0.0])
     u = 0.0
     dt = tspan[1]-tspan[0]
 
@@ -92,36 +99,47 @@ def discrete_ls_noise_simulation(tspan, x0, xr):
         u = -model.K@(x - xr)
         x[0] += np.random.normal(0.0, 0.0001)
         x[3] += np.random.normal(0.0,0.0026)
+        
         run_data[i] = x
 
     return run_data
 
-
-def kalman_filter_simulation(tspan, x0, xr):
+# linear kalman filter simulation
+def kf_sim(tspan, x0, xr):
     
     run_data = np.empty([len(tspan),4])
     run_data[0] = x0
     x = x0
-    y = np.array([0.0, 0.0])
     u = 0.0
+    uy = np.array([0,1,0]).reshape((3,1))
     dt = tspan[1]-tspan[0]
 
     for i in range(len(tspan)):
-        dx = (model.A@(x-xr) + (model.B*u).transpose() + model.Kf@(y - model.C@(x)))[0]
+        dx = (model.A_kf@(x-xr) + (model.B_kf@uy).transpose())[0]
         x = x + dx*dt
         u = -model.K@(x - xr)
-        y = model.C@x + np.array([np.random.normal(0.0, 0.0001), np.random.normal(0.0,0.0000026)])
+        uy = np.array([u, x[0], x[3]]).reshape((3,1))
         run_data[i] = x
 
     return run_data
-# def linear_sys_simulation(tspan, x0, xr):
-#     run_data = np.zeros([len(tspan),4])
-#     x = x0
-#     u = 0.0
-#     dt = tspan[1]-tspan[0]
-#     sys = ct.ss(model.A, model.B, model.C, 0.0, dt)
-#     return run_data
 
+def kf_sim_with_noise(tspan, x0, xr):
+    
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = x0
+    u = 0.0
+    uy = np.array([0,1,0]).reshape((3,1))
+    dt = tspan[1]-tspan[0]
+
+    for i in range(len(tspan)):
+        dx = (model.A_kf@(x-xr) + (model.B_kf@uy).transpose())[0]
+        x = x + dx*dt
+        u = -model.K@(x - xr)
+        uy = np.array([u, x[0], x[3] + np.random.normal(0.0,0.00026)]).reshape((3,1))
+        run_data[i] = x
+
+    return run_data
 
 #########################################################
 # This is a simple wrapper class for simulation functions
@@ -159,18 +177,16 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
 
 
 
-# currently the methods available are
-#  ode_simulation
-#  discrete_ode_simulation
-#  discrete_ls_simulation
-#  discrete_ls_noise_simulation
+
+
+
 
 tspan = np.arange(0,10,0.01)
 x0 = np.array([1,0,np.pi,0]) # Initial condition
 xr = np.array([0,0,np.pi,0])      # Reference position 
 
-method1 = Method(ode_simulation)
-method2 = Method(discrete_ls_noise_simulation)
+method1 = Method(ode_sim)
+method2 = Method(kf_sim_with_noise)
 
 compare_solution_methods(method1, method2, tspan, x0, xr)
 

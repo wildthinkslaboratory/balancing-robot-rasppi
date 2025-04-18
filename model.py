@@ -45,14 +45,18 @@ C = np.array([[1, 0, 0, 0], \
 # it contains the variance for state disturbances
 # Examples of a distrubances are giving the robot
 # a push or rolling over a bump in the floor
-Vd = np.eye(4) * 0.00001         
+Vd = np.eye(4)      
 
 # This is our sensor noise matrix
 # it contains the variance for our position and gyro sensors
-Vn = np.array([[0.000000001, 0], \
-               [0, 0.00000026]])  
-
+Vn = np.array([[1, 0], \
+               [0, 1]])  
 
 Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
-    
+Kf_off = np.zeros_like(Kf)
+
+A_kf = A - (Kf @ C)    
+B_kf = np.concatenate((B, Kf), axis=1)
+C_kf = np.eye(4)
+D_kf = np.zeros_like(B_kf)
