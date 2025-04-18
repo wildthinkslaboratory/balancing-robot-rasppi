@@ -4,7 +4,7 @@ from scipy import integrate
 import numpy as np
 import control as ct
 
-import model
+import model as md
 import json
 from utilities import import_data
 import math
@@ -41,8 +41,9 @@ def equations_of_motion(x,t,m,M,L,g,d,uf):
 # use the odeint function and the true equations of motion 
 # to simulate the system
 def ode_sim(tspan, x0, xr):
-    u = lambda x: -(model.K)@(x-xr) 
-    return integrate.odeint(equations_of_motion,x0,tspan,args=(model.m,model.M,model.L,model.g,model.d,u))
+    u = lambda x: -(md.K)@(x-xr) 
+    return integrate.odeint(equations_of_motion,x0,tspan,args=(md.m,md.M,md.L,md.g,md.d,u))
+
 
 # use true equations of motion to iteratively move the state forward
 def it_ode_sim(tspan, x0, xr):
@@ -50,9 +51,9 @@ def it_ode_sim(tspan, x0, xr):
     x = x0
     y = np.array([0.0, 0.0])
     dt = tspan[1]-tspan[0]
-    u = lambda x: -model.K@(x - xr)
+    u = lambda x: -md.K@(x - xr)
     for i in range(len(tspan)):
-        dx = equations_of_motion(x,0.0,model.m,model.M,model.L,model.g,model.d,u)
+        dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,u)
         x = x + dx*dt
         run_data[i] = x
 
@@ -69,9 +70,9 @@ def it_ls_sim(tspan, x0, xr):
     dt = tspan[1]-tspan[0]
 
     for i in range(len(tspan)):
-        dx = (model.A@(x-xr) + (model.B*u).transpose())[0]
+        dx = (md.A@(x-xr) + (md.B*u).transpose())[0]
         x = x + dx*dt
-        u = -model.K@(x - xr)
+        u = -md.K@(x - xr)
         run_data[i] = x
 
     return run_data
@@ -88,9 +89,9 @@ def it_ls_sim_with_noise(tspan, x0, xr):
     dt = tspan[1]-tspan[0]
 
     for i in range(len(tspan)):
-        dx = (model.A@(x-xr) + (model.B*u).transpose())[0]
+        dx = (md.A@(x-xr) + (md.B*u).transpose())[0]
         x = x + dx*dt
-        u = -model.K@(x - xr)
+        u = -md.K@(x - xr)
         x[0] += np.random.normal(0.0, 0.0001)
         x[3] += np.random.normal(0.0,0.0026)
         
@@ -109,9 +110,9 @@ def kf_sim(tspan, x0, xr):
     dt = tspan[1]-tspan[0]
 
     for i in range(len(tspan)):
-        dx = (model.A_kf@(x-xr) + (model.B_kf@uy).transpose())[0]
+        dx = (md.A_kf@(x-xr) + (md.B_kf@uy).transpose())[0]
         x = x + dx*dt
-        u = -model.K@(x - xr)
+        u = -md.K@(x - xr)
         uy = np.array([u, x[0], x[3]]).reshape((3,1))
         run_data[i] = x
 
@@ -127,13 +128,37 @@ def kf_sim_with_noise(tspan, x0, xr):
     dt = tspan[1]-tspan[0]
 
     for i in range(len(tspan)):
-        dx = (model.A_kf@(x-xr) + (model.B_kf@uy).transpose())[0]
+        dx = (md.A_kf@(x-xr) + (md.B_kf@uy).transpose())[0]
         x = x + dx*dt
-        u = -model.K@(x - xr)
+        u = -md.K@(x - xr)
         uy = np.array([u, x[0], x[3] + np.random.normal(0.0,0.00026)]).reshape((3,1))
         run_data[i] = x
 
     return run_data
+
+# # linear kalman filter simulation
+# def kf_sim_using_ss(tspan, x0, xr):
+    
+#     run_data = np.empty([len(tspan),4])
+#     run_data[0] = x0
+#     x = x0
+#     u = 0.0
+#     uy = np.array([0,1,0]).reshape((3,1))
+#     dt = tspan[1]-tspan[0]
+
+#     sys = ct.ss(md.A_kf, md.B_kf, md.C_kf, md.D_kf, dt)
+#     print(sys)
+#     # for t,i in enumerate(tspan):
+#     #     dx = (md.A_kf@(x-xr) + (md.B_kf@uy).transpose())[0]
+#     #     timeVector = np.linspace(t,t+dt,dt)
+#     #     inputVector = np.array()
+#     #     dxss = ct.forced_response(sys,timeVector, inputVector, x)
+#     #     x = x + dx*dt
+#     #     u = -md.K@(x - xr)
+#     #     uy = np.array([u, x[0], x[3]]).reshape((3,1))
+#     #     run_data[i] = x
+
+#     return run_data
 
 #########################################################
 # This is a simple wrapper class for simulation functions
@@ -167,7 +192,6 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
         plt.ylabel('State')
         plt.legend()
         plt.show()
-
 
 
 
