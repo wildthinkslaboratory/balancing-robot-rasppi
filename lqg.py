@@ -27,7 +27,7 @@ timeout = 0.5
 # 
 ############################################
 
-imu_sensor = ImuSensor()      # mpu6050 gyro/accelorometer access                    
+imu_sensor = ImuSensor()        # mpu6050 gyro/accelorometer access                    
 motors = BRMotors(dT)           # DC motors with encoder
 
 run_data = list()  
@@ -69,6 +69,7 @@ output_timer.start()
 
 # collect runtime data and output it to file
 if output_data_to_file:
+    output_timer.start()
     while loop_timer.running:
         sleep(dT)
     output_data(run_data)
