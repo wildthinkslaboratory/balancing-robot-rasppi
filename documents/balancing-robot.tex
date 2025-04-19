@@ -72,7 +72,7 @@ Derive the equations here
 
 \begin{eqnarray}
 	\dot{x} & = & v \\
-	\ddot{x}          & = & \frac{-m^2L^2g \cos(\theta)\sin(\theta) + mL^2(mL\omega^2 \sin(\theta)-\delta v)+mL^2u }{mL^2(M+m(1-\cos(\theta)^2))} \\
+	\dot{v}          & = & \frac{-m^2L^2g \cos(\theta)\sin(\theta) + mL^2(mL\omega^2 \sin(\theta)-\delta v)+mL^2u }{mL^2(M+m(1-\cos(\theta)^2))} \\
 	\dot{\theta}  &= & \omega \\
 	\dot{\omega}  &= & \frac{(m+M)mgL\sin(\theta)-mL\cos(\theta)(mL\omega^2\sin(\theta)-\delta v)+mL\cos(\theta)u}{mL^2(M+m(1-\cos(\theta)^2))}
 \end{eqnarray}
@@ -105,28 +105,47 @@ where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jac
 		0 & -\frac{d}{ML} & -\frac{(m+M)g}{ML} & 0
 	\end{bmatrix}
 \end{equation}
-
 \begin{equation*}
 	\frac{d}{dt} \bx \simeq A(\bx -\bx_r)
 \end{equation*}
+\begin{equation}
+	B = 
+	\begin{bmatrix}
+		0 \\
+		\frac{1}{M}  \\
+		0  \\
+		\frac{1}{ML}   
+	\end{bmatrix}
+\end{equation}
 \subsection*{LQR}
 \subsection*{LQG}
- I'm just testing out how to include code in our document. This is how you do inline code text. \pythoninline{class MyClass} And next is a full code snippet.
- 
- 
-\begin{python}
-def loop_iteration():
-	global u
-	global x
+\begin{itemize}
+	\item Estimate the full state from sensor readings from the $x$ position, and the angular velocity $\omega$.
+	\item Derive the Kalman filter matrix $K_f$ using the   \pythoninline{lqr} function from python control library.
+	\begin{python}
+	# This is our state disturbance matrix
+	Vd = np.eye(4) 
+	# This is our sensor noise matrix
+	Vn = np.array([[1, 0], \
+					[0, 1]])
+	Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
+	\end{python}
+	 \item To build the linear state space for our Kalman filter we build new matrices.
+	\begin{itemize}
+		\item $A_{kf} = A - K_fC$
+		\item $B_{kf} = \begin{bmatrix} B & K_f \end{bmatrix}$
+		\item $C = I_4$
+		\item $D$ is a $0$ matrix with the same dimensions as $K_f$
+	\end{itemize}
+	These form a new linear system
+	\begin{align}
+		\frac{d}{dt} \bx  = & A_{kf} \bx + B_{kf} \bu \\
+		\by = &C_{kf} \bx + D \bu
+	\end{align}
 
-	# estimate state
-	dx = (A@(x - xr) + (B*u).transpose() + Kf@(y - C@(x-xr)))[0]  
-	x = x + dx*dT
-
-	# compute the control value u, and update motor duty cycle
-	u = -K@(x - xr)  
-	motors.run(u * duty_coeff)
-\end{python}
+	\item Our input vector $\bu = [u, x_s, \omega_s]$ is our motor torque $u$ and our two sensor readings, position $x_s$ and angular velocity $\omega_s$
+	
+\end{itemize}
 
 \section*{Experiments}
 

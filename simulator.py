@@ -192,7 +192,7 @@ def run_comparison():
 #########################################################
 def kf_comparison_plot():
     tspan = np.arange(0,10,0.01)
-    x0 = np.array([0,0,np.pi,0]) # Initial condition
+    x0 = np.array([1,0,np.pi,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
     dt = tspan[1]-tspan[0]
 
@@ -246,3 +246,5 @@ def kf_comparison_plot():
     plt.ylabel('State')
     plt.legend()
     plt.show()
+
+kf_comparison_plot()

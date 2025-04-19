@@ -37,7 +37,6 @@ C = np.array([[1, 0, 0, 0], \
               [0, 0, 0, 1]]) 
 
 # This is our state disturbance matrix
-# it contains the variance for state disturbances
 # Examples of a distrubances are giving the robot
 # a push or rolling over a bump in the floor
 Vd = np.eye(4) 
@@ -48,11 +47,7 @@ av_var = 0.0000026
 Vn = np.array([[1, 0], \
                [0, 1]])
 
-
-
 Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
-
-Kf_off = np.zeros_like(Kf)
 
 # These are our A,B,C,D matrices for the Kalman Filter system
 A_kf = A - (Kf @ C)    
