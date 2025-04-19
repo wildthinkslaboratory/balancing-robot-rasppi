@@ -1,5 +1,5 @@
 import numpy as np
-from control.matlab import lqr, lqe
+from control.matlab import lqr
 
 m = 0.29        # mass of pendulum (kilograms)
 M = 0.765       # mass of cart (kilograms)

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy import integrate
 import numpy as np
 import control as ct
-
+from time import perf_counter
 import model as md
 import json
 from utilities import import_data
@@ -52,11 +52,14 @@ def it_ode_sim(tspan, x0, xr):
     y = np.array([0.0, 0.0])
     dt = tspan[1]-tspan[0]
     u = lambda x: -md.K@(x - xr)
+
+    start_time = perf_counter()
     for i in range(len(tspan)):
         dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,u)
         x = x + dx*dt
         run_data[i] = x
 
+    print('Time for 1000 iterations of it_ode_sim: ', perf_counter() - start_time)
     return run_data
 
 # iterative linear system simulation
@@ -127,6 +130,7 @@ def kf_sim_with_noise(tspan, x0, xr):
     uy = np.array([0,1,0]).reshape((3,1))
     dt = tspan[1]-tspan[0]
 
+    start_time = perf_counter()
     for i in range(len(tspan)):
         dx = (md.A_kf@(x-xr) + (md.B_kf@uy).transpose())[0]
         x = x + dx*dt
@@ -134,6 +138,7 @@ def kf_sim_with_noise(tspan, x0, xr):
         uy = np.array([u, x[0], x[3] + np.random.normal(0.0,0.00026)]).reshape((3,1))
         run_data[i] = x
 
+    print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
     return run_data
 
 
@@ -178,7 +183,7 @@ def run_comparison():
     x0 = np.array([1,0,np.pi,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(ode_sim)
+    method1 = Method(it_ode_sim)
     method2 = Method(kf_sim_with_noise)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
@@ -247,4 +252,4 @@ def kf_comparison_plot():
     plt.legend()
     plt.show()
 
-kf_comparison_plot()
+run_comparison()
