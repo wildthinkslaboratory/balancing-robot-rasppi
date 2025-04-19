@@ -206,6 +206,12 @@ def run_comparison():
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
 
+#########################################################
+# Here we compare three simulations
+#     - standard linear system with no noise (the true state)
+#     - standard linear system noise
+#     - Kalman Filter system the same noise
+#########################################################
 def kf_comparison_plot():
     tspan = np.arange(0,10,0.01)
     x0 = np.array([0,0,np.pi,0]) # Initial condition
@@ -262,51 +268,64 @@ def kf_comparison_plot():
     plt.ylabel('State')
     plt.legend()
     plt.show()
-    
+
+
+#########################################################   
+# run a live data set recorded from the robot through
+# a kalman filter simulation
+#########################################################
 def kf_comparison_with_live_data():
     sensor_data = import_data('data.json')
-    tspan = np.arange(0,len(sensor_data)*0.01,0.01)
+
+    mean = np.mean([d[6] for d in sensor_data])
+    std = np.std([d[6] for d in sensor_data])
+
+    # tspan = np.arange(0,len(sensor_data)*0.01,0.01)
+    tspan = np.arange(0,10,0.01)
     x0 = np.array([0,0,np.pi,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
     dt = tspan[1]-tspan[0]
 
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([1000,4])
+    noise_data = np.empty([1000])
     x = x0
     u = 0.0
     uy = np.array([0,1,0]).reshape((3,1))
     dt = tspan[1]-tspan[0]
-    for i, record in enumerate(sensor_data):
+    for i in range(1000):
+    # for i, record in enumerate(sensor_data):
+        noise = np.random.normal(0.0, std)
+        noise_data[i] = noise
         dx = (md.A_kf@(x-xr) + (md.B_kf@uy).transpose())[0]
         x = x + dx*dt
-        print(x)
         u = -md.K@(x - xr)
-        uy = np.array([u, record[5], record[6]]).reshape((3,1))
+        uy = np.array([u, 0.0, x[3] + noise]).reshape((3,1))
         run_data[i] = x
 
 
     plt.rcParams['figure.figsize'] = [8, 8]
     plt.rcParams.update({'font.size': 18})
 
-    plt.plot(tspan,[d[5] for d in sensor_data],linewidth=2,label='x sensor')
-    plt.plot(tspan,run_data[:,0],linewidth=2,label='x kf')
-    plt.xlabel('Time')
-    plt.ylabel('State')
-    plt.legend()
-    plt.show()
-    plt.plot(tspan,[d[6] for d in sensor_data],linewidth=2,label='av sensor')
+    # plt.plot(tspan,[d[5] for d in sensor_data],linewidth=2,label='x sensor')
+    # plt.plot(tspan,run_data[:,0],linewidth=2,label='x kf')
+    # plt.xlabel('Time')
+    # plt.ylabel('State')
+    # plt.legend()
+    # plt.show()
+
+    # plt.plot(tspan,[d[6] for d in sensor_data],linewidth=2,label='av sensor')
+    plt.plot(tspan,noise_data,linewidth=2,label='av noise')
     plt.plot(tspan,run_data[:,3],linewidth=2,label='av kf')
+
     plt.xlabel('Time')
     plt.ylabel('State')
     plt.legend()
     plt.show()
 
-    plt.plot(tspan,[d[2] for d in sensor_data],linewidth=2,label='a sensor')
     plt.plot(tspan,run_data[:,2],linewidth=2,label='a kf')
     plt.xlabel('Time')
     plt.ylabel('State')
     plt.legend()
     plt.show()
 
-
-kf_comparison_plot()
+kf_comparison_with_live_data()

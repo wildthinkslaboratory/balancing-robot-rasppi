@@ -1,7 +1,7 @@
 import numpy as np
 from time import sleep
 from InterruptTimer import InterruptTimer
-from model import A, K, B, Kf, C
+from model import A_kf, K, B_kf
 from motors import BRMotors
 from imu3 import ImuSensor
 from utilities import output_data
@@ -14,10 +14,9 @@ output_data_to_file = True
 # These are all our loop variables 
 
 ############################################
-y = np.array([0.0, 0.0])                # y is our raw sensor readings, position and angular velocity
-state = np.array([0,0,np.pi,0])                # this is our estimated state
-wr = np.array([0,0,np.pi,0])                    # Reference position / Goal state
-u = 0.0                                         # our control variable for motor torque
+x = np.array([0,0,np.pi,0])                   # this is our estimated state
+x_r = np.array([0,0,np.pi,0])                 # Reference position / Goal state
+u = np.array([0,0,0])                         # our input values [ u, x_sensor, y_sensor ]
 duty_coeff = 0.18
 dT = 0.01
 timeout = 0.5       
@@ -38,21 +37,20 @@ def loop_iteration():
     global u
 
     # estimate the state
-    dstate = (A@(state - wr) + (B*u).transpose() + Kf@(y - C@state))[0]  
-    state = state + dstate*dT
+    dx = (A_kf@(x-x_r) + (B_kf@u).transpose())[0]
+    x = x + dx*dT
 
-    run_data.append([state[0], state[1], state[2], state[3], u, y[0], y[1]])
+    run_data.append([x[0], x[1], x[2], x[3], u[0], u[1], u[2]])
 
-   
     # compute the control value u, and update motor duty cycle
-    u = -K@(state - wr)  
-    # motors.run(u * duty_coeff)
+    u[0] = -K@(x - x_r)  
+    motors.run(u[0] * duty_coeff)
     
 
 def read_sensors():
-    global y
-    y[0] = motors.position()
-    y[1] = imu_sensor.raw_angular_velocity_rad()
+    global u
+    u[1] = motors.position()
+    u[2] = imu_sensor.raw_angular_velocity_rad()
 
 
 # the main functions are called in timers that
