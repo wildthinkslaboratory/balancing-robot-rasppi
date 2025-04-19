@@ -37,18 +37,19 @@ def read_sensors():
     u[1] = motors.position()
     u[2] = imu_sensor.raw_angular_velocity_rad()
 
+def update_run_data():
+    global run_data
+    run_data.append([x[0], x[1], x[2], x[3], u[0], u[1], u[2]])
 
 def loop_iteration():
     global state
     global u
 
     read_sensors()
-    
+
     # estimate the state
     dx = (A_kf@(x-x_r) + (B_kf@u).transpose())[0]
     x = x + dx*dT
-
-    run_data.append([x[0], x[1], x[2], x[3], u[0], u[1], u[2]])
 
     # compute the control value u, and update motor duty cycle
     u[0] = -K@(x - x_r)  
@@ -59,9 +60,11 @@ def loop_iteration():
 # keep strict time deltas between calls
 loop_timer = InterruptTimer(dT, loop_iteration, timeout)
 # sensor_timer = InterruptTimer(dT , read_sensors, timeout)
+output_timer = InterruptTimer(dT, update_run_data, timeout)
 
 loop_timer.start()
 # sensor_timer.start()
+output_timer.start()
 
 
 # collect runtime data and output it to file
