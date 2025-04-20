@@ -219,7 +219,7 @@ def kf_comparison_plot():
     x_true = x0
 
     u_kf = 0.0
-    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
+    uy = np.array([0, x0[0], x0[2], x0[3]])
     uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
     u_noise = 0.0
     u_true = 0.0
@@ -241,7 +241,7 @@ def kf_comparison_plot():
         u_noise = -md.K@(x_noise - xr)
         run_data_noise[i] = x_noise
 
-        dx_kf = (md.A_kf@(x_kf-xr) + (md.B_kf@(uy-uy_r)).transpose())[0]
+        dx_kf = (md.A_kf@(x_kf-xr) + (md.B_kf@(uy.reshape((4,1))-uy_r)).transpose())[0]
         x_kf = x_kf + dx_kf*dt
         u_kf = -md.K@(x_kf - xr)
 
