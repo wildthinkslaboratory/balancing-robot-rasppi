@@ -16,11 +16,11 @@ output_data_to_file = True
 ############################################
 x = np.array([0.0,0.0,np.pi,0.0])               # this is our estimated state
 x_r = np.array([0.0,0.0,np.pi,0.0])             # Reference position / Goal state                        
-uy = np.array([0, x[0], x[2], x[3]]).reshape((4,1))            # our input values [ u, x_sensor, a_sensor, av_sensor ]   
-uy_r = np.array([0, x_r[0], x_r[2], x_r[3]]).reshape((4,1))    # input values goal state
+uy = np.array([0.0, x[0], x[2], x[3]]).reshape((4,1))            # our input values [ u, x_sensor, a_sensor, av_sensor ]   
+uy_r = np.array([0.0, x_r[0], x_r[2], x_r[3]]).reshape((4,1))    # input values goal state
 duty_coeff = 2.0
 dT = 0.01
-timeout = 10
+timeout = 2
 
 
 ############################################
@@ -42,7 +42,7 @@ def read_sensors():
 
 def update_run_data():
     global run_data
-    run_data.append([x[0], x[1], x[2], x[3], uy[0], uy[1], uy[2], uy[3]])
+    run_data.append([x[0], x[1], x[2], x[3], uy[0][0], uy[1][0], uy[2][0], uy[3][0]])
 
 def loop_iteration():
     global x

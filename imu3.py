@@ -55,13 +55,14 @@ if __name__ == "__main__":
     
     print("testing gyro readings")
     imu = ImuSensor() 
-    gyro_data = []
+    angle_data = []
 
     def callback():
         global imu
-        global gyro_data
+        global angle_data
+        raw_angle = imu.raw_angle_rad()
         raw_angular_velocity = imu.raw_angular_velocity_rad()
-        gyro_data.append(raw_angular_velocity)
+        angle_data.append([raw_angle, raw_angular_velocity])
         
     # query the gyro in a timer
     timer = InterruptTimer(0.01, callback, 5)
@@ -70,9 +71,9 @@ if __name__ == "__main__":
     while timer.running: # wait for the trial to end
         sleep(1)
 
-    print("gyro noise variance", np.var(gyro_data))
+    print("gyro noise variance", np.var([a[0] for a in angle_data]))
 
-    plt.plot(gyro_data)
+    plt.plot([a[0] for a in angle_data])
     plt.xlabel('Time')
     plt.ylabel('angular velocity')
     plt.show()
