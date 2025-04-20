@@ -15,7 +15,7 @@ output_data_to_file = True
 
 ############################################
 x = np.array([0.0,0.0,np.pi,0.0])               # this is our estimated state
-x_r = np.array([0.0,0.0,np.pi,0.0])             # Reference position / Goal state                        
+x_r = np.array([1.0,0.0,np.pi,0.0])             # Reference position / Goal state                        
 uy = np.array([0.0, x[0], x[2], x[3]])          # our input values [ u, x_sensor, a_sensor, av_sensor ]   
 uy_r = np.array([0.0, x_r[0], x_r[2], x_r[3]]).reshape((4,1))  # input values goal state
 duty_coeff = 0.18
