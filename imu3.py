@@ -25,6 +25,16 @@ class ImuSensor:
         gyro_data = self.sensor.get_gyro_data()
         return  (gyro_data["x"] - self.bias_x)* math.pi / 180 
 
+    def raw_angle_rad(self):
+        accelerometer_data = self.sensor.get_accel_data()
+        self.ax_raw = accelerometer_data['x']
+        self.ay_raw = accelerometer_data['y']
+        self.az_raw = accelerometer_data['z']
+        accelerometer_angle = math.atan2(self.ay_raw, math.sqrt(self.ax_raw**2 + self.az_raw**2)) * math.pi / 180 
+        accelerometer_angle = accelerometer_angle + math.pi
+        if (accelerometer_angle >= 2 * math.pi):
+            accelerometer_angle -= 2 * math.pi
+        return  accelerometer_angle
     
     def calibrate_gyro(self, samples):
         cum_bias_x = 0
