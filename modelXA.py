@@ -23,7 +23,7 @@ B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
 Q = np.array([[1, 0, 0, 0],\
             [0, 1, 0, 0],\
             [0, 0, 1, 0],\
-            [0, 0, 0, 0.001]])
+            [0, 0, 0, 1]])
 R = 1
 K = lqr(A,B,Q,R)[0][0]
 
@@ -38,8 +38,8 @@ K = lqr(A,B,Q,R)[0][0]
 # the position is read from the motor encoders and
 # angular velocity is from the gyro
 C = np.array([[1, 0, 0, 0], \
-              [0, 0, 1, 0], \
-              [0, 0, 0, 1]]) 
+              [0, 0, 1, 0]])
+
 
 # This is our state disturbance matrix
 # Examples of a distrubances are giving the robot
@@ -48,7 +48,7 @@ Vd = np.eye(4)
 
 # This is our sensor noise matrix
 # it contains the variance for our position and gyro sensors
-Vn = np.eye(3)
+Vn = np.eye(2)
 
 Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
@@ -57,3 +57,5 @@ A_kf = A - (Kf @ C)
 B_kf = np.concatenate((B, Kf), axis=1)
 C_kf = np.eye(4)
 D_kf = np.zeros_like(B_kf)
+
+print(K)

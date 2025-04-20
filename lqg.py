@@ -1,7 +1,7 @@
 import numpy as np
 from time import sleep
 from InterruptTimer import InterruptTimer
-from model import A_kf, K, B_kf
+from modelXA import A_kf, K, B_kf
 from motors import BRMotors
 from imu3 import ImuSensor
 from utilities import output_data
@@ -15,9 +15,9 @@ output_data_to_file = True
 
 ############################################
 x = np.array([0.0,0.0,np.pi,0.0])               # this is our estimated state
-x_r = np.array([1.0,0.0,np.pi,0.0])             # Reference position / Goal state                        
-uy = np.array([0.0, x[0], x[2], x[3]])          # our input values [ u, x_sensor, a_sensor, av_sensor ]   
-uy_r = np.array([0.0, x_r[0], x_r[2], x_r[3]]).reshape((4,1))  # input values goal state
+x_r = np.array([0.0,0.0,np.pi,0.0])             # Reference position / Goal state                        
+uy = np.array([0.0, x[0], x[2]])          # our input values [ u, x_sensor, a_sensor]   
+uy_r = np.array([0.0, x_r[0], x_r[2]]).reshape((3,1))  # input values goal state
 duty_coeff = 0.18
 dT = 0.01
 timeout = 2
@@ -33,16 +33,10 @@ motors = BRMotors(dT)           # DC motors with encoder
 
 run_data = list()  
 
-def read_sensors():
-    global uy
-    uy[1] = motors.position()
-    uy[2] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
-    uy[3] = imu_sensor.raw_angular_velocity_rad()
-
 
 def update_run_data():
     global run_data
-    run_data.append([x[0], x[1], x[2], x[3], uy[0], uy[1], uy[2], uy[3]])
+    run_data.append([x[0], x[1], x[2], x[3], uy[0], uy[1], uy[2]])
 
 def loop_iteration():
     global x
@@ -50,10 +44,9 @@ def loop_iteration():
 
     uy[1] = motors.position()
     uy[2] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
-    uy[3] = imu_sensor.raw_angular_velocity_rad()
 
     # estimate the state
-    dx = (A_kf@(x - x_r) + (B_kf@(uy.reshape((4,1))-uy_r)).transpose())[0]
+    dx = (A_kf@(x - x_r) + (B_kf@(uy.reshape((3,1))-uy_r)).transpose())[0]
     x = x + dx*dT
 
     # compute the control value u, and update motor duty cycle
@@ -64,11 +57,9 @@ def loop_iteration():
 # the main functions are called in timers that
 # keep strict time deltas between calls
 loop_timer = InterruptTimer(dT, loop_iteration, timeout)
-# sensor_timer = InterruptTimer(dT , read_sensors, timeout)
 output_timer = InterruptTimer(dT, update_run_data, timeout)
 
 loop_timer.start()
-# sensor_timer.start()
 output_timer.start()
 
 

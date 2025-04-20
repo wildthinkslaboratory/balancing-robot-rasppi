@@ -5,6 +5,7 @@ import numpy as np
 import control as ct
 from time import perf_counter
 import model as md
+import modelXA as mxa
 import json
 from utilities import import_data
 import math
@@ -146,6 +147,31 @@ def kf_sim_with_noise(tspan, x0, xr):
     print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
     return run_data
 
+def kf_sim_with_noise_mxa(tspan, x0, xr):
+    
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = x0
+    u = 0.0
+    uy = np.array([0, x0[0], x0[2]]).reshape((3,1))
+    uy_r = np.array([0, xr[0], xr[2]]).reshape((3,1))
+    dt = tspan[1]-tspan[0]
+
+    start_time = perf_counter()
+    for i in range(len(tspan)):
+        dx = (mxa.A_kf@(x-xr) + (mxa.B_kf@(uy-uy_r)).transpose())[0]
+        x = x + dx*dt
+        u = -md.K@(x - xr)
+        position = xr[0]
+        angle = xr[2] + np.random.normal(0.0,math.sqrt(md.angle_var))
+        #angle_vel = x[3] + np.random.normal(0.0,math.sqrt(md.angle_vel_var))
+        uy = np.array([u, position, angle]).reshape((3,1))
+        run_data[i] = x
+
+
+    print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
+    return run_data
+
 
 
 #########################################################
@@ -185,11 +211,11 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
 
 def run_comparison():
     tspan = np.arange(0,10,0.01)
-    x0 = np.array([1,0,np.pi+0.1,0]) # Initial condition
+    x0 = np.array([0,0,np.pi,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
     method1 = Method(it_ode_sim)
-    method2 = Method(kf_sim_with_noise)
+    method2 = Method(kf_sim_with_noise_mxa)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
@@ -273,5 +299,5 @@ def kf_comparison_plot():
     plt.legend()
     plt.show()
 
-#run_comparison()
-kf_comparison_plot()
+run_comparison()
+#kf_comparison_plot()
