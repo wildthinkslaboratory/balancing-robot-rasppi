@@ -14,12 +14,12 @@ output_data_to_file = True
 # These are all our loop variables 
 
 ############################################
-x = np.array([0,0,np.pi,0])                   # this is our estimated state
-x_r = np.array([0,0,np.pi,0])                 # Reference position / Goal state
-u = np.array([0,0,0])                         # our input values [ u, x_sensor, y_sensor ]
-duty_coeff = 0.18
+x = np.array([0.0,0.0,np.pi,0.0])                   # this is our estimated state
+x_r = np.array([0.0,0.0,np.pi,0.0])                 # Reference position / Goal state
+u = np.array([0.0,0.0,0.0])                         # our input values [ u, x_sensor, y_sensor ]
+duty_coeff = 2.0
 dT = 0.01
-timeout = 0.5       
+timeout = 10
 
 
 ############################################
@@ -37,18 +37,19 @@ def read_sensors():
     u[1] = motors.position()
     u[2] = imu_sensor.raw_angular_velocity_rad()
 
+
 def update_run_data():
     global run_data
     run_data.append([x[0], x[1], x[2], x[3], u[0], u[1], u[2]])
 
 def loop_iteration():
-    global state
+    global x
     global u
 
     read_sensors()
 
     # estimate the state
-    dx = (A_kf@(x-x_r) + (B_kf@u).transpose())[0]
+    dx = (A_kf@(x - x_r) + (B_kf@u).transpose())[0]
     x = x + dx*dT
 
     # compute the control value u, and update motor duty cycle
@@ -59,11 +60,11 @@ def loop_iteration():
 # the main functions are called in timers that
 # keep strict time deltas between calls
 loop_timer = InterruptTimer(dT, loop_iteration, timeout)
-# sensor_timer = InterruptTimer(dT , read_sensors, timeout)
+sensor_timer = InterruptTimer(dT , read_sensors, timeout)
 output_timer = InterruptTimer(dT, update_run_data, timeout)
 
 loop_timer.start()
-# sensor_timer.start()
+sensor_timer.start()
 output_timer.start()
 
 
@@ -72,6 +73,6 @@ if output_data_to_file:
     output_timer.start()
     while loop_timer.running:
         sleep(dT)
-    output_data(run_data)
+    output_data(run_data, "data.json")
 
 

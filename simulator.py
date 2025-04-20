@@ -252,4 +252,5 @@ def kf_comparison_plot():
     plt.legend()
     plt.show()
 
-run_comparison()
+# run_comparison()
+kf_comparison_plot()

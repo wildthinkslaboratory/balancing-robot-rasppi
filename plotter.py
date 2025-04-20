@@ -3,7 +3,7 @@ import json
 import numpy as np
 from utilities import import_data
 
-indexes_to_plot = [0]
+indexes_to_plot = [6,0,1,2,3,4,5]
 data = import_data("data.json")
 
 
