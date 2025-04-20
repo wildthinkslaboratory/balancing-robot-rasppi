@@ -9,7 +9,6 @@ import json
 from utilities import import_data
 import math
 
-
 #########################################################
 # this function returns the change in state of the robot
 # based on the full differential equations
@@ -96,7 +95,7 @@ def it_ls_sim_with_noise(tspan, x0, xr):
         x = x + dx*dt
         u = -md.K@(x - xr)
         x[0] += np.random.normal(0.0, 0.0001)
-        x[3] += np.random.normal(0.0,0.0026)
+        x[3] += np.random.normal(0.0,math.sqrt(md.angle_vel_var))
         
         run_data[i] = x
 
@@ -109,14 +108,15 @@ def kf_sim(tspan, x0, xr):
     run_data[0] = x0
     x = x0
     u = 0.0
-    uy = np.array([0,1,0]).reshape((3,1))
+    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
+    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
     dt = tspan[1]-tspan[0]
 
     for i in range(len(tspan)):
-        dx = (md.A_kf@(x-xr) + (md.B_kf@uy).transpose())[0]
+        dx = (md.A_kf@(x-xr) + (md.B_kf@(uy-uy_r)).transpose())[0]
         x = x + dx*dt
         u = -md.K@(x - xr)
-        uy = np.array([u, x[0], x[3]]).reshape((3,1))
+        uy = np.array([u, x[0], x[2], x[3]]).reshape((4,1))
         run_data[i] = x
 
     return run_data
@@ -127,16 +127,21 @@ def kf_sim_with_noise(tspan, x0, xr):
     run_data[0] = x0
     x = x0
     u = 0.0
-    uy = np.array([0,1,0]).reshape((3,1))
+    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
+    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
     dt = tspan[1]-tspan[0]
 
     start_time = perf_counter()
     for i in range(len(tspan)):
-        dx = (md.A_kf@(x-xr) + (md.B_kf@uy).transpose())[0]
+        dx = (md.A_kf@(x-xr) + (md.B_kf@(uy-uy_r)).transpose())[0]
         x = x + dx*dt
         u = -md.K@(x - xr)
-        uy = np.array([u, x[0], x[3] + np.random.normal(0.0,0.00026)]).reshape((3,1))
+        position = x[0]
+        angle = x[2] + np.random.normal(0.0,math.sqrt(md.angle_var))
+        angle_vel = x[3] + np.random.normal(0.0,math.sqrt(md.angle_vel_var))
+        uy = np.array([u, position, angle, angle_vel]).reshape((4,1))
         run_data[i] = x
+
 
     print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
     return run_data
@@ -180,7 +185,7 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
 
 def run_comparison():
     tspan = np.arange(0,10,0.01)
-    x0 = np.array([1,0,np.pi,0]) # Initial condition
+    x0 = np.array([1,0,np.pi+0.1,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
     method1 = Method(it_ode_sim)
@@ -214,29 +219,36 @@ def kf_comparison_plot():
     x_true = x0
 
     u_kf = 0.0
-    uy = np.array([u_kf,1,0])
+    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
+    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
     u_noise = 0.0
     u_true = 0.0
 
     
     for i in range(len(tspan)):
-        noise = np.random.normal(0.0,math.sqrt(md.av_var))
+        av_noise = np.random.normal(0.0,math.sqrt(md.angle_vel_var))
+        a_noise = np.random.normal(0.0,0.001)
 
         dx_true = (md.A@(x_true-xr) + (md.B*u_true).transpose())[0]
         x_true = x_true + dx_true*dt
         u_true = -md.K@(x_true - xr)
         run_data_true[i] = x_true
 
-        x_noise[3] += noise  
+        x_noise[2] += a_noise
+        x_noise[3] += av_noise  
         dx_noise = (md.A@(x_noise-xr) + (md.B*u_noise).transpose())[0]
         x_noise = x_noise + dx_noise*dt
         u_noise = -md.K@(x_noise - xr)
         run_data_noise[i] = x_noise
 
-        dx_kf = (md.A_kf@(x_kf-xr) + (md.B_kf@uy).transpose())[0]
+        dx_kf = (md.A_kf@(x_kf-xr) + (md.B_kf@(uy-uy_r)).transpose())[0]
         x_kf = x_kf + dx_kf*dt
         u_kf = -md.K@(x_kf - xr)
-        uy = np.array([u_kf, x_kf[0], x_kf[3] + noise]).reshape((3,1))
+
+        uy[0] = u_kf
+        uy[1] = x_kf[0]
+        uy[2] = x_kf[2] + a_noise
+        uy[3] = x_kf[3] + av_noise
         run_data_kf[i] = x_kf
        
 
@@ -252,5 +264,14 @@ def kf_comparison_plot():
     plt.legend()
     plt.show()
 
-# run_comparison()
+    i=2
+    plt.plot(tspan,run_data_noise[:,i],linewidth=2,label='a measured')
+    plt.plot(tspan,run_data_kf[:,i],linewidth=2,label='a k filter')
+    plt.plot(tspan,run_data_true[:,i],linewidth=2,label='a true')
+    plt.xlabel('Time')
+    plt.ylabel('State')
+    plt.legend()
+    plt.show()
+
+#run_comparison()
 kf_comparison_plot()

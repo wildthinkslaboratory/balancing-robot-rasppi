@@ -14,9 +14,10 @@ output_data_to_file = True
 # These are all our loop variables 
 
 ############################################
-x = np.array([0.0,0.0,np.pi,0.0])                   # this is our estimated state
-x_r = np.array([0.0,0.0,np.pi,0.0])                 # Reference position / Goal state
-u = np.array([0.0,0.0,0.0])                         # our input values [ u, x_sensor, y_sensor ]
+x = np.array([0.0,0.0,np.pi,0.0])               # this is our estimated state
+x_r = np.array([0.0,0.0,np.pi,0.0])             # Reference position / Goal state                        
+uy = np.array([0, x[0], x[2], x[3]]).reshape((4,1))            # our input values [ u, x_sensor, a_sensor, av_sensor ]   
+uy_r = np.array([0, x_r[0], x_r[2], x_r[3]]).reshape((4,1))    # input values goal state
 duty_coeff = 2.0
 dT = 0.01
 timeout = 10
@@ -33,28 +34,29 @@ motors = BRMotors(dT)           # DC motors with encoder
 run_data = list()  
 
 def read_sensors():
-    global u
-    u[1] = motors.position()
-    u[2] = imu_sensor.raw_angular_velocity_rad()
+    global uy
+    uy[1] = motors.position()
+    uy[2] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
+    uy[3] = imu_sensor.raw_angular_velocity_rad()
 
 
 def update_run_data():
     global run_data
-    run_data.append([x[0], x[1], x[2], x[3], u[0], u[1], u[2]])
+    run_data.append([x[0], x[1], x[2], x[3], uy[0], uy[1], uy[2], uy[3]])
 
 def loop_iteration():
     global x
-    global u
+    global uy
 
     read_sensors()
 
     # estimate the state
-    dx = (A_kf@(x - x_r) + (B_kf@u).transpose())[0]
+    dx = (A_kf@(x - x_r) + (B_kf@(uy-uy_r)).transpose())[0]
     x = x + dx*dT
 
     # compute the control value u, and update motor duty cycle
-    u[0] = -K@(x - x_r)  
-    motors.run(u[0] * duty_coeff)
+    uy[0] = -K@(x - x_r)  
+    motors.run(uy[0] * duty_coeff)
     
 
 # the main functions are called in timers that
