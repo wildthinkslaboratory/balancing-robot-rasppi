@@ -48,7 +48,9 @@ def loop_iteration():
     global x
     global uy
 
-    read_sensors()
+    uy[1] = motors.position()
+    uy[2] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
+    uy[3] = imu_sensor.raw_angular_velocity_rad()
 
     # estimate the state
     dx = (A_kf@(x - x_r) + (B_kf@(uy-uy_r)).transpose())[0]
@@ -62,11 +64,11 @@ def loop_iteration():
 # the main functions are called in timers that
 # keep strict time deltas between calls
 loop_timer = InterruptTimer(dT, loop_iteration, timeout)
-sensor_timer = InterruptTimer(dT , read_sensors, timeout)
+# sensor_timer = InterruptTimer(dT , read_sensors, timeout)
 output_timer = InterruptTimer(dT, update_run_data, timeout)
 
 loop_timer.start()
-sensor_timer.start()
+# sensor_timer.start()
 output_timer.start()
 
 
