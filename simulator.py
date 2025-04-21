@@ -147,6 +147,31 @@ def kf_sim_with_noise(tspan, x0, xr):
     print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
     return run_data
 
+def kf_sim_with_noise_bug(tspan, x0, xr):
+    
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = x0
+    u = 0.0
+    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
+    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
+    dt = tspan[1]-tspan[0]
+
+    start_time = perf_counter()
+    for i in range(len(tspan)):
+        dx = (md.A_kf@(x-xr) + (md.B_kf@(uy-uy_r)).transpose())[0]
+        x = x + dx*dt
+        u = -md.K@(x - xr)
+        position = xr[0]
+        angle = xr[2] + np.random.normal(0.0,math.sqrt(md.angle_var))
+        angle_vel = xr[3] + np.random.normal(0.0,math.sqrt(md.angle_vel_var))
+        uy = np.array([u, position, angle, angle_vel]).reshape((4,1))
+        run_data[i] = x
+
+
+    print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
+    return run_data
+
 def kf_sim_with_noise_mxa(tspan, x0, xr):
     
     run_data = np.empty([len(tspan),4])
@@ -215,7 +240,7 @@ def run_comparison():
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
     method1 = Method(it_ode_sim)
-    method2 = Method(kf_sim_with_noise_mxa)
+    method2 = Method(kf_sim_with_noise_bug)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
