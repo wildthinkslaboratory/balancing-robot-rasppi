@@ -4,11 +4,22 @@ from scipy import integrate
 import numpy as np
 import control as ct
 from time import perf_counter
-import model as md
-import modelXA as mxa
+from model import LQRModel, KalmanFilterXThetaOmega, KalmanFilterXTheta, angle_vel_var
 import json
 from utilities import import_data
 import math
+
+md = LQRModel()
+kf = KalmanFilterXThetaOmega()
+kf2 = KalmanFilterXTheta()
+
+# compute the distance between two vectors
+def distance(v1, v2):
+    assert len(v1) == len(v2)
+    sum = 0
+    for i in range(len(v1)):
+        sum += (v1[i] - v2[i])**2
+    return math.sqrt(sum)
 
 #########################################################
 # this function returns the change in state of the robot
@@ -80,24 +91,39 @@ def it_ls_sim(tspan, x0, xr):
 
     return run_data
 
+# the bug!
+def it_ls_sim_bug(tspan, x0, xr):
+    uf = lambda x: -md.K@(x - xr)
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = x0
+    u = 0.0
+    dt = tspan[1]-tspan[0]
+    for i in range(len(tspan)):
+        n = np.random.normal(0.0,math.sqrt(angle_vel_var))
+        x[3] = xr[3] + n
+        u = -md.K@(x - xr)
+        dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
+        x = x + dx*dt
+        run_data[i] = x
+
+    return run_data
+
 # iterative linear system simulation with added noise
 # Ax + Bu. 
 def it_ls_sim_with_noise(tspan, x0, xr):
-    
     run_data = np.empty([len(tspan),4])
     run_data[0] = x0
     x = x0
     y = np.array([1.0, 0.0])
     u = 0.0
     dt = tspan[1]-tspan[0]
-
     for i in range(len(tspan)):
         dx = (md.A@(x-xr) + (md.B*u).transpose())[0]
         x = x + dx*dt
         u = -md.K@(x - xr)
         x[0] += np.random.normal(0.0, 0.0001)
-        x[3] += np.random.normal(0.0,math.sqrt(md.angle_vel_var))
-        
+        x[3] += np.random.normal(0.0,math.sqrt(angle_vel_var))
         run_data[i] = x
 
     return run_data
@@ -114,7 +140,7 @@ def kf_sim(tspan, x0, xr):
     dt = tspan[1]-tspan[0]
 
     for i in range(len(tspan)):
-        dx = (md.A_kf@(x-xr) + (md.B_kf@(uy-uy_r)).transpose())[0]
+        dx = (kf.A_kf@(x-xr) + (kf.B_kf@(uy-uy_r)).transpose())[0]
         x = x + dx*dt
         u = -md.K@(x - xr)
         uy = np.array([u, x[0], x[2], x[3]]).reshape((4,1))
@@ -134,12 +160,12 @@ def kf_sim_with_noise(tspan, x0, xr):
 
     start_time = perf_counter()
     for i in range(len(tspan)):
-        dx = (md.A_kf@(x-xr) + (md.B_kf@(uy-uy_r)).transpose())[0]
+        dx = (kf.A_kf@(x-xr) + (kf.B_kf@(uy-uy_r)).transpose())[0]
         x = x + dx*dt
         u = -md.K@(x - xr)
         position = x[0]
-        angle = x[2] + np.random.normal(0.0,math.sqrt(md.angle_var))
-        angle_vel = x[3] + np.random.normal(0.0,math.sqrt(md.angle_vel_var))
+        angle = x[2] + np.random.normal(0.0,math.sqrt(angle_vel_var))
+        angle_vel = x[3] + np.random.normal(0.0,math.sqrt(angle_vel_var))
         uy = np.array([u, position, angle, angle_vel]).reshape((4,1))
         run_data[i] = x
 
@@ -147,30 +173,7 @@ def kf_sim_with_noise(tspan, x0, xr):
     print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
     return run_data
 
-def kf_sim_with_noise_bug(tspan, x0, xr):
-    
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
-    x = x0
-    u = 0.0
-    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
-    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
-    dt = tspan[1]-tspan[0]
 
-    start_time = perf_counter()
-    for i in range(len(tspan)):
-        dx = (md.A_kf@(x-xr) + (md.B_kf@(uy-uy_r)).transpose())[0]
-        x = x + dx*dt
-        u = -md.K@(x - xr)
-        position = xr[0]
-        angle = xr[2] + np.random.normal(0.0,math.sqrt(md.angle_var))
-        angle_vel = xr[3] + np.random.normal(0.0,math.sqrt(md.angle_vel_var))
-        uy = np.array([u, position, angle, angle_vel]).reshape((4,1))
-        run_data[i] = x
-
-
-    print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
-    return run_data
 
 def kf_sim_with_noise_mxa(tspan, x0, xr):
     
@@ -184,12 +187,11 @@ def kf_sim_with_noise_mxa(tspan, x0, xr):
 
     start_time = perf_counter()
     for i in range(len(tspan)):
-        dx = (mxa.A_kf@(x-xr) + (mxa.B_kf@(uy-uy_r)).transpose())[0]
+        dx = (kf2.A_kf@(x-xr) + (kf2.B_kf@(uy-uy_r)).transpose())[0]
         x = x + dx*dt
         u = -md.K@(x - xr)
-        position = xr[0]
-        angle = xr[2] + np.random.normal(0.0,math.sqrt(md.angle_var))
-        #angle_vel = x[3] + np.random.normal(0.0,math.sqrt(md.angle_vel_var))
+        position = x[0]
+        angle = x[2] + np.random.normal(0.0,0.0002)
         uy = np.array([u, position, angle]).reshape((3,1))
         run_data[i] = x
 
@@ -236,11 +238,11 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
 
 def run_comparison():
     tspan = np.arange(0,10,0.01)
-    x0 = np.array([0,0,np.pi,0]) # Initial condition
+    x0 = np.array([1,0,np.pi,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
     method1 = Method(it_ode_sim)
-    method2 = Method(kf_sim_with_noise_bug)
+    method2 = Method(kf_sim_with_noise_mxa)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
@@ -277,8 +279,8 @@ def kf_comparison_plot():
 
     
     for i in range(len(tspan)):
-        av_noise = np.random.normal(0.0,math.sqrt(md.angle_vel_var))
-        a_noise = np.random.normal(0.0,0.001)
+        av_noise = np.random.normal(0.0,math.sqrt(angle_vel_var))
+        a_noise = np.random.normal(0.0,0.0001)
 
         dx_true = (md.A@(x_true-xr) + (md.B*u_true).transpose())[0]
         x_true = x_true + dx_true*dt
@@ -292,7 +294,7 @@ def kf_comparison_plot():
         u_noise = -md.K@(x_noise - xr)
         run_data_noise[i] = x_noise
 
-        dx_kf = (md.A_kf@(x_kf-xr) + (md.B_kf@(uy.reshape((4,1))-uy_r)).transpose())[0]
+        dx_kf = (kf.A_kf@(x_kf-xr) + (kf.B_kf@(uy.reshape((4,1))-uy_r)).transpose())[0]
         x_kf = x_kf + dx_kf*dt
         u_kf = -md.K@(x_kf - xr)
 
@@ -324,5 +326,74 @@ def kf_comparison_plot():
     plt.legend()
     plt.show()
 
-run_comparison()
-#kf_comparison_plot()
+kf_comparison_plot()
+
+# uf = lambda x: -md.K@(x - xr)
+# x = np.array([1,0,np.pi,0]) # Initial condition
+# xr = np.array([0,0,np.pi,0])      # Reference position 
+# d = x - xr
+# u0 = md.K[0]* d[0]
+# u1 = md.K[1]* d[1]
+# u2 = md.K[2]* d[2]
+# u3 = md.K[3]* d[3]
+# print('x', x)
+# print('u', u0, u1, u2, u3)
+# u = u0 + u1 + u2 + u3
+# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
+# print('dx', dx)
+# print('new x', x + dx*0.01)
+
+# x = np.array([0,1,np.pi,0]) # Initial condition
+# xr = np.array([0,0,np.pi,0])      # Reference position 
+# d = x - xr
+# u0 = md.K[0]* d[0]
+# u1 = md.K[1]* d[1]
+# u2 = md.K[2]* d[2]
+# u3 = md.K[3]* d[3]
+# print('x', x)
+# print('u', u0, u1, u2, u3)
+# u = u0 + u1 + u2 + u3
+# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
+# print('dx', dx)
+# x =  x + dx*0.01
+# print('new x', x)
+# d = x - xr
+# u0 = md.K[0]* d[0]
+# u1 = md.K[1]* d[1]
+# u2 = md.K[2]* d[2]
+# u3 = md.K[3]* d[3]
+# print('x', x)
+# print('u', u0, u1, u2, u3)
+# u = u0 + u1 + u2 + u3
+# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
+# print('dx', dx)
+# x =  x + dx*0.01
+# print('new x', x)
+
+# x = np.array([0,0,np.pi + 0.1,0]) # Initial condition
+# xr = np.array([0,0,np.pi,0])      # Reference position 
+# d = x - xr
+# u0 = md.K[0]* d[0]
+# u1 = md.K[1]* d[1]
+# u2 = md.K[2]* d[2]
+# u3 = md.K[3]* d[3]
+# print('x', x)
+# print('u', u0, u1, u2, u3)
+# u = u0 + u1 + u2 + u3
+# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
+# print('dx', dx)
+# print('new x', x + dx*0.01)
+
+# x = np.array([0,0,np.pi,1]) # Initial condition
+# xr = np.array([0,0,np.pi,0])      # Reference position 
+# d = x - xr
+# u0 = md.K[0]* d[0]
+# u1 = md.K[1]* d[1]
+# u2 = md.K[2]* d[2]
+# u3 = md.K[3]* d[3]
+# print('x', x)
+# print('u', u0, u1, u2, u3)
+# u = u0 + u1 + u2 + u3
+# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
+# print('dx', dx)
+# print('new x', x + dx*0.01)

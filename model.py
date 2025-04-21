@@ -1,59 +1,127 @@
 import numpy as np
-from control.matlab import lqr
+from control.matlab import lqr, place
 
 # measured noise in our 
 angle_vel_var = 0.0000026
 angle_var = 0.0000026
 
-m = 0.29        # mass of pendulum (kilograms)
-M = 0.765       # mass of cart (kilograms)
-L = 0.16        # length of pendulum (meters)
-g = -9.81       # gravity, (meters / sec^2)
-d = 0           # d is a damping factor
+class LQRModelConstants:
 
-# equations of motion linearized about vertical pendulum position
-A = np.array([[0, 1, 0, 0],\
-            [0, -d/M, m*g/M, 0],\
-            [0, 0, 0, 1],\
-            [0, -d/(M*L), -(m+M)*g/(M*L), 0]])
+        m = 0.29        # mass of pendulum (kilograms)
+        M = 0.765       # mass of cart (kilograms)
+        L = 0.16        # length of pendulum (meters)
+        g = -9.81       # gravity, (meters / sec^2)
+        d = 0.001       # d is a damping factor
 
-# linearization of control matrix
-B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
+        # equations of motion linearized about vertical pendulum position
+        A = np.array([[0, 1, 0, 0],\
+                    [0, -d/M, m*g/M, 0],\
+                    [0, 0, 0, 1],\
+                    [0, -d/(M*L), -(m+M)*g/(M*L), 0]])
 
-Q = np.array([[1, 0, 0, 0],\
-            [0, 1, 0, 0],\
-            [0, 0, 1, 0],\
-            [0, 0, 0, 1]])
-R = 1
-K = lqr(A,B,Q,R)[0][0]
+        # linearization of control matrix
+        B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
+
+        Q = np.array([[1, 0, 0, 0],\
+                    [0, 1, 0, 0],\
+                    [0, 0, 1, 0],\
+                    [0, 0, 0, 1]])
+        R = 0.5
+        K = lqr(A,B,Q,R)[0][0]
 
 
-############################################
+class LQRModel:
+    def __init__(self):
+        # Set constants from separate classes as attributes
+        for cls in [LQRModelConstants]:
+            for key, value in cls.__dict__.items():
+                if not key.startswith("__"):
+                    self.__dict__.update(**{key: value})
+
+    def __setattr__(self, name, value):
+        raise TypeError("Model values are immutable")
+
+
+###########################################
 # Generate our Kalman Filter
 
-############################################
+###########################################
+class KalmanFilterXThetaOmegaConstants:
+    model = LQRModel()
+    # C is our measurement model
+    # we are measuring position and angular velocity
+    # the position is read from the motor encoders and
+    # angular velocity is from the gyro
+    C = np.array([[1, 0, 0, 0], \
+                [0, 0, 1, 0], \
+                [0, 0, 0, 1]]) 
 
-# C is our measurement model
-# we are measuring position and angular velocity
-# the position is read from the motor encoders and
-# angular velocity is from the gyro
-C = np.array([[1, 0, 0, 0], \
-              [0, 0, 1, 0], \
-              [0, 0, 0, 1]]) 
+    # This is our state disturbance matrix
+    # Examples of a distrubances are giving the robot
+    # a push or rolling over a bump in the floor
+    Vd = np.eye(4) 
 
-# This is our state disturbance matrix
-# Examples of a distrubances are giving the robot
-# a push or rolling over a bump in the floor
-Vd = np.eye(4) 
+    # This is our sensor noise matrix
+    # it contains the variance for our position and gyro sensors
+    Vn = np.eye(3)
 
-# This is our sensor noise matrix
-# it contains the variance for our position and gyro sensors
-Vn = np.eye(3)
+    Kf = lqr(model.A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
-Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
+    # These are our A,B,C,D matrices for the Kalman Filter system
+    A_kf = model.A - (Kf @ C)    
+    B_kf = np.concatenate((model.B, Kf), axis=1)
+    C_kf = np.eye(4)
+    D_kf = np.zeros_like(B_kf)
 
-# These are our A,B,C,D matrices for the Kalman Filter system
-A_kf = A - (Kf @ C)    
-B_kf = np.concatenate((B, Kf), axis=1)
-C_kf = np.eye(4)
-D_kf = np.zeros_like(B_kf)
+
+class KalmanFilterXThetaOmega:
+    def __init__(self):
+        # Set constants from separate classes as attributes
+        for cls in [KalmanFilterXThetaOmegaConstants]:
+            for key, value in cls.__dict__.items():
+                if not key.startswith("__"):
+                    self.__dict__.update(**{key: value})
+
+    def __setattr__(self, name, value):
+        raise TypeError("Model values are immutable")
+
+
+class KalmanFilterXThetaConstants:
+    model = LQRModel()
+    # C is our measurement model
+    # we are measuring position and angular velocity
+    # the position is read from the motor encoders and
+    # angular velocity is from the gyro
+    C = np.array([[1, 0, 0, 0], \
+                [0, 0, 1, 0]])
+
+
+    # This is our state disturbance matrix
+    # Examples of a distrubances are giving the robot
+    # a push or rolling over a bump in the floor
+    Vd = np.eye(4) 
+
+    # This is our sensor noise matrix
+    # it contains the variance for our position and gyro sensors
+    Vn = np.eye(2)
+
+    Kf = lqr(model.A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
+
+    # These are our A,B,C,D matrices for the Kalman Filter system
+    A_kf = model.A - (Kf @ C)    
+    B_kf = np.concatenate((model.B, Kf), axis=1)
+    C_kf = np.eye(4)
+    D_kf = np.zeros_like(B_kf)
+
+
+class KalmanFilterXTheta:
+    def __init__(self):
+        # Set constants from separate classes as attributes
+        for cls in [KalmanFilterXThetaConstants]:
+            for key, value in cls.__dict__.items():
+                if not key.startswith("__"):
+                    self.__dict__.update(**{key: value})
+
+    def __setattr__(self, name, value):
+        raise TypeError("Model values are immutable")
+
