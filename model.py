@@ -43,10 +43,10 @@ class LQRModelConstants:
         # linearization of control matrix
         B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
 
-        Q = np.array([[0.0001, 0, 0, 0],\
-                    [0, 0.0001, 0, 0],\
-                    [0, 0, 100, 0],\
-                    [0, 0, 0, 1]])
+        Q = np.array([[1, 0, 0, 0],\
+                    [0, 0.01, 0, 0],\
+                    [0, 0, 10, 0],\
+                    [0, 0, 0, 0.1]])
         R = 1
         K = lqr(A,B,Q,R)[0][0]
 
@@ -63,6 +63,9 @@ class LQRModel:
         raise TypeError("Model values are immutable")
     
 
+    def dx_from_equations(self,x,u):
+        uf = lambda y: u
+        return equations_of_motion(x,0.0,self.m,self.M,self.L,self.g,self.d,uf)
 
 
 

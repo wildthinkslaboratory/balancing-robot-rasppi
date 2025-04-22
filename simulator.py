@@ -46,11 +46,10 @@ def it_ode_sim(tspan, x0, xr):
     x = x0
     y = np.array([0.0, 0.0])
     dt = tspan[1]-tspan[0]
-    u = lambda x: -md.K@(x - xr)
-
     start_time = perf_counter()
     for i in range(len(tspan)):
-        dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,u)
+        u = -md.K@(x - xr)
+        dx = md.dx_from_equations(x,u)
         x = x + dx*dt
         run_data[i] = x
 
@@ -204,11 +203,11 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
 
 def run_comparison():
     tspan = np.arange(0,10,0.01)
-    x0 = np.array([0,0,np.pi,0]) # Initial condition
+    x0 = np.array([5,0,np.pi,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(it_ode_sim)
-    method2 = Method(it_ls_sim_bug)
+    method1 = Method(ode_sim)
+    method2 = Method(it_ls_sim)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
