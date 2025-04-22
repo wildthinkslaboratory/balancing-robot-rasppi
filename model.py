@@ -5,6 +5,27 @@ from control.matlab import lqr, place
 angle_vel_var = 0.0000026
 angle_var = 0.0000026
 
+
+#########################################################
+# this function returns the change in state of the robot
+# based on the full differential equations
+#########################################################
+def equations_of_motion(x,t,m,M,L,g,d,uf):
+    u = uf(x) # evaluate anonymous function at x
+    Sx = np.sin(x[2])
+    Cx = np.cos(x[2])
+    D = m*L*L*(M+m*(1-Cx**2))
+    
+    dx = np.zeros(4)
+    dx[0] = x[1]
+    dx[1] = (1/D)*(-(m**2)*(L**2)*g*Cx*Sx + m*(L**2)*(m*L*(x[3]**2)*Sx - d*x[1])) + m*L*L*(1/D)*u
+    dx[2] = x[3]
+    dx[3] = (1/D)*((m+M)*m*g*L*Sx - m*L*Cx*(m*L*(x[3]**2)*Sx - d*x[1])) - m*L*Cx*(1/D)*u;
+    
+    return dx
+
+
+
 class LQRModelConstants:
 
         m = 0.29        # mass of pendulum (kilograms)
@@ -22,11 +43,11 @@ class LQRModelConstants:
         # linearization of control matrix
         B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
 
-        Q = np.array([[1, 0, 0, 0],\
-                    [0, 1, 0, 0],\
-                    [0, 0, 1, 0],\
+        Q = np.array([[0.0001, 0, 0, 0],\
+                    [0, 0.0001, 0, 0],\
+                    [0, 0, 100, 0],\
                     [0, 0, 0, 1]])
-        R = 0.5
+        R = 1
         K = lqr(A,B,Q,R)[0][0]
 
 
@@ -40,6 +61,9 @@ class LQRModel:
 
     def __setattr__(self, name, value):
         raise TypeError("Model values are immutable")
+    
+
+
 
 
 ###########################################

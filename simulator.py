@@ -4,10 +4,11 @@ from scipy import integrate
 import numpy as np
 import control as ct
 from time import perf_counter
-from model import LQRModel, KalmanFilterXThetaOmega, KalmanFilterXTheta, angle_vel_var
+from model import LQRModel, KalmanFilterXThetaOmega, KalmanFilterXTheta, angle_vel_var, equations_of_motion
 import json
 from utilities import import_data
 import math
+from utilities import output_data
 
 md = LQRModel()
 kf = KalmanFilterXThetaOmega()
@@ -21,23 +22,6 @@ def distance(v1, v2):
         sum += (v1[i] - v2[i])**2
     return math.sqrt(sum)
 
-#########################################################
-# this function returns the change in state of the robot
-# based on the full differential equations
-#########################################################
-def equations_of_motion(x,t,m,M,L,g,d,uf):
-    u = uf(x) # evaluate anonymous function at x
-    Sx = np.sin(x[2])
-    Cx = np.cos(x[2])
-    D = m*L*L*(M+m*(1-Cx**2))
-    
-    dx = np.zeros(4)
-    dx[0] = x[1]
-    dx[1] = (1/D)*(-(m**2)*(L**2)*g*Cx*Sx + m*(L**2)*(m*L*(x[3]**2)*Sx - d*x[1])) + m*L*L*(1/D)*u
-    dx[2] = x[3]
-    dx[3] = (1/D)*((m+M)*m*g*L*Sx - m*L*Cx*(m*L*(x[3]**2)*Sx - d*x[1])) - m*L*Cx*(1/D)*u;
-    
-    return dx
 
 #########################################################
 # These are functions that simulate our system. They may
@@ -91,23 +75,6 @@ def it_ls_sim(tspan, x0, xr):
 
     return run_data
 
-# the bug!
-def it_ls_sim_bug(tspan, x0, xr):
-    uf = lambda x: -md.K@(x - xr)
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
-    x = x0
-    u = 0.0
-    dt = tspan[1]-tspan[0]
-    for i in range(len(tspan)):
-        n = np.random.normal(0.0,math.sqrt(angle_vel_var))
-        x[3] = xr[3] + n
-        u = -md.K@(x - xr)
-        dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
-        x = x + dx*dt
-        run_data[i] = x
-
-    return run_data
 
 # iterative linear system simulation with added noise
 # Ax + Bu. 
@@ -233,16 +200,15 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
         plt.ylabel('State')
         plt.legend()
         plt.show()
-
-
+    
 
 def run_comparison():
     tspan = np.arange(0,10,0.01)
-    x0 = np.array([1,0,np.pi,0]) # Initial condition
+    x0 = np.array([0,0,np.pi,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
     method1 = Method(it_ode_sim)
-    method2 = Method(kf_sim_with_noise_mxa)
+    method2 = Method(it_ls_sim_bug)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
@@ -326,74 +292,4 @@ def kf_comparison_plot():
     plt.legend()
     plt.show()
 
-kf_comparison_plot()
-
-# uf = lambda x: -md.K@(x - xr)
-# x = np.array([1,0,np.pi,0]) # Initial condition
-# xr = np.array([0,0,np.pi,0])      # Reference position 
-# d = x - xr
-# u0 = md.K[0]* d[0]
-# u1 = md.K[1]* d[1]
-# u2 = md.K[2]* d[2]
-# u3 = md.K[3]* d[3]
-# print('x', x)
-# print('u', u0, u1, u2, u3)
-# u = u0 + u1 + u2 + u3
-# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
-# print('dx', dx)
-# print('new x', x + dx*0.01)
-
-# x = np.array([0,1,np.pi,0]) # Initial condition
-# xr = np.array([0,0,np.pi,0])      # Reference position 
-# d = x - xr
-# u0 = md.K[0]* d[0]
-# u1 = md.K[1]* d[1]
-# u2 = md.K[2]* d[2]
-# u3 = md.K[3]* d[3]
-# print('x', x)
-# print('u', u0, u1, u2, u3)
-# u = u0 + u1 + u2 + u3
-# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
-# print('dx', dx)
-# x =  x + dx*0.01
-# print('new x', x)
-# d = x - xr
-# u0 = md.K[0]* d[0]
-# u1 = md.K[1]* d[1]
-# u2 = md.K[2]* d[2]
-# u3 = md.K[3]* d[3]
-# print('x', x)
-# print('u', u0, u1, u2, u3)
-# u = u0 + u1 + u2 + u3
-# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
-# print('dx', dx)
-# x =  x + dx*0.01
-# print('new x', x)
-
-# x = np.array([0,0,np.pi + 0.1,0]) # Initial condition
-# xr = np.array([0,0,np.pi,0])      # Reference position 
-# d = x - xr
-# u0 = md.K[0]* d[0]
-# u1 = md.K[1]* d[1]
-# u2 = md.K[2]* d[2]
-# u3 = md.K[3]* d[3]
-# print('x', x)
-# print('u', u0, u1, u2, u3)
-# u = u0 + u1 + u2 + u3
-# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
-# print('dx', dx)
-# print('new x', x + dx*0.01)
-
-# x = np.array([0,0,np.pi,1]) # Initial condition
-# xr = np.array([0,0,np.pi,0])      # Reference position 
-# d = x - xr
-# u0 = md.K[0]* d[0]
-# u1 = md.K[1]* d[1]
-# u2 = md.K[2]* d[2]
-# u3 = md.K[3]* d[3]
-# print('x', x)
-# print('u', u0, u1, u2, u3)
-# u = u0 + u1 + u2 + u3
-# dx = equations_of_motion(x,0.0,md.m,md.M,md.L,md.g,md.d,uf)
-# print('dx', dx)
-# print('new x', x + dx*0.01)
+run_comparison()
