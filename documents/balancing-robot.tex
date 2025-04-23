@@ -97,12 +97,22 @@ Because $\bx_r$ is a fixed point, we know that $f(\bx_r) = 0$. Additionally, thi
 where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jacobian matrix for our system of equations $f(\bx)$ evaluated at the fixed point $\bx_r$. The Jacobian matrix for our system of equations evaluated at $\bx_r = [0\; 0\; \pi \; 0]$ is 
 
 	\begin{equation}
-		A = 
+	 \frac{\boldsymbol{df}}{\boldsymbol{dx}}  = 
 	\begin{bmatrix}
 		0 & 1              & 0                          & 0 \\
-		0 & -\frac{d}{M}      & \frac{mg}{M}                 & 0 \\
+		0 & -\frac{\delta}{M+m(1-\cos(\theta)^2)}      & \frac{mg}{M}                 & 0 \\
 		0 & 0              & 0                          & 1 \\
 		0 & -\frac{d}{ML} & -\frac{(m+M)g}{ML} & 0
+	\end{bmatrix}
+\end{equation}
+
+	\begin{equation}
+		A = \left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}
+	\begin{bmatrix}
+		0 & 1              & 0                          & 0 \\
+		0 & -\frac{\delta}{M}      & \frac{mg}{M}                 & 0 \\
+		0 & 0              & 0                          & 1 \\
+		0 & -\frac{\delta}{ML} & -\frac{(m+M)g}{ML} & 0
 	\end{bmatrix}
 \end{equation}
 \begin{equation*}

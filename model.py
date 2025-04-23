@@ -164,3 +164,48 @@ class KalmanFilterXTheta:
         raise TypeError("Model values are immutable")
 
 
+class LQRModelAngleOnlyConstants:
+
+        m = 0.29        # mass of pendulum (kilograms)
+        M = 0.765       # mass of cart (kilograms)
+        L = 0.16        # length of pendulum (meters)
+        g = -9.81       # gravity, (meters / sec^2)
+        d = 0.001       # d is a damping factor
+
+        # equations of motion linearized about vertical pendulum position
+        A = np.array([[0, 1],\
+                    [-(m+M)*g/(M*L), 0]])
+
+        # linearization of control matrix
+        B = np.array([0,1/(M*L)]).reshape((2,1))
+
+        Q = np.array([[ 1, 0],\
+                    [0, 1]])
+        R = 1
+        K = lqr(A,B,Q,R)[0][0] 
+        C = np.eye(2)
+
+        Vd = np.eye(2) 
+        Vn = np.eye(2)
+        Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
+
+        A_kf = A - (Kf @ C)    
+        B_kf = np.concatenate((B, Kf), axis=1)
+        C_kf = np.eye(2)
+        D_kf = np.zeros_like(B_kf)
+
+# This just makes it easy to access our model constants as 
+# a class. This way we can have multiple models and not
+# get the A's B's and K's mixed up
+class LQRModelAngleOnly:
+    def __init__(self):
+        # Set constants from separate classes as attributes
+        for cls in [LQRModelAngleOnlyConstants]:
+            for key, value in cls.__dict__.items():
+                if not key.startswith("__"):
+                    self.__dict__.update(**{key: value})
+
+    # these are constants. This keeps them read only
+    def __setattr__(self, name, value):
+        raise TypeError("Model values are immutable")
+

@@ -4,15 +4,15 @@ from scipy import integrate
 import numpy as np
 from control.matlab import ss, c2d
 from time import perf_counter
-from model import LQRModel, KalmanFilterXThetaOmega, KalmanFilterXTheta, angle_vel_var, equations_of_motion
+from model import LQRModel, KalmanFilterXThetaOmega, KalmanFilterXTheta, angle_vel_var, equations_of_motion, LQRModelAngleOnly
 from utilities import import_data, output_data
 from math import sqrt
 
 
 md = LQRModel()
+ma = LQRModelAngleOnly()
 kf = KalmanFilterXThetaOmega()
 kf2 = KalmanFilterXTheta()
-
 
 #########################################################
 # These are functions that simulate our system. They may
@@ -44,7 +44,7 @@ def it_ode_sim(tspan, x0, xr):
         x = x + dx*dt
         run_data[i] = x
 
-    print('Time for 1000 iterations of it_ode_sim: ', perf_counter() - start_time)
+    print('Time for', len(tspan), 'iterations of it_ode_sim: ', perf_counter() - start_time)
     return run_data
 
 
@@ -58,12 +58,59 @@ def it_ls_sim(tspan, x0, xr):
     u = np.array([0.0])
     dt = tspan[1]-tspan[0]
 
+    start_time = perf_counter()
     for i in range(len(tspan)):
         dx = md.A@(x-xr) + md.B@u
         x = x + dx*dt
         u[0] = -md.K@(x - xr)
         run_data[i] = x
 
+    print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
+    return run_data
+
+# iterative linear system simulation for angle only model
+# Ax + Bu. 
+def it_ls_sim_angle_only(tspan, x0, xr):
+    
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = np.array([x0[2], x0[3]])
+    xra = np.array([xr[2], xr[3]])
+    u = np.array([0.0])
+    dt = tspan[1]-tspan[0]
+
+    start_time = perf_counter()
+    for i in range(len(tspan)):
+        dx = ma.A@(x-xra) + ma.B@u
+        x = x + dx*dt
+        u[0] = -ma.K@(x - xra)
+        run_data[i] = np.array([0.0, 0.0, x[0], x[1]])
+
+    print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
+    return run_data
+
+
+# iterative linear system simulation for angle only model
+# with Kalman Filter
+def kf_sim_angle_only(tspan, x0, xr):
+    
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = np.array([x0[2], x0[3]])
+    xra = np.array([xr[2], xr[3]])
+    uy = np.array([0.0, x0[2], x0[3]])
+    ur = np.array([0.0, xr[2], xr[3]])
+    dt = tspan[1]-tspan[0]
+
+    start_time = perf_counter()
+    for i in range(len(tspan)):
+        dx = ma.A_kf@(x-xra) + ma.B_kf@(uy-ur)
+        x = x + dx*dt
+        u = -ma.K@(x - xra)
+        uy = np.array([u, x[0], x[1]])
+        run_data[i] = np.array([0.0, 0.0, x[0], x[1]])
+
+    print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
     return run_data
 
 
@@ -76,6 +123,8 @@ def it_ls_sim_with_noise(tspan, x0, xr):
     y = np.array([1.0, 0.0])
     u = np.array([0.0])
     dt = tspan[1]-tspan[0]
+
+    start_time = perf_counter()
     for i in range(len(tspan)):
         dx = md.A@(x-xr) + md.B@u
         x = x + dx*dt
@@ -84,6 +133,7 @@ def it_ls_sim_with_noise(tspan, x0, xr):
         x[3] += np.random.normal(0.0,sqrt(angle_vel_var))
         run_data[i] = x
 
+    print('Time for', len(tspan), 'iterations of it_ls_sim_with_noise:', perf_counter() - start_time)
     return run_data
 
 
@@ -100,12 +150,14 @@ def ls_discrete(tspan, x0, xr):
     uy = np.array([0, x0[0], x0[2], x0[3]])
     uy_r = np.array([0, xr[0], xr[2], xr[3]])
 
+    start_time = perf_counter()
     for i in range(len(tspan)):
         x = sys_d.A@(x-xr) + sys_d.B@([u]) + xr
         u = -md.K@(x - xr)
         uy = np.array([u, x[0], x[2], x[3]])
         run_data[i] = x
 
+    print('Time for', len(tspan), 'iterations of ls_discrete: ', perf_counter() - start_time)
     return run_data
 
 
@@ -121,6 +173,7 @@ def kf_sim(tspan, x0, xr):
     uy_r = np.array([0, xr[0], xr[2], xr[3]])
     dt = tspan[1]-tspan[0]
 
+    start_time = perf_counter()
     for i in range(len(tspan)):
         dx = kf.A@(x-xr) + kf.B@(uy-uy_r)
         x = x + dx*dt
@@ -128,6 +181,7 @@ def kf_sim(tspan, x0, xr):
         uy = np.array([u, x[0], x[2], x[3]])
         run_data[i] = x
 
+    print('Time for', len(tspan), 'iterations of kf_sim: ', perf_counter() - start_time)
     return run_data
 
 
@@ -156,7 +210,7 @@ def kf_sim_with_noise(tspan, x0, xr):
         run_data[i] = x
 
 
-    print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
+    print('Time for', len(tspan), 'iterations of kf_sim_with_noise: ', perf_counter() - start_time)
     return run_data
 
 
@@ -181,7 +235,7 @@ def kf_sim_with_noise_mxa(tspan, x0, xr):
         uy = np.array([u, position, angle])
         run_data[i] = x
 
-    print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
+    print('Time for', len(tspan), 'iterations of kf_sim_with_nosie_mxa: ', perf_counter() - start_time)
     return run_data
 
 
@@ -200,12 +254,14 @@ def kf_discrete(tspan, x0, xr):
     uy = np.array([0, x0[0], x0[2], x0[3]])
     uy_r = np.array([0, xr[0], xr[2], xr[3]])
 
+    start_time = perf_counter()
     for i in range(len(tspan)):
         x = sys_d.A@(x-xr) + sys_d.B@((uy-uy_r)) + xr
         u = -md.K@(x - xr)
         uy = np.array([u, x[0], x[2], x[3]])
         run_data[i] = x
 
+    print('Time for', len(tspan), 'iterations of kf_discrete: ', perf_counter() - start_time)
     return run_data
 
 #########################################################
@@ -247,8 +303,8 @@ def run_comparison():
     x0 = np.array([0,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(ls_discrete)
-    method2 = Method(kf_discrete)
+    method1 = Method(it_ls_sim_angle_only)
+    method2 = Method(kf_sim_angle_only)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
@@ -335,4 +391,4 @@ def kf_comparison_plot():
     plt.savefig("KFangle.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
-kf_comparison_plot()
+run_comparison()
