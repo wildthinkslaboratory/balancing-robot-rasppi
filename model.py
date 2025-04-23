@@ -100,10 +100,10 @@ class KalmanFilterXThetaOmegaConstants:
     Kf = lqr(model.A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
     # These are our A,B,C,D matrices for the Kalman Filter system
-    A_kf = model.A - (Kf @ C)    
-    B_kf = np.concatenate((model.B, Kf), axis=1)
-    C_kf = np.eye(4)
-    D_kf = np.zeros_like(B_kf)
+    A = model.A - (Kf @ C)    
+    B = np.concatenate((model.B, Kf), axis=1)
+    C = np.eye(4)
+    D = np.zeros_like(B)
 
 
 class KalmanFilterXThetaOmega:
@@ -141,10 +141,10 @@ class KalmanFilterXThetaConstants:
     Kf = lqr(model.A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
     # These are our A,B,C,D matrices for the Kalman Filter system
-    A_kf = model.A - (Kf @ C)    
-    B_kf = np.concatenate((model.B, Kf), axis=1)
-    C_kf = np.eye(4)
-    D_kf = np.zeros_like(B_kf)
+    A = model.A - (Kf @ C)    
+    B = np.concatenate((model.B, Kf), axis=1)
+    C = np.eye(4)
+    D = np.zeros_like(B)
 
 
 class KalmanFilterXTheta:

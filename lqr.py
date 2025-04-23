@@ -31,7 +31,7 @@ duty_coeff = 0.18
 def update_motors():
     global u
     start_time = perf_counter()  # Start timer
-    u = K[0]*(x-wr[0]) + K[1]*(v-wr[1]) + K[2]*(a-wr[2]) + K[3]*(av-wr[3])
+    u = md.K[0]*(x-wr[0]) + md.K[1]*(v-wr[1]) + md.K[2]*(a-wr[2]) + md.K[3]*(av-wr[3])
     motors.run(u * duty_coeff)
     
 

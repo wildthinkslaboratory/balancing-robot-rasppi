@@ -18,8 +18,8 @@ output_data_to_file = True
 ############################################
 x = np.array([0.0,0.0,np.pi,0.0])               # this is our estimated state
 x_r = np.array([0.0,0.0,np.pi,0.0])             # Reference position / Goal state                        
-uy = np.array([0.0, x[0], x[2]])          # our input values [ u, x_sensor, a_sensor]   
-uy_r = np.array([0.0, x_r[0], x_r[2]]).reshape((3,1))  # input values goal state
+uy = np.array([0.0, x[0], x[2], x[3]])          # our input values [ u, x_sensor, a_sensor, av_sensor]   
+uy_r = np.array([0.0, x_r[0], x_r[2], x[3]])    # input values goal state
 duty_coeff = 0.18
 dT = 0.01
 timeout = 2
@@ -46,9 +46,10 @@ def loop_iteration():
 
     uy[1] = motors.position()
     uy[2] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
+    uy[3] = imu_sensor.raw_angular_velocity_rad()
 
     # estimate the state
-    dx = (kf.A_kf@(x - x_r) + (kf.B_kf@(uy.reshape((3,1))-uy_r)).transpose())[0]
+    dx = kf.A@(x - x_r) + kf.B@(uy-uy_r)
     x = x + dx*dT
 
     # compute the control value u, and update motor duty cycle

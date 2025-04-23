@@ -64,13 +64,13 @@ def it_ls_sim(tspan, x0, xr):
     run_data = np.empty([len(tspan),4])
     run_data[0] = x0
     x = x0
-    u = 0.0
+    u = np.array([0.0])
     dt = tspan[1]-tspan[0]
 
     for i in range(len(tspan)):
-        dx = (md.A@(x-xr) + (md.B*u).transpose())[0]
+        dx = md.A@(x-xr) + md.B@u
         x = x + dx*dt
-        u = -md.K@(x - xr)
+        u[0] = -md.K@(x - xr)
         run_data[i] = x
 
     return run_data
@@ -83,12 +83,12 @@ def it_ls_sim_with_noise(tspan, x0, xr):
     run_data[0] = x0
     x = x0
     y = np.array([1.0, 0.0])
-    u = 0.0
+    u = np.array([0.0])
     dt = tspan[1]-tspan[0]
     for i in range(len(tspan)):
-        dx = (md.A@(x-xr) + (md.B*u).transpose())[0]
+        dx = md.A@(x-xr) + md.B@u
         x = x + dx*dt
-        u = -md.K@(x - xr)
+        u[0] = -md.K@(x - xr)
         x[0] += np.random.normal(0.0, 0.0001)
         x[3] += np.random.normal(0.0,math.sqrt(angle_vel_var))
         run_data[i] = x
@@ -102,15 +102,15 @@ def kf_sim(tspan, x0, xr):
     run_data[0] = x0
     x = x0
     u = 0.0
-    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
-    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
+    uy = np.array([0, x0[0], x0[2], x0[3]])
+    uy_r = np.array([0, xr[0], xr[2], xr[3]])
     dt = tspan[1]-tspan[0]
 
     for i in range(len(tspan)):
-        dx = (kf.A_kf@(x-xr) + (kf.B_kf@(uy-uy_r)).transpose())[0]
+        dx = kf.A@(x-xr) + kf.B@(uy-uy_r)
         x = x + dx*dt
         u = -md.K@(x - xr)
-        uy = np.array([u, x[0], x[2], x[3]]).reshape((4,1))
+        uy = np.array([u, x[0], x[2], x[3]])
         run_data[i] = x
 
     return run_data
@@ -121,19 +121,19 @@ def kf_sim_with_noise(tspan, x0, xr):
     run_data[0] = x0
     x = x0
     u = 0.0
-    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
-    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
+    uy = np.array([0, x0[0], x0[2], x0[3]])
+    uy_r = np.array([0, xr[0], xr[2], xr[3]])
     dt = tspan[1]-tspan[0]
 
     start_time = perf_counter()
     for i in range(len(tspan)):
-        dx = (kf.A_kf@(x-xr) + (kf.B_kf@(uy-uy_r)).transpose())[0]
+        dx = kf.A@(x-xr) + kf.B@(uy-uy_r)
         x = x + dx*dt
         u = -md.K@(x - xr)
         position = x[0]
         angle = x[2] + np.random.normal(0.0,math.sqrt(angle_vel_var))
         angle_vel = x[3] + np.random.normal(0.0,math.sqrt(angle_vel_var))
-        uy = np.array([u, position, angle, angle_vel]).reshape((4,1))
+        uy = np.array([u, position, angle, angle_vel])
         run_data[i] = x
 
 
@@ -148,18 +148,18 @@ def kf_sim_with_noise_mxa(tspan, x0, xr):
     run_data[0] = x0
     x = x0
     u = 0.0
-    uy = np.array([0, x0[0], x0[2]]).reshape((3,1))
-    uy_r = np.array([0, xr[0], xr[2]]).reshape((3,1))
+    uy = np.array([0, x0[0], x0[2]])
+    uy_r = np.array([0, xr[0], xr[2]])
     dt = tspan[1]-tspan[0]
 
     start_time = perf_counter()
     for i in range(len(tspan)):
-        dx = (kf2.A_kf@(x-xr) + (kf2.B_kf@(uy-uy_r)).transpose())[0]
+        dx = kf2.A@(x-xr) + kf2.B@(uy-uy_r)
         x = x + dx*dt
         u = -md.K@(x - xr)
         position = x[0]
         angle = x[2] + np.random.normal(0.0,0.0002)
-        uy = np.array([u, position, angle]).reshape((3,1))
+        uy = np.array([u, position, angle])
         run_data[i] = x
 
 
@@ -186,28 +186,27 @@ def ls_discrete(tspan, x0, xr):
 
     return run_data
 
-# # linear kalman filter simulation
-# def kf_discrete(tspan, x0, xr):
-#     dt = tspan[1]-tspan[0]
-#     sys_c = ss(kf.A_kf, kf.B_kf, kf.C_kf, kf.D_kf)
-#     sys_d = c2d(sys_c, dt, 'zoh')
+# linear kalman filter simulation
+def kf_discrete(tspan, x0, xr):
+    dt = tspan[1]-tspan[0]
+    sys_c = ss(kf.A, kf.B, kf.C, kf.D)
+    sys_d = c2d(sys_c, dt, 'zoh')
 
-#     run_data = np.empty([len(tspan),4])
-#     run_data[0] = x0
-#     x = x0
-#     u = 0.0
-#     uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
-#     uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = x0
+    u = 0.0
+    uy = np.array([0, x0[0], x0[2], x0[3]])
+    uy_r = np.array([0, xr[0], xr[2], xr[3]])
  
 
-#     for i in range(len(tspan)):
-#         x = sys_d.A@(x-xr) + sys_d.B@((uy-uy_r)) + xr
-#         print(x)
-#         u = -md.K@(x - xr)
-#         uy = np.array([u, x[0], x[2], x[3]]).reshape((4,1))
-#         run_data[i] = x
+    for i in range(len(tspan)):
+        x = sys_d.A@(x-xr) + sys_d.B@((uy-uy_r)) + xr
+        u = -md.K@(x - xr)
+        uy = np.array([u, x[0], x[2], x[3]])
+        run_data[i] = x
 
-#     return run_data
+    return run_data
 
 #########################################################
 # This is a simple wrapper class for simulation functions
@@ -248,8 +247,8 @@ def run_comparison():
     x0 = np.array([0,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(it_ls_sim)
-    method2 = Method(ls_discrete)
+    method1 = Method(it_ls_sim_with_noise)
+    method2 = Method(kf_discrete)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
@@ -278,34 +277,31 @@ def kf_comparison_plot():
     x_kf = x0
     x_true = x0
 
-    u_kf = 0.0
-    uy = np.array([0, x0[0], x0[2], x0[3]])
-    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
-    u_noise = 0.0
-    u_true = 0.0
+    uy = np.array([0.0, x0[0], x0[2], x0[3]])
+    uy_r = np.array([0, xr[0], xr[2], xr[3]])
+    u_noise = np.array([0.0])
+    u_true = np.array([0.0])
 
     
     for i in range(len(tspan)):
         av_noise = np.random.normal(0.0,math.sqrt(angle_vel_var))
         a_noise = np.random.normal(0.0,0.0001)
 
-        dx_true = (md.A@(x_true-xr) + (md.B*u_true).transpose())[0]
+        dx_true = md.A@(x_true-xr) + md.B@u_true
         x_true = x_true + dx_true*dt
-        u_true = -md.K@(x_true - xr)
+        u_true[0] = -md.K@(x_true - xr)
         run_data_true[i] = x_true
 
         x_noise[2] += a_noise
         x_noise[3] += av_noise  
-        dx_noise = (md.A@(x_noise-xr) + (md.B*u_noise).transpose())[0]
+        dx_noise = md.A@(x_noise-xr) + md.B@u_noise
         x_noise = x_noise + dx_noise*dt
-        u_noise = -md.K@(x_noise - xr)
+        u_noise[0] = -md.K@(x_noise - xr)
         run_data_noise[i] = x_noise
 
-        dx_kf = (kf.A_kf@(x_kf-xr) + (kf.B_kf@(uy.reshape((4,1))-uy_r)).transpose())[0]
+        dx_kf = kf.A@(x_kf-xr) + kf.B@(uy-uy_r)
         x_kf = x_kf + dx_kf*dt
-        u_kf = -md.K@(x_kf - xr)
-
-        uy[0] = u_kf
+        uy[0] = -md.K@(x_kf - xr)
         uy[1] = x_kf[0]
         uy[2] = x_kf[2] + a_noise
         uy[3] = x_kf[3] + av_noise
@@ -339,4 +335,4 @@ def kf_comparison_plot():
     plt.savefig("KFangle.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
-run_comparison()
+kf_comparison_plot()
