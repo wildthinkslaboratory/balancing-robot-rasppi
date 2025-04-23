@@ -53,7 +53,10 @@ def loop_iteration():
     x = x + dx*dT
 
     # compute the control value u, and update motor duty cycle
-    uy[0] = -md.K@(x - x_r)  
+    # for testing purposes we'll break this into parts
+    error = x - x_r
+    uy[0] = -(md.K[0]* error[0] + md.K[1]* error[1] + md.K[2]* error[2] + md.K[3]* error[3])
+    # uy[0] = -md.K@(x - x_r)  
     motors.run(uy[0] * duty_coeff)
     
 

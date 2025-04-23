@@ -68,6 +68,9 @@ class LQRModel:
     def __setattr__(self, name, value):
         raise TypeError("Model values are immutable")
     
+    # package up the equations of motions function
+    # this makes it easier to call without having to feed in 
+    # all those parameters
     def dx_from_equations(self,x,u):
         uf = lambda y: u
         return equations_of_motion(x,0.0,self.m,self.M,self.L,self.g,self.d,uf)
@@ -81,8 +84,9 @@ class LQRModel:
 class KalmanFilterXThetaOmegaConstants:
     model = LQRModel()
     # C is our measurement model
-    # we are measuring position and angular velocity
-    # the position is read from the motor encoders and
+    # we are measuring position, angle and angular velocity
+    # the position is read from the motor encoders 
+    # angle is from the accelerometer
     # angular velocity is from the gyro
     C = np.array([[1, 0, 0, 0], \
                 [0, 0, 1, 0], \

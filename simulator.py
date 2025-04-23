@@ -2,14 +2,12 @@
 import matplotlib.pyplot as plt
 from scipy import integrate
 import numpy as np
-import control as ct
 from control.matlab import ss, c2d
 from time import perf_counter
 from model import LQRModel, KalmanFilterXThetaOmega, KalmanFilterXTheta, angle_vel_var, equations_of_motion
-import json
-from utilities import import_data
-import math
-from utilities import output_data
+from utilities import import_data, output_data
+from math import sqrt
+
 
 md = LQRModel()
 kf = KalmanFilterXThetaOmega()
@@ -83,7 +81,7 @@ def it_ls_sim_with_noise(tspan, x0, xr):
         x = x + dx*dt
         u[0] = -md.K@(x - xr)
         x[0] += np.random.normal(0.0, 0.0001)
-        x[3] += np.random.normal(0.0,math.sqrt(angle_vel_var))
+        x[3] += np.random.normal(0.0,sqrt(angle_vel_var))
         run_data[i] = x
 
     return run_data
@@ -99,13 +97,13 @@ def ls_discrete(tspan, x0, xr):
     run_data[0] = x0
     x = x0
     u = 0.0
-    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
-    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
+    uy = np.array([0, x0[0], x0[2], x0[3]])
+    uy_r = np.array([0, xr[0], xr[2], xr[3]])
 
     for i in range(len(tspan)):
         x = sys_d.A@(x-xr) + sys_d.B@([u]) + xr
         u = -md.K@(x - xr)
-        uy = np.array([u, x[0], x[2], x[3]]).reshape((4,1))
+        uy = np.array([u, x[0], x[2], x[3]])
         run_data[i] = x
 
     return run_data
@@ -152,8 +150,8 @@ def kf_sim_with_noise(tspan, x0, xr):
         x = x + dx*dt
         u = -md.K@(x - xr)
         position = x[0]
-        angle = x[2] + np.random.normal(0.0,math.sqrt(angle_vel_var))
-        angle_vel = x[3] + np.random.normal(0.0,math.sqrt(angle_vel_var))
+        angle = x[2] + np.random.normal(0.0,sqrt(angle_vel_var))
+        angle_vel = x[3] + np.random.normal(0.0,sqrt(angle_vel_var))
         uy = np.array([u, position, angle, angle_vel])
         run_data[i] = x
 
@@ -183,7 +181,6 @@ def kf_sim_with_noise_mxa(tspan, x0, xr):
         uy = np.array([u, position, angle])
         run_data[i] = x
 
-
     print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
     return run_data
 
@@ -202,7 +199,6 @@ def kf_discrete(tspan, x0, xr):
     u = 0.0
     uy = np.array([0, x0[0], x0[2], x0[3]])
     uy_r = np.array([0, xr[0], xr[2], xr[3]])
- 
 
     for i in range(len(tspan)):
         x = sys_d.A@(x-xr) + sys_d.B@((uy-uy_r)) + xr
@@ -251,7 +247,7 @@ def run_comparison():
     x0 = np.array([0,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(it_ls_sim_with_noise)
+    method1 = Method(ls_discrete)
     method2 = Method(kf_discrete)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
@@ -288,7 +284,7 @@ def kf_comparison_plot():
 
     
     for i in range(len(tspan)):
-        av_noise = np.random.normal(0.0,math.sqrt(angle_vel_var))
+        av_noise = np.random.normal(0.0,sqrt(angle_vel_var))
         a_noise = np.random.normal(0.0,0.0001)
 
         dx_true = md.A@(x_true-xr) + md.B@u_true
