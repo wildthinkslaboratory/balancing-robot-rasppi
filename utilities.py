@@ -1,4 +1,5 @@
 import json
+from math import sqrt
 
 def output_data(data, filename):
     # Serializing json
@@ -15,3 +16,12 @@ def import_data(filename):
     with open(filename, 'r') as file:
         data = json.load(file)
     return data
+
+
+# compute the distance between two vectors
+def distance(v1, v2):
+    assert len(v1) == len(v2)
+    sum = 0
+    for i in range(len(v1)):
+        sum += (v1[i] - v2[i])**2
+    return sqrt(sum)

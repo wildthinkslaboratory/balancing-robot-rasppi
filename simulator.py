@@ -15,14 +15,6 @@ md = LQRModel()
 kf = KalmanFilterXThetaOmega()
 kf2 = KalmanFilterXTheta()
 
-# compute the distance between two vectors
-def distance(v1, v2):
-    assert len(v1) == len(v2)
-    sum = 0
-    for i in range(len(v1)):
-        sum += (v1[i] - v2[i])**2
-    return math.sqrt(sum)
-
 
 #########################################################
 # These are functions that simulate our system. They may
@@ -56,6 +48,7 @@ def it_ode_sim(tspan, x0, xr):
 
     print('Time for 1000 iterations of it_ode_sim: ', perf_counter() - start_time)
     return run_data
+
 
 # iterative linear system simulation
 # Ax + Bu. 
@@ -95,7 +88,31 @@ def it_ls_sim_with_noise(tspan, x0, xr):
 
     return run_data
 
-# linear kalman filter simulation
+
+# use a discrete linear system Ax + Bu
+def ls_discrete(tspan, x0, xr):
+    dt = tspan[1]-tspan[0]
+    sys_c = ss(md.A, md.B, np.eye(4), np.zeros_like(md.B))
+    sys_d = c2d(sys_c, dt, 'zoh')
+
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = x0
+    u = 0.0
+    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
+    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
+
+    for i in range(len(tspan)):
+        x = sys_d.A@(x-xr) + sys_d.B@([u]) + xr
+        u = -md.K@(x - xr)
+        uy = np.array([u, x[0], x[2], x[3]]).reshape((4,1))
+        run_data[i] = x
+
+    return run_data
+
+
+# linear kalman filter simulation that measures 
+# position, angle and angular velocity
 def kf_sim(tspan, x0, xr):
     
     run_data = np.empty([len(tspan),4])
@@ -115,6 +132,10 @@ def kf_sim(tspan, x0, xr):
 
     return run_data
 
+
+# linear kalman filter simulation that measures 
+# position, angle and angular velocity
+# with added noise
 def kf_sim_with_noise(tspan, x0, xr):
     
     run_data = np.empty([len(tspan),4])
@@ -141,7 +162,7 @@ def kf_sim_with_noise(tspan, x0, xr):
     return run_data
 
 
-
+# kalman filter linear system that measures position and angle
 def kf_sim_with_noise_mxa(tspan, x0, xr):
     
     run_data = np.empty([len(tspan),4])
@@ -166,27 +187,10 @@ def kf_sim_with_noise_mxa(tspan, x0, xr):
     print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
     return run_data
 
-def ls_discrete(tspan, x0, xr):
-    dt = tspan[1]-tspan[0]
-    sys_c = ss(md.A, md.B, np.eye(4), np.zeros_like(md.B))
-    sys_d = c2d(sys_c, dt, 'zoh')
 
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
-    x = x0
-    u = 0.0
-    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
-    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
 
-    for i in range(len(tspan)):
-        x = sys_d.A@(x-xr) + sys_d.B@([u]) + xr
-        u = -md.K@(x - xr)
-        uy = np.array([u, x[0], x[2], x[3]]).reshape((4,1))
-        run_data[i] = x
-
-    return run_data
-
-# linear kalman filter simulation
+# discrete linear kalman filter simulation that
+# measures position, angle and angular velocity
 def kf_discrete(tspan, x0, xr):
     dt = tspan[1]-tspan[0]
     sys_c = ss(kf.A, kf.B, kf.C, kf.D)
