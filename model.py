@@ -9,6 +9,9 @@ angle_var = 0.0000026
 #########################################################
 # this function returns the change in state of the robot
 # based on the full differential equations
+#
+# This is based of Steve Brunton's Control Theory book code
+#
 #########################################################
 def equations_of_motion(x,t,m,M,L,g,d,uf):
     u = uf(x) # evaluate anonymous function at x
@@ -48,9 +51,11 @@ class LQRModelConstants:
                     [0, 0, 10, 0],\
                     [0, 0, 0, 0.1]])
         R = 1
-        K = lqr(A,B,Q,R)[0][0]
+        K = lqr(A,B,Q,R)[0][0] 
 
-
+# This just makes it easy to access our model constants as 
+# a class. This way we can have multiple models and not
+# get the A's B's and K's mixed up
 class LQRModel:
     def __init__(self):
         # Set constants from separate classes as attributes
@@ -59,10 +64,10 @@ class LQRModel:
                 if not key.startswith("__"):
                     self.__dict__.update(**{key: value})
 
+    # these are constants. This keeps them read only
     def __setattr__(self, name, value):
         raise TypeError("Model values are immutable")
     
-
     def dx_from_equations(self,x,u):
         uf = lambda y: u
         return equations_of_motion(x,0.0,self.m,self.M,self.L,self.g,self.d,uf)
@@ -109,6 +114,7 @@ class KalmanFilterXThetaOmega:
                 if not key.startswith("__"):
                     self.__dict__.update(**{key: value})
 
+    # these are constants. This keeps them read only
     def __setattr__(self, name, value):
         raise TypeError("Model values are immutable")
 
@@ -149,6 +155,7 @@ class KalmanFilterXTheta:
                 if not key.startswith("__"):
                     self.__dict__.update(**{key: value})
 
+    # these are constants. This keeps them read only
     def __setattr__(self, name, value):
         raise TypeError("Model values are immutable")
 

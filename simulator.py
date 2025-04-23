@@ -270,25 +270,31 @@ def kf_comparison_plot():
         run_data_kf[i] = x_kf
        
 
-    plt.rcParams['figure.figsize'] = [8, 8]
-    plt.rcParams.update({'font.size': 18})
+    # plt.rcParams['figure.figsize'] = [8, 8]
+    # plt.rcParams.update({'font.size': 18})
+    # plt.rcParams.update({
+    # "text.usetex": True,
+    # "font.family": "serif"
+    # })
     
     i = 3
-    plt.plot(tspan,run_data_noise[:,i],linewidth=2,label='av measured')
-    plt.plot(tspan,run_data_kf[:,i],linewidth=2,label='av k filter')
-    plt.plot(tspan,run_data_true[:,i],linewidth=2,label='av true')
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=(r'$\omega$ true + noise'))
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\omega$ KF')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\omega$ true')
     plt.xlabel('Time')
     plt.ylabel('State')
     plt.legend()
+    plt.savefig("KFangular_velocity.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
     i=2
-    plt.plot(tspan,run_data_noise[:,i],linewidth=2,label='a measured')
-    plt.plot(tspan,run_data_kf[:,i],linewidth=2,label='a k filter')
-    plt.plot(tspan,run_data_true[:,i],linewidth=2,label='a true')
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=r'$\theta$ true + noise')
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\theta$ KF')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\theta$ true')
     plt.xlabel('Time')
     plt.ylabel('State')
     plt.legend()
+    plt.savefig("KFangle.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
-run_comparison()
+kf_comparison_plot()
