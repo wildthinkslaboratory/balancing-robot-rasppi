@@ -1,5 +1,5 @@
 import numpy as np
-from control.matlab import lqr, place
+from control.matlab import lqr
 
 # measured noise in our 
 angle_vel_var = 0.0000026
@@ -158,4 +158,5 @@ class KalmanFilterXTheta:
     # these are constants. This keeps them read only
     def __setattr__(self, name, value):
         raise TypeError("Model values are immutable")
+
 

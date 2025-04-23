@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy import integrate
 import numpy as np
 import control as ct
+from control.matlab import ss, c2d
 from time import perf_counter
 from model import LQRModel, KalmanFilterXThetaOmega, KalmanFilterXTheta, angle_vel_var, equations_of_motion
 import json
@@ -165,7 +166,48 @@ def kf_sim_with_noise_mxa(tspan, x0, xr):
     print('Time for 1000 iterations of kf_sim_with_noise: ', perf_counter() - start_time)
     return run_data
 
+def ls_discrete(tspan, x0, xr):
+    dt = tspan[1]-tspan[0]
+    sys_c = ss(md.A, md.B, np.eye(4), np.zeros_like(md.B))
+    sys_d = c2d(sys_c, dt, 'zoh')
 
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = x0
+    u = 0.0
+    uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
+    uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
+
+    for i in range(len(tspan)):
+        x = sys_d.A@(x-xr) + sys_d.B@([u]) + xr
+        u = -md.K@(x - xr)
+        uy = np.array([u, x[0], x[2], x[3]]).reshape((4,1))
+        run_data[i] = x
+
+    return run_data
+
+# # linear kalman filter simulation
+# def kf_discrete(tspan, x0, xr):
+#     dt = tspan[1]-tspan[0]
+#     sys_c = ss(kf.A_kf, kf.B_kf, kf.C_kf, kf.D_kf)
+#     sys_d = c2d(sys_c, dt, 'zoh')
+
+#     run_data = np.empty([len(tspan),4])
+#     run_data[0] = x0
+#     x = x0
+#     u = 0.0
+#     uy = np.array([0, x0[0], x0[2], x0[3]]).reshape((4,1))
+#     uy_r = np.array([0, xr[0], xr[2], xr[3]]).reshape((4,1))
+ 
+
+#     for i in range(len(tspan)):
+#         x = sys_d.A@(x-xr) + sys_d.B@((uy-uy_r)) + xr
+#         print(x)
+#         u = -md.K@(x - xr)
+#         uy = np.array([u, x[0], x[2], x[3]]).reshape((4,1))
+#         run_data[i] = x
+
+#     return run_data
 
 #########################################################
 # This is a simple wrapper class for simulation functions
@@ -203,11 +245,11 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
 
 def run_comparison():
     tspan = np.arange(0,10,0.01)
-    x0 = np.array([5,0,np.pi,0]) # Initial condition
+    x0 = np.array([0,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(ode_sim)
-    method2 = Method(it_ls_sim)
+    method1 = Method(it_ls_sim)
+    method2 = Method(ls_discrete)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
@@ -297,4 +339,4 @@ def kf_comparison_plot():
     plt.savefig("KFangle.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
-kf_comparison_plot()
+run_comparison()
