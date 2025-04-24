@@ -1,13 +1,12 @@
 import numpy as np
 from time import sleep
 from InterruptTimer import InterruptTimer
-from model import LQRModel, KalmanFilterXTheta
+from model import SSModelTwoState
 from motors import BRMotors
 from imu3 import ImuSensor
 from utilities import output_data
 
-md = LQRModel()
-kf = KalmanFilterXTheta()
+md = SSModelTwoState()
 
 debug = False
 output_data_to_file = True
@@ -49,7 +48,7 @@ def loop_iteration():
     uy[3] = imu_sensor.raw_angular_velocity_rad()
 
     # estimate the state
-    dx = kf.A@(x - x_r) + kf.B@(uy-uy_r)
+    dx = md.A_kf@(x - x_r) + md.B_kf@(uy-uy_r)
     x = x + dx*dT
 
     # compute the control value u, and update motor duty cycle

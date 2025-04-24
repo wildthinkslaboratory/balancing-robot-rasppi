@@ -33,48 +33,17 @@ def equations_of_motion(x,t,u):
     
     return dx
 
-class LQRModelConstants:
+# State Space Model
+class SSModelConstants:
+    # equations of motion linearized about vertical pendulum position
+    A = np.array([[0, 1, 0, 0],\
+                [0, -d/M, m*g/M, 0],\
+                [0, 0, 0, 1],\
+                [0, -d/(M*L), -(m+M)*g/(M*L), 0]])
 
-        # equations of motion linearized about vertical pendulum position
-        A = np.array([[0, 1, 0, 0],\
-                    [0, -d/M, m*g/M, 0],\
-                    [0, 0, 0, 1],\
-                    [0, -d/(M*L), -(m+M)*g/(M*L), 0]])
+    # linearization of control matrix
+    B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
 
-        # linearization of control matrix
-        B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
-
-        Q = np.array([[1, 0, 0, 0],\
-                    [0, 0.01, 0, 0],\
-                    [0, 0, 10, 0],\
-                    [0, 0, 0, 0.1]])
-        R = 1
-        K = lqr(A,B,Q,R)[0][0] 
-
-# This just makes it easy to access our model constants as 
-# a class. This way we can have multiple models and not
-# get the A's B's and K's mixed up
-class LQRModel:
-    def __init__(self):
-        # Set constants from separate classes as attributes
-        for cls in [LQRModelConstants]:
-            for key, value in cls.__dict__.items():
-                if not key.startswith("__"):
-                    self.__dict__.update(**{key: value})
-
-    # these are constants. This keeps them read only
-    def __setattr__(self, name, value):
-        raise TypeError("Model values are immutable")
-
-
-
-
-###########################################
-# Generate our Kalman Filter
-
-###########################################
-class KalmanFilterXThetaOmegaConstants:
-    model = LQRModel()
     # C is our measurement model
     # we are measuring position, angle and angular velocity
     # the position is read from the motor encoders 
@@ -83,6 +52,15 @@ class KalmanFilterXThetaOmegaConstants:
     C = np.array([[1, 0, 0, 0], \
                 [0, 0, 1, 0], \
                 [0, 0, 0, 1]]) 
+    
+    D = np.zeros_like(B)
+
+    Q = np.array([[1, 0, 0, 0],\
+                [0, 0.01, 0, 0],\
+                [0, 0, 10, 0],\
+                [0, 0, 0, 0.1]])
+    R = 1
+    K = lqr(A,B,Q,R)[0][0] 
 
     # This is our state disturbance matrix
     # Examples of a distrubances are giving the robot
@@ -93,19 +71,25 @@ class KalmanFilterXThetaOmegaConstants:
     # it contains the variance for our position and gyro sensors
     Vn = np.eye(3)
 
-    Kf = lqr(model.A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
+    # Generate our Kalman Filter
+    Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
     # These are our A,B,C,D matrices for the Kalman Filter system
-    A = model.A - (Kf @ C)    
-    B = np.concatenate((model.B, Kf), axis=1)
-    C = np.eye(4)
-    D = np.zeros_like(B)
+    A_kf = A - (Kf @ C)    
+    B_kf = np.concatenate((B, Kf), axis=1)
+    C_kf = np.eye(4)
+    D_kf = np.zeros_like(B_kf)
 
+    # now we generate the discrete matrices
+    
 
-class KalmanFilterXThetaOmega:
+# This just makes it easy to access our model constants as 
+# a class. This way we can have multiple models and not
+# get the A's B's and K's mixed up
+class SSModel:
     def __init__(self):
         # Set constants from separate classes as attributes
-        for cls in [KalmanFilterXThetaOmegaConstants]:
+        for cls in [SSModelConstants]:
             for key, value in cls.__dict__.items():
                 if not key.startswith("__"):
                     self.__dict__.update(**{key: value})
@@ -115,49 +99,9 @@ class KalmanFilterXThetaOmega:
         raise TypeError("Model values are immutable")
 
 
-class KalmanFilterXThetaConstants:
-    model = LQRModel()
-    # C is our measurement model
-    # we are measuring position and angular velocity
-    # the position is read from the motor encoders and
-    # angular velocity is from the gyro
-    C = np.array([[1, 0, 0, 0], \
-                [0, 0, 1, 0]])
 
 
-    # This is our state disturbance matrix
-    # Examples of a distrubances are giving the robot
-    # a push or rolling over a bump in the floor
-    Vd = np.eye(4) 
-
-    # This is our sensor noise matrix
-    # it contains the variance for our position and gyro sensors
-    Vn = np.eye(2)
-
-    Kf = lqr(model.A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
-
-    # These are our A,B,C,D matrices for the Kalman Filter system
-    A = model.A - (Kf @ C)    
-    B = np.concatenate((model.B, Kf), axis=1)
-    C = np.eye(4)
-    D = np.zeros_like(B)
-
-
-class KalmanFilterXTheta:
-    def __init__(self):
-        # Set constants from separate classes as attributes
-        for cls in [KalmanFilterXThetaConstants]:
-            for key, value in cls.__dict__.items():
-                if not key.startswith("__"):
-                    self.__dict__.update(**{key: value})
-
-    # these are constants. This keeps them read only
-    def __setattr__(self, name, value):
-        raise TypeError("Model values are immutable")
-
-
-class LQRModelAngleOnlyConstants:
-
+class SSModelTwoStateConstants:
         # equations of motion linearized about vertical pendulum position
         A = np.array([[0, 1],\
                     [-(m+M)*g/(M*L), 0]])
@@ -183,10 +127,10 @@ class LQRModelAngleOnlyConstants:
 # This just makes it easy to access our model constants as 
 # a class. This way we can have multiple models and not
 # get the A's B's and K's mixed up
-class LQRModelAngleOnly:
+class SSModelTwoState:
     def __init__(self):
         # Set constants from separate classes as attributes
-        for cls in [LQRModelAngleOnlyConstants]:
+        for cls in [SSModelTwoStateConstants]:
             for key, value in cls.__dict__.items():
                 if not key.startswith("__"):
                     self.__dict__.update(**{key: value})

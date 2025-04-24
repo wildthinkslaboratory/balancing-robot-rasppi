@@ -4,9 +4,9 @@ from time import sleep, perf_counter
 from motors import BRMotors
 from imu2 import ImuSensor
 from InterruptTimer import InterruptTimer
-from model import LQRModel
+from model import SSModel
 
-md = LQRModel()
+md = SSModel()
 
 debug = False
 output_data_to_file = True
