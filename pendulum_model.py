@@ -96,7 +96,7 @@ class SSPendModel:
 
 
 
-class SSPendModelTwoStateConstants:
+class SSPendModelTwoVarConstants:
         # equations of motion linearized about vertical pendulum position
         A = np.array([[0, 1],\
                     [-(m+M)*g/(M*L), 0]])
@@ -122,10 +122,10 @@ class SSPendModelTwoStateConstants:
 # This just makes it easy to access our model constants as 
 # a class. This way we can have multiple models and not
 # get the A's B's and K's mixed up
-class SSPendModelTwoState:
+class SSPendModelTwoVar:
     def __init__(self):
         # Set constants from separate classes as attributes
-        for cls in [SSPendModelTwoStateConstants]:
+        for cls in [SSPendModelTwoVarConstants]:
             for key, value in cls.__dict__.items():
                 if not key.startswith("__"):
                     self.__dict__.update(**{key: value})

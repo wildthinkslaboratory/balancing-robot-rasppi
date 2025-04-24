@@ -4,13 +4,13 @@ from scipy import integrate
 import numpy as np
 from control.matlab import ss, c2d
 from time import perf_counter
-from pendulum_model import SSPendModel, equations_of_motion, SSPendModelTwoState
+from pendulum_model import SSPendModel, equations_of_motion, SSPendModelTwoVar
 from utilities import import_data, output_data
 from math import sqrt
 
 
 md = SSPendModel()
-ma = SSPendModelTwoState()
+ma = SSPendModelTwoVar()
 angle_vel_var = 0.0000026
 
 #########################################################
@@ -360,6 +360,7 @@ def kf_comparison_plot():
     plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=(r'$\omega$ true + noise'))
     plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\omega$ KF')
     plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\omega$ true')
+    plt.title('Four Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
     plt.legend()
@@ -370,6 +371,7 @@ def kf_comparison_plot():
     plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=r'$\theta$ true + noise')
     plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\theta$ KF')
     plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\theta$ true')
+    plt.title('Four Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
     plt.legend()
@@ -459,10 +461,11 @@ def kf_comparison_plot_angle_only():
     plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\omega$ KF')
     plt.plot(tspan,run_data_kf_d[:,i],linewidth=1,label=r'$\omega$ KF discrete')
     plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\omega$ true')
+    plt.title('Two Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
     plt.legend()
-    plt.savefig("KFangular_velocity.pdf", format="pdf", bbox_inches="tight")
+    plt.savefig("KFangular_velocity2.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
     i=1
@@ -470,11 +473,12 @@ def kf_comparison_plot_angle_only():
     plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\theta$ KF')
     plt.plot(tspan,run_data_kf_d[:,i],linewidth=1,label=r'$\theta$ KF discrete')
     plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\theta$ true')
+    plt.title('Two Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
     plt.legend()
-    plt.savefig("KFangle.pdf", format="pdf", bbox_inches="tight")
+    plt.savefig("KFangle2.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
 
-kf_comparison_plot_angle_only()
+kf_comparison_plot()
