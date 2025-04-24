@@ -4,7 +4,7 @@ from scipy import integrate
 import numpy as np
 from control.matlab import ss, c2d
 from time import perf_counter
-from pendulum_model import SSPendModel, equations_of_motion, SSPendModelTwoVar
+from pendulum_model import SSPendModel, equations_of_motion, SSPendModelTwoVar, equations_of_motion_two_var
 from utilities import import_data, output_data
 from math import sqrt
 
@@ -197,11 +197,32 @@ def kf_discrete(tspan, x0, xr):
     print('Time for', len(tspan), 'iterations of kf_discrete: ', perf_counter() - start_time)
     return run_data
 
+# ode simulation for two 
+# variables: angle, angular velocity
+# 
+def ode_angle_only(tspan, x0, xr):
+    
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = np.array([x0[2], x0[3]])
+    xra = np.array([xr[2], xr[3]])
+    u = np.array([0.0])
+    dt = tspan[1]-tspan[0]
+
+    start_time = perf_counter()
+    for i in range(len(tspan)):
+        dx = equations_of_motion_two_var(x,0.0,u[0])
+        x = x + dx*dt
+        u[0] = -ma.K@(x - xra)
+        run_data[i] = np.array([0.0, 0.0, x[0], x[1]])
+
+    print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
+    return run_data
 
 # linear state space system simulation for two 
 # variables: angle, angular velocity
 # Ax + Bu. 
-def it_ls_sim_angle_only(tspan, x0, xr):
+def lss_angle_only(tspan, x0, xr):
     
     run_data = np.empty([len(tspan),4])
     run_data[0] = x0
@@ -225,7 +246,7 @@ def it_ls_sim_angle_only(tspan, x0, xr):
 # variables: angle, angular velocity
 # with a Kalman filter
 # Ax + Bu. 
-def kf_sim_angle_only(tspan, x0, xr):
+def kf_angle_only(tspan, x0, xr):
     
     run_data = np.empty([len(tspan),4])
     run_data[0] = x0
@@ -286,8 +307,8 @@ def run_comparison():
     x0 = np.array([0,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(it_ode_sim)
-    method2 = Method(it_ls_sim_with_noise)
+    method1 = Method(ode_angle_only)
+    method2 = Method(kf_angle_only)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
@@ -481,4 +502,4 @@ def kf_comparison_plot_angle_only():
     plt.show()
 
 
-kf_comparison_plot()
+run_comparison()

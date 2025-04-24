@@ -95,6 +95,16 @@ class SSPendModel:
 
 
 
+def equations_of_motion_two_var(x,t,u):
+    Sx = np.sin(x[0])
+    Cx = np.cos(x[0])
+    D = m*L*L*(M+m*(1-Cx**2))
+    
+    dx = np.zeros(2)
+    dx[0] = x[1]
+    dx[1] = (1/D)*((m+M)*m*g*L*Sx - m*L*Cx*(m*L*(x[1]**2)*Sx)) - m*L*Cx*(1/D)*u;
+
+    return dx
 
 class SSPendModelTwoVarConstants:
         # equations of motion linearized about vertical pendulum position
