@@ -4,9 +4,9 @@ from time import sleep, perf_counter
 from motors import BRMotors
 from imu2 import ImuSensor
 from InterruptTimer import InterruptTimer
-from model import SSModel
+from pendulum_model import SSPendModel
 
-md = SSModel()
+md = SSPendModel()
 
 debug = False
 output_data_to_file = True

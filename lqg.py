@@ -1,12 +1,12 @@
 import numpy as np
 from time import sleep
 from InterruptTimer import InterruptTimer
-from model import SSModelTwoState
+from pendulum_model import SSPendModelTwoState
 from motors import BRMotors
 from imu3 import ImuSensor
 from utilities import output_data
 
-md = SSModelTwoState()
+md = SSPendModelTwoState()
 
 debug = False
 output_data_to_file = True
