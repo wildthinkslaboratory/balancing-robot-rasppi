@@ -6,6 +6,13 @@ angle_vel_var = 0.0000026
 angle_var = 0.0000026
 
 
+m = 0.29        # mass of pendulum (kilograms)
+M = 0.765       # mass of cart (kilograms)
+L = 0.16        # length of pendulum (meters)
+g = -9.81       # gravity, (meters / sec^2)
+d = 0.001       # d is a damping factor
+
+
 #########################################################
 # this function returns the change in state of the robot
 # based on the full differential equations
@@ -13,8 +20,7 @@ angle_var = 0.0000026
 # This is based of Steve Brunton's Control Theory book code
 #
 #########################################################
-def equations_of_motion(x,t,m,M,L,g,d,uf):
-    u = uf(x) # evaluate anonymous function at x
+def equations_of_motion(x,t,u):
     Sx = np.sin(x[2])
     Cx = np.cos(x[2])
     D = m*L*L*(M+m*(1-Cx**2))
@@ -27,15 +33,7 @@ def equations_of_motion(x,t,m,M,L,g,d,uf):
     
     return dx
 
-
-
 class LQRModelConstants:
-
-        m = 0.29        # mass of pendulum (kilograms)
-        M = 0.765       # mass of cart (kilograms)
-        L = 0.16        # length of pendulum (meters)
-        g = -9.81       # gravity, (meters / sec^2)
-        d = 0.001       # d is a damping factor
 
         # equations of motion linearized about vertical pendulum position
         A = np.array([[0, 1, 0, 0],\
@@ -67,13 +65,7 @@ class LQRModel:
     # these are constants. This keeps them read only
     def __setattr__(self, name, value):
         raise TypeError("Model values are immutable")
-    
-    # package up the equations of motions function
-    # this makes it easier to call without having to feed in 
-    # all those parameters
-    def dx_from_equations(self,x,u):
-        uf = lambda y: u
-        return equations_of_motion(x,0.0,self.m,self.M,self.L,self.g,self.d,uf)
+
 
 
 
@@ -165,12 +157,6 @@ class KalmanFilterXTheta:
 
 
 class LQRModelAngleOnlyConstants:
-
-        m = 0.29        # mass of pendulum (kilograms)
-        M = 0.765       # mass of cart (kilograms)
-        L = 0.16        # length of pendulum (meters)
-        g = -9.81       # gravity, (meters / sec^2)
-        d = 0.001       # d is a damping factor
 
         # equations of motion linearized about vertical pendulum position
         A = np.array([[0, 1],\

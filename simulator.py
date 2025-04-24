@@ -24,13 +24,6 @@ kf2 = KalmanFilterXTheta()
 #########################################################
 
 
-# use the odeint function and the true equations of motion 
-# to simulate the system
-def ode_sim(tspan, x0, xr):
-    u = lambda x: -(md.K)@(x-xr) 
-    return integrate.odeint(equations_of_motion,x0,tspan,args=(md.m,md.M,md.L,md.g,md.d,u))
-
-
 # use true equations of motion to iteratively move the state forward
 def it_ode_sim(tspan, x0, xr):
     run_data = np.empty([len(tspan),4])
@@ -40,7 +33,7 @@ def it_ode_sim(tspan, x0, xr):
     start_time = perf_counter()
     for i in range(len(tspan)):
         u = -md.K@(x - xr)
-        dx = md.dx_from_equations(x,u)
+        dx = equations_of_motion(x,0.0,u)
         x = x + dx*dt
         run_data[i] = x
 
@@ -303,7 +296,7 @@ def run_comparison():
     x0 = np.array([0,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(it_ls_sim_angle_only)
+    method1 = Method(it_ode_sim)
     method2 = Method(kf_sim_angle_only)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
@@ -384,6 +377,103 @@ def kf_comparison_plot():
     i=2
     plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=r'$\theta$ true + noise')
     plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\theta$ KF')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\theta$ true')
+    plt.xlabel('Time')
+    plt.ylabel('State')
+    plt.legend()
+    plt.savefig("KFangle.pdf", format="pdf", bbox_inches="tight")
+    plt.show()
+
+#########################################################
+# Here we compare three simulations
+#     - standard linear system with no noise (the true state)
+#     - standard linear system noise
+#     - Kalman Filter system with the same noisy values
+#########################################################
+def kf_comparison_plot_angle_only():
+    tspan = np.arange(0,5,0.01)
+    x0 = np.array([np.pi+0.2,0]) # Initial condition
+    xr = np.array([np.pi,0])      # Reference position 
+    dt = tspan[1]-tspan[0]
+
+    sys_c = ss(ma.A_kf, ma.B_kf, ma.C_kf, ma.D_kf)
+    sys_d = c2d(sys_c, dt, 'zoh')
+
+    
+
+    run_data_noise = np.empty([len(tspan),2])
+    run_data_kf = np.empty([len(tspan),2])
+    run_data_true = np.empty([len(tspan),2])
+    run_data_kf_d = np.empty([len(tspan),2])
+
+    run_data_noise[0] = x0
+    run_data_kf[0] = x0
+    run_data_true[0] = x0
+    run_data_kf_d[0] = x0
+    
+    x_noise = x0
+    x_kf = x0
+    x_true = x0
+    x_kf_d = x0
+
+    uy = np.array([0.0, x0[0], x0[1]])
+    uy_r = np.array([0.0, xr[0], xr[1]])
+    u_noise = np.array([0.0])
+    u_true = np.array([0.0])
+    uy_d = np.array([0.0, x0[0], x0[1]])
+    uy_r_d = np.array([0.0, xr[0], xr[1]])
+
+    for i in range(len(tspan)):
+        av_noise = np.random.normal(0.0,0.01)
+        a_noise = np.random.normal(0.0,0.001)
+
+        dx_true = ma.A@(x_true-xr) + ma.B@u_true
+        x_true = x_true + dx_true*dt
+        u_true[0] = -ma.K@(x_true - xr)
+        run_data_true[i] = x_true
+
+        x_noise[0] += a_noise
+        x_noise[1] += av_noise  
+        dx_noise = ma.A@(x_noise-xr) + ma.B@u_noise
+        x_noise = x_noise + dx_noise*dt
+        u_noise[0] = -ma.K@(x_noise - xr)
+        run_data_noise[i] = x_noise
+
+        dx_kf = ma.A_kf@(x_kf - xr) + ma.B_kf@(uy-uy_r)
+        x_kf = x_kf + dx_kf*dt
+        uy[0] = -ma.K@(x_kf - xr)
+        uy[1] = x_kf[0] + a_noise
+        uy[2] = x_kf[1] + av_noise
+        run_data_kf[i] = x_kf
+
+        x_kf_d = sys_d.A@(x_kf_d - xr) + sys_d.B@(uy_d-uy_r_d) + xr
+        uy_d[0] = -ma.K@(x_kf_d - xr)
+        uy_d[1] = x_kf_d[0] + a_noise
+        uy_d[2] = x_kf_d[1] + av_noise
+        run_data_kf_d[i] = x_kf_d
+
+    # plt.rcParams['figure.figsize'] = [8, 8]
+    # plt.rcParams.update({'font.size': 18})
+    # plt.rcParams.update({
+    # "text.usetex": True,
+    # "font.family": "serif"
+    # })
+    
+    i = 0
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=(r'$\omega$ true + noise'))
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\omega$ KF')
+    plt.plot(tspan,run_data_kf_d[:,i],linewidth=1,label=r'$\omega$ KF discrete')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\omega$ true')
+    plt.xlabel('Time')
+    plt.ylabel('State')
+    plt.legend()
+    plt.savefig("KFangular_velocity.pdf", format="pdf", bbox_inches="tight")
+    plt.show()
+
+    i=1
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=r'$\theta$ true + noise')
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\theta$ KF')
+    plt.plot(tspan,run_data_kf_d[:,i],linewidth=1,label=r'$\theta$ KF discrete')
     plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\theta$ true')
     plt.xlabel('Time')
     plt.ylabel('State')
