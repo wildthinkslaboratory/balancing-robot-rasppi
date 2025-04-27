@@ -72,10 +72,10 @@ class BRMotors:
 	def run(self, speed):
 		speed = constrain(speed, -1, 1)
 		self.standby.on()
-		if speed > 0:
+		if speed < 0:
 			self.count_inc = 1
 			self.motors.forward()
-		if speed <= 0:
+		if speed >= 0:
 			self.count_inc = -1
 			self.motors.backward()
 		self.pwmA.value = abs(speed)

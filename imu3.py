@@ -30,7 +30,7 @@ class ImuSensor:
         self.ax_raw = accelerometer_data['x']
         self.ay_raw = accelerometer_data['y']
         self.az_raw = accelerometer_data['z']
-        accelerometer_angle = math.atan2(self.ay_raw, math.sqrt(self.ax_raw**2 + self.az_raw**2)) * math.pi / 180 
+        accelerometer_angle = math.atan2(self.ay_raw, math.sqrt(self.ax_raw**2 + self.az_raw**2))
         accelerometer_angle = accelerometer_angle + math.pi
         if (accelerometer_angle >= 2 * math.pi):
             accelerometer_angle -= 2 * math.pi
