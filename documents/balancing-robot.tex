@@ -4,6 +4,9 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{bm}
+\usepackage{physics}
+\usepackage[round]{natbib}
+\bibliographystyle{unsrtnat}
 
 % this just sets up the page size and margins
 \setlength{\topmargin}{0pt}
@@ -67,57 +70,76 @@
 Should have list of all the components. Maybe a picture. Do we need to show circuit stuff?
 
 \section*{Model}
-\subsection*{System Description (Lagrange's Method)}
-Derive the equations here
+We modeled our balancing robot as a pendulum cart system.The wheels and motors are considered to be the cart.  All other parts of the robot pivot around the axis created by the wheels and are considered part of the pendulum.  A thorough discussion of this model is found in \cite{brunton}.
 
 \begin{eqnarray}
-	\dot{x} & = & v \\
-	\dot{v}          & = & \frac{-m^2L^2g \cos(\theta)\sin(\theta) + mL^2(mL\omega^2 \sin(\theta)-\delta v)+mL^2u }{mL^2(M+m(1-\cos(\theta)^2))} \\
-	\dot{\theta}  &= & \omega \\
-	\dot{\omega}  &= & \frac{(m+M)mgL\sin(\theta)-mL\cos(\theta)(mL\omega^2\sin(\theta)-\delta v)-mL\cos(\theta)u}{mL^2(M+m(1-\cos(\theta)^2))}
+	\dot{x} & = & \dot{x} \label{dfx} \\ 
+	\ddot{x}          & = & \frac{-mg \cos(\theta)\sin(\theta) + mL{\dot{\theta}}^2 \sin(\theta)-\delta \dot{x}+u }{M+m\sin^2\theta}  \label{dfv} \\
+	\dot{\theta}  &= & \dot{\theta} \label{dftheta} \\	
+	\ddot{\theta}  &= & \frac{(m+M)g\sin(\theta)-\cos(\theta)(mL{\dot{\theta}}^2\sin(\theta)-\delta \dot{x})-\cos(\theta)u}{L(M+m\sin^2\theta)} \label{dfomega}
 \end{eqnarray}
-where $x$ is the cart position, $v$ is the velocity, $\theta$ is the pendulum angle, $\omega$ is the angular velocity, $m$ is the pendulum mass, $M$ is the cart mass, $L$ is the pendulum arm length, $g$ is the gravitational acceleration, $\delta$ is a friction damping on the cart, and $u$ is the control force applied to the cart.
-
+where $x$ is the cart position, $\dot{x}$ is the cart velocity, $\theta$ is the pendulum angle, $\dot{\theta}$ is the angular velocity, $m$ is the pendulum mass, $M$ is the cart mass, $L$ is the distance from the pivot point to the center of mass of the pendulum, $g$ is the gravitational acceleration, $\delta$ is a friction damping on the cart, and $u$ is the control force applied to the cart. This forms a set of differential equations 
+\begin{equation}
+	\frac{d}{dt} \bx = f(\bx, \bu) \label{dfdx}
+\end{equation}
+where $\bx$ is the state vector $\bx = [x, \dot{x}, \theta, \dot{\theta}]$ and $\bu$ is the input vector.$\bu=u *[ 0, 1, 0, 1]$.
 
 \subsection*{Linearization}
-To build a control system for our model we will linearize our system of equations around a fixed point $x_r$ where $x_r$ is the position where the robot is vertical, unmoving and positioned at the origin.  
+To build a control system for our model we will linearize the non-linear system of equations \eqref{dfx}, \eqref{dfv}, \eqref{dftheta}, and \eqref{dfomega} around a fixed point $(\bx_r, \bu_r)$  where $\bx_r$ is the position where the robot is vertical, unmoving and positioned at the origin and $\bu_r$ is the input with motor torque at zero.
 
-The nonlinear system of differential equations
+The nonlinear system of differential equations \eqref{dfdx} can be represented as a Taylor series expansion around the point $\bx_r$.
 \begin{equation}
-		\frac{d}{dt} \bx = f(\bx).
+	 f(\bx, \bu) = f(\bx_r, \bu_r) + \left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}(\bx -\bx_r) 
+	 + \left.  \frac{\boldsymbol{df}}{\boldsymbol{du}} \right|_{u_r}(\bu -\bu_r) 
+	 + \left. \frac{\boldsymbol{d}^2\boldsymbol{f}}{\boldsymbol{dx}^2} \right|_{x_r}(\bx -\bx_r)^2
+	 + \left. \frac{\boldsymbol{d}^2\boldsymbol{f}}{\boldsymbol{du}^2} \right|_{u_r}(\bu -\bu_r)^2 + \cdots
 \end{equation}
-can be represented as a Taylor series expansion around the point $\bx_r$.
-\begin{equation}
-	 f(\bx) = f(\bx_r) +\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}(\bx -\bx_r) + \left. \frac{\boldsymbol{d}^2\boldsymbol{f}}{\boldsymbol{dx}^2} \right|_{x_r}(\bx -\bx_r)^2 + \cdots
-\end{equation}
-Because $\bx_r$ is a fixed point, we know that $f(\bx_r) = 0$. Additionally, this approximation is only accurate in a small neighborhood around $\bx_r$.  In this neighborhood, we can assume that the value of $(\bx -\bx_r)$ is small, so higher order terms of this series will go to zero. So a fair estimate of our system is
+Because $(\bx_r, \bu_r)$ is a fixed point, we know that $f(\bx_r, \bu_r) = 0$. Additionally, this approximation is only accurate in a small neighborhood around $(\bx_r, \bu_r)$.  In this neighborhood, we can assume that the values of both $(\bx -\bx_r)$ and $(\bu -\bu_r)$ are small, so higher order terms of this series will go to zero. So a fair estimate of our system is
 \begin{equation}
 	\frac{d}{dt} \bx \simeq \left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}(\bx -\bx_r) 
+	+  \left.  \frac{\boldsymbol{df}}{\boldsymbol{du}} \right|_{u_r}(\bu -\bu_r) 
 \end{equation}
-where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jacobian matrix for our system of equations $f(\bx)$ evaluated at the fixed point $\bx_r$. The Jacobian matrix for our system of equations evaluated at $\bx_r = [0\; 0\; \pi \; 0]$ is 
+where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jacobian matrix for our system of equations $f(\bx, \bu)$ with respect to $\bx$ and $\left.  \frac{\boldsymbol{df}}{\boldsymbol{du}} \right|_{u_r}$ is the Jacobian matrix with respect to $\bu$. Both are then evaluated at the fixed point $(\bx_r, \bu_r)$.  Our partial differentials with respect to $\bx$ are
 
-	\begin{equation}
-	 \frac{\boldsymbol{df}}{\boldsymbol{dx}}  = 
+\begin{equation*}
+	\pdv{f_1}{x}  = \pdv{f_1}{\theta} = \pdv{f_1}{\dot{\theta}} = 	\pdv{f_3}{x}  =	\pdv{f_3}{\dot{x}} = \pdv{f_3}{\theta} = 0 
+\end{equation*}
+\begin{equation*}
+	 \pdv{f_1}{\dot{x}} = \pdv{f_3}{\dot{\theta}}  = 1
+\end{equation*}
+
+
+\begin{eqnarray*}
+	\pdv{f_2}{x} = & 0 \\
+	\pdv{f_2}{\dot{x}} =&  \frac{-\delta}{M + m \sin^2 \theta} \\
+	\pdv{f_2}{\theta} =  & \frac{(M+ m \sin^2 \theta)(-mg(\cos^2 \theta - \sin^2 \theta)+mL\dot{\theta}^2 \cos \theta)-(-mg \cos(\theta)\sin(\theta) + mL{\dot{\theta}}^2 \sin(\theta)-\delta \dot{x}+u)(2m \sin \theta \cos \theta)}{(M + m \sin^2 \theta)^2} \\
+	\pdv{f_2}{\dot{\theta}} = & \frac{mL\sin \theta}{M + m \sin^2 \theta} \cdot 2 \dot{\theta}
+\end{eqnarray*}
+
+\begin{eqnarray*}
+	\pdv{f_4}{x} = & 0 \\
+	\pdv{f_4}{\dot{x}} =&  \frac{\delta \cos \theta}{L(M + m \sin^2 \theta)} \\
+	\pdv{f_4}{\theta} =  &  \frac{(L(M + m \sin^2 \theta))((M+m)g \cos \theta -mL\dot{\theta}^2(\cos^2 \theta - \sin^2 \theta) -\delta \dot{x} \sin \theta + u \sin \theta)-((m+M)g\sin(\theta)-\cos(\theta)(mL{\dot{\theta}}^2\sin(\theta)-\delta \dot{x})-\cos(\theta)u)(2mL \sin \theta \cos \theta)}{L^2(M + m \sin^2 \theta)^2} \\
+	\pdv{f_4}{\dot{\theta}} = & -\frac{2\dot{\theta}mL \cos \theta \sin \theta}{L(M + m \sin^2 \theta)}
+\end{eqnarray*}
+The Jacobian matrix for our system of equations evaluated at $\bx_r = [0\; 0\; \pi \; 0]$ and $\bu_r = [0]$ gives the matrix
+\begin{equation}
+		A = 
 	\begin{bmatrix}
 		0 & 1              & 0                          & 0 \\
-		0 & -\frac{\delta}{M+m(1-\cos(\theta)^2)}      & \frac{mg}{M}                 & 0 \\
-		0 & 0              & 0                          & 1 \\
-		0 & -\frac{d}{ML} & -\frac{(m+M)g}{ML} & 0
-	\end{bmatrix}
-\end{equation}
-
-	\begin{equation}
-		A = \left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}
-	\begin{bmatrix}
-		0 & 1              & 0                          & 0 \\
-		0 & -\frac{\delta}{M}      & \frac{mg}{M}                 & 0 \\
+		0 & -\frac{\delta}{M}      & -\frac{mg}{M}                 & 0 \\
 		0 & 0              & 0                          & 1 \\
 		0 & -\frac{\delta}{ML} & -\frac{(m+M)g}{ML} & 0
 	\end{bmatrix}
 \end{equation}
-\begin{equation*}
-	\frac{d}{dt} \bx \simeq A(\bx -\bx_r)
-\end{equation*}
+Our partial differentials with respect to $\bu$ are
+\begin{eqnarray*}
+	\pdv{f_1}{u} = & 0 \\
+	\pdv{f_2}{u} = & \frac{1}{M + m \sin^2 \theta}\\
+	\pdv{f_3}{u} =  & 0 \\
+	\pdv{f_4}{u} = & -\frac{\cos \theta}{L(M + m \sin^2 \theta)}
+\end{eqnarray*}
+Evaluating these equations at $\bx_r = [0\; 0\; \pi \; 0]$ and $\bu_r = [0]$ gives the matrix
 \begin{equation}
 	B = 
 	\begin{bmatrix}
@@ -127,6 +149,28 @@ where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jac
 		\frac{1}{ML}   
 	\end{bmatrix}
 \end{equation}
+\subsection*{Two Variable Model}
+We also built a two variable model for the balancing robot that has a state consisting of only the robot angle and angular velocity. This model works if you don't need to control the position of the robot. Working with this model was useful for testing purposes since it is a simpler system. It has the equations of motion
+\begin{eqnarray*}
+	\dot{\theta}  &= & \dot{\theta} \\	
+	\ddot{\theta}  &= & \frac{(m+M)g\sin(\theta)-\cos(\theta)(mL{\dot{\theta}}^2\sin(\theta))-\cos(\theta)u}{L(M+m\sin^2\theta)} 
+\end{eqnarray*}
+and the linearized matrices
+\begin{equation*}
+		A = 
+\begin{bmatrix}
+	0                          & 1 \\
+	-\frac{(m+M)g}{ML} & 0
+\end{bmatrix}
+\end{equation*}
+\begin{equation*}
+	B = 
+	\begin{bmatrix}
+		0  \\
+		\frac{1}{ML}   
+	\end{bmatrix}
+\end{equation*}
+
 \subsection*{LQR}
 \subsection*{LQG}
 \begin{itemize}
@@ -160,10 +204,5 @@ where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jac
 \section*{Experiments}
 
 \section*{Conclusions}
-	
-
-
-
-
-	
+\bibliography{references.bib}
 \end{document}

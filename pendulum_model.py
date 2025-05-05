@@ -2,9 +2,17 @@ import numpy as np
 from control.matlab import lqr
 
 
-m = 0.29        # mass of pendulum (kilograms)
-M = 0.765       # mass of cart (kilograms)
-L = 0.16        # length of pendulum (meters)
+
+# m = 0.29        # mass of pendulum (kilograms)
+# M = 0.765       # mass of cart (kilograms)
+# L = 0.16        # length of pendulum (meters)
+# g = -9.81       # gravity, (meters / sec^2)
+# d = 0.001       # d is a damping factor
+
+
+M = 0.29        # wheels plus motors (kilograms) 
+m = 0.765       # rest of the robot (kilograms)
+L = 0.09        # length of pendulum (meters)
 g = -9.81       # gravity, (meters / sec^2)
 d = 0.001       # d is a damping factor
 
@@ -13,19 +21,17 @@ d = 0.001       # d is a damping factor
 # this function returns the change in state of the robot
 # based on the full differential equations
 #
-# This is based of Steve Brunton's Control Theory book code
-#
 #########################################################
 def equations_of_motion(x,t,u):
     Sx = np.sin(x[2])
     Cx = np.cos(x[2])
-    D = m*L*L*(M+m*(1-Cx**2))
-    
+    D = (M+m*(Sx**2))
+
     dx = np.zeros(4)
     dx[0] = x[1]
-    dx[1] = (1/D)*(-(m**2)*(L**2)*g*Cx*Sx + m*(L**2)*(m*L*(x[3]**2)*Sx - d*x[1])) + m*L*L*(1/D)*u
+    dx[1] = (1/D)*(-m*g*Cx*Sx + m*L*(x[3]**2)*Sx - d*x[1] + u)
     dx[2] = x[3]
-    dx[3] = (1/D)*((m+M)*m*g*L*Sx - m*L*Cx*(m*L*(x[3]**2)*Sx - d*x[1])) - m*L*Cx*(1/D)*u;
+    dx[3] = (1/(D*L))*((m+M)*g*Sx - Cx*(m*L*(x[3]**2)*Sx - d*x[1]) - Cx*u)
     
     return dx
 
@@ -33,7 +39,7 @@ def equations_of_motion(x,t,u):
 class SSPendModelConstants:
     # equations of motion linearized about vertical pendulum position
     A = np.array([[0, 1, 0, 0],\
-                [0, -d/M, m*g/M, 0],\
+                [0, -d/M, -m*g/M, 0],\
                 [0, 0, 0, 1],\
                 [0, -d/(M*L), -(m+M)*g/(M*L), 0]])
 
@@ -102,7 +108,7 @@ def equations_of_motion_two_var(x,t,u):
     
     dx = np.zeros(2)
     dx[0] = x[1]
-    dx[1] = (1/D)*((m+M)*m*g*L*Sx - m*L*Cx*(m*L*(x[1]**2)*Sx)) - m*L*Cx*(1/D)*u;
+    dx[1] = (1/D)*((m+M)*m*g*L*Sx - m*L*Cx*(m*L*(x[1]**2)*Sx)) - m*L*Cx*(1/D)*u
 
     return dx
 
@@ -114,7 +120,7 @@ class SSPendModelTwoVarConstants:
         # linearization of control matrix
         B = np.array([0,1/(M*L)]).reshape((2,1))
 
-        Q = np.array([[ 1, 0],\
+        Q = np.array([[1, 0],\
                     [0, 1]])
         R = 1
         K = lqr(A,B,Q,R)[0][0] 

@@ -25,14 +25,16 @@ angle_vel_var = 0.0000026
 # use true equations of motion to iteratively move the state forward
 def ode(tspan, x0, xr):
     run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
     x = x0
+    u = 0.0
     y = np.array([0.0, 0.0])
     dt = tspan[1]-tspan[0]
     start_time = perf_counter()
     for i in range(len(tspan)):
-        u = -md.K@(x - xr)
         dx = equations_of_motion(x,0.0,u)
         x = x + dx*dt
+        u = -md.K@(x - xr)
         run_data[i] = x
 
     print('Time for', len(tspan), 'iterations of it_ode_sim: ', perf_counter() - start_time)
@@ -292,7 +294,7 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
     plt.rcParams['figure.figsize'] = [8, 8]
     plt.rcParams.update({'font.size': 18})
 
-    state_labels = ('$x$ ','$v$ ','$\\theta$ ','$\\omega$ ')
+    state_labels = ('$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ')
     for i in range(4):
         plt.plot(time_series,x_1[:,i],linewidth=2,label=state_labels[i]+'1')
         plt.plot(time_series,x_2[:,i],linewidth=2,label=state_labels[i]+'2')
@@ -304,11 +306,11 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
 
 def run_comparison():
     tspan = np.arange(0,10,0.01)
-    x0 = np.array([0,0,np.pi+0.2,0]) # Initial condition
+    x0 = np.array([1,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(ode_angle_only)
-    method2 = Method(kf_angle_only)
+    method1 = Method(ode)
+    method2 = Method(kf_sim_with_noise)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
@@ -323,7 +325,7 @@ def run_comparison():
 #########################################################
 def kf_comparison_plot():
     tspan = np.arange(0,10,0.01)
-    x0 = np.array([1,0,np.pi,0]) # Initial condition
+    x0 = np.array([1,0,np.pi+0.1,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
     dt = tspan[1]-tspan[0]
 
@@ -378,9 +380,9 @@ def kf_comparison_plot():
     # })
     
     i = 3
-    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=(r'$\omega$ true + noise'))
-    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\omega$ KF')
-    plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\omega$ true')
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=('$\\dot{\\theta}$ true + noise'))
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\dot{\\theta}$ KF')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\dot{\\theta}$ true')
     plt.title('Four Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
@@ -389,9 +391,9 @@ def kf_comparison_plot():
     plt.show()
 
     i=2
-    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=r'$\theta$ true + noise')
-    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\theta$ KF')
-    plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\theta$ true')
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label='$\\theta$ true + noise')
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\theta$ KF')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\theta$ true')
     plt.title('Four Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
@@ -478,10 +480,10 @@ def kf_comparison_plot_angle_only():
     # })
     
     i = 0
-    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=(r'$\omega$ true + noise'))
-    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\omega$ KF')
-    plt.plot(tspan,run_data_kf_d[:,i],linewidth=1,label=r'$\omega$ KF discrete')
-    plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\omega$ true')
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=('$\\dot{\\theta}$ true + noise'))
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\dot{\\theta}$ KF')
+    plt.plot(tspan,run_data_kf_d[:,i],linewidth=1,label='$\\dot{\\theta}$ KF discrete')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\dot{\\theta}$ true')
     plt.title('Two Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
@@ -490,10 +492,10 @@ def kf_comparison_plot_angle_only():
     plt.show()
 
     i=1
-    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=r'$\theta$ true + noise')
-    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label=r'$\theta$ KF')
-    plt.plot(tspan,run_data_kf_d[:,i],linewidth=1,label=r'$\theta$ KF discrete')
-    plt.plot(tspan,run_data_true[:,i],linewidth=1,label=r'$\theta$ true')
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label='$\\theta$ true + noise')
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\theta$ KF')
+    plt.plot(tspan,run_data_kf_d[:,i],linewidth=1,label='$\\theta$ KF discrete')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\theta$ true')
     plt.title('Two Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
@@ -502,4 +504,4 @@ def kf_comparison_plot_angle_only():
     plt.show()
 
 
-run_comparison()
+kf_comparison_plot_angle_only()
