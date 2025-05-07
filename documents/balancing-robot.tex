@@ -5,6 +5,7 @@
 \usepackage{amsthm}
 \usepackage{bm}
 \usepackage{physics}
+\usepackage{graphicx}
 \usepackage[round]{natbib}
 \bibliographystyle{unsrtnat}
 
@@ -65,12 +66,22 @@
 
 \begin{document}
 	\maketitle
-
+\section{Helpful Papers}
+\cite{nature_paper}
+\cite{two_var_system}
+ \cite{brunton}
+ \cite{mitcode}
+ 
 \section*{Robot Design}
 Should have list of all the components. Maybe a picture. Do we need to show circuit stuff?
 
+\subsection*{Measuring the Robot State}
+The position $x$ and velocity $\dot{x}$ along the $x$ axis are computed from the motor encoders. The encoders return a number of counts which is positive in the clockwise direction and negative in the counter clockwise direction. Using the number of counts per wheel rotation and the circumference of the wheel we can compute the distance in the $x$ direction. The instantaneous velocity can be estimated by computing the change in position over a very small time window times the length of the window. The angle $\theta$ is computed from the accelerometer and angular velocity $\dot{\theta}$ is given by the gyroscope.
+
 \section*{Model}
-We modeled our balancing robot as a pendulum cart system.The wheels and motors are considered to be the cart.  All other parts of the robot pivot around the axis created by the wheels and are considered part of the pendulum.  A thorough discussion of this model is found in \cite{brunton}.
+Need a drawing of model.
+
+We modeled our balancing robot as a pendulum cart system.The wheels and motors are considered to be the cart.  All other parts of the robot pivot around the axis created by the wheels and are considered part of the pendulum.  A thorough discussion of this model is found in \cite{brunton}.  Our system is described by the system of differential equations
 
 \begin{eqnarray}
 	\dot{x} & = & \dot{x} \label{dfx} \\ 
@@ -82,12 +93,15 @@ where $x$ is the cart position, $\dot{x}$ is the cart velocity, $\theta$ is the 
 \begin{equation}
 	\frac{d}{dt} \bx = f(\bx, \bu) \label{dfdx}
 \end{equation}
-where $\bx$ is the state vector $\bx = [x, \dot{x}, \theta, \dot{\theta}]$ and $\bu$ is the input vector.$\bu=u *[ 0, 1, 0, 1]$.
+where $\bx$ is the state vector $\bx = [x, \dot{x}, \theta, \dot{\theta}]$ and $\bu$ is the input vector $\bu=[u]$.
+
+\subsection*{Modeling Motors}
+Talk about how we didn't model motor circuit. We assumed that torque is a linear function of duty cycle.  We tuned the coefficient experimentally.  This model is probably pretty good as long as are not near their max duty cycle.
 
 \subsection*{Linearization}
 To build a control system for our model we will linearize the non-linear system of equations \eqref{dfx}, \eqref{dfv}, \eqref{dftheta}, and \eqref{dfomega} around a fixed point $(\bx_r, \bu_r)$  where $\bx_r$ is the position where the robot is vertical, unmoving and positioned at the origin and $\bu_r$ is the input with motor torque at zero.
 
-The nonlinear system of differential equations \eqref{dfdx} can be represented as a Taylor series expansion around the point $\bx_r$.
+The nonlinear system of differential equations \eqref{dfdx} can be represented as a Taylor series expansion around the point $(\bx_r, \bu_r)$.
 \begin{equation}
 	 f(\bx, \bu) = f(\bx_r, \bu_r) + \left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}(\bx -\bx_r) 
 	 + \left.  \frac{\boldsymbol{df}}{\boldsymbol{du}} \right|_{u_r}(\bu -\bu_r) 
@@ -119,7 +133,8 @@ where $\left.  \frac{\boldsymbol{df}}{\boldsymbol{dx}} \right|_{x_r}$ is the Jac
 \begin{eqnarray*}
 	\pdv{f_4}{x} = & 0 \\
 	\pdv{f_4}{\dot{x}} =&  \frac{\delta \cos \theta}{L(M + m \sin^2 \theta)} \\
-	\pdv{f_4}{\theta} =  &  \frac{(L(M + m \sin^2 \theta))((M+m)g \cos \theta -mL\dot{\theta}^2(\cos^2 \theta - \sin^2 \theta) -\delta \dot{x} \sin \theta + u \sin \theta)-((m+M)g\sin(\theta)-\cos(\theta)(mL{\dot{\theta}}^2\sin(\theta)-\delta \dot{x})-\cos(\theta)u)(2mL \sin \theta \cos \theta)}{L^2(M + m \sin^2 \theta)^2} \\
+	\pdv{f_4}{\theta} =  &  \frac{(L(M + m \sin^2 \theta))((M+m)g \cos \theta -mL\dot{\theta}^2(\cos^2 \theta - \sin^2 \theta) -\delta \dot{x} \sin \theta + u \sin \theta)}{L^2(M + m \sin^2 \theta)^2} \\
+	& - \frac{((m+M)g\sin(\theta)-\cos(\theta)(mL{\dot{\theta}}^2\sin(\theta)-\delta \dot{x})-\cos(\theta)u)(2mL \sin \theta \cos \theta)}{L^2(M + m \sin^2 \theta)^2} \\
 	\pdv{f_4}{\dot{\theta}} = & -\frac{2\dot{\theta}mL \cos \theta \sin \theta}{L(M + m \sin^2 \theta)}
 \end{eqnarray*}
 The Jacobian matrix for our system of equations evaluated at $\bx_r = [0\; 0\; \pi \; 0]$ and $\bu_r = [0]$ gives the matrix
@@ -149,6 +164,10 @@ Evaluating these equations at $\bx_r = [0\; 0\; \pi \; 0]$ and $\bu_r = [0]$ giv
 		\frac{1}{ML}   
 	\end{bmatrix}
 \end{equation}
+Now we can approximate our system of equations \eqref{dfx}, \eqref{dfv}, \eqref{dftheta}, and \eqref{dfomega} with the linear system
+\begin{equation}
+	\frac{d}{dt} \bx = A(\bx - \bx_r) + B (\bu - \bu_r). \label{lin_mod}
+\end{equation}
 \subsection*{Two Variable Model}
 We also built a two variable model for the balancing robot that has a state consisting of only the robot angle and angular velocity. This model works if you don't need to control the position of the robot. Working with this model was useful for testing purposes since it is a simpler system. It has the equations of motion
 \begin{eqnarray*}
@@ -171,20 +190,110 @@ and the linearized matrices
 	\end{bmatrix}
 \end{equation*}
 
-\subsection*{LQR}
-\subsection*{LQG}
-\begin{itemize}
-	\item Estimate the full state from sensor readings from the $x$ position, and the angular velocity $\omega$.
-	\item Derive the Kalman filter matrix $K_f$ using the   \pythoninline{lqr} function from python control library.
-	\begin{python}
+\section*{Algorithm}
+\subsection*{Linear Quadratic Regulator}
+A Linear Quadratic Regulator (LQR) is a closed loop feedback system that uses a linearized model of the system based on differential equations to compute the optimal control parameters to stabilize the system around a fixed point. Additionally, LQR control allows some level of optimization over performance requirements, allowing tradeoffs between reducing the power consumption of our motors and the stability of the system. Our LQR algorithm and accompanying simulations were coded using Python's Control Systems library \pythoninline{control} and the numerical and scientific computing library \pythoninline{numpy}.
+
+We need our linear system \eqref{lin_mod} to be {\bf controllable}. A system is controllable if the column space of the controllability matrix 
+\begin{equation}
+	\mathcal{C} = 
+	\begin{bmatrix}
+		B & AB & A^2B & \cdots & A^{n-1}B
+	\end{bmatrix}
+\end{equation}
+has $n$ linearly independent columns, where $n$ is the number of variables in our state. At a high-level, controllability means that our control $B\bu$ has the ability to affect all of our state variables in $\bx$.  This is easily tested in Python with the line
+\vspace{\baselineskip}
+\begin{python}
+	print(np.linalg.matrix_rank(ctrb(A, B)))
+\end{python}
+\vspace{\baselineskip}
+For our system, the controllability matrix has rank $4$ confirming that our system is controllable.
+
+LQR works by finding a  matrix $K$ that we can use to compute our control input $\bu$ from the current state $\bx$
+\begin{equation}
+	\bu = -K(\bx - \bx_r). \label{u}
+\end{equation}
+We know that the bahaviour of our system can be approximated with our linearized model  \eqref{lin_mod}. If we substitute \eqref{u} into  \eqref{lin_mod} we get
+\begin{equation*}
+ A(\bx - \bx_r) + B(-K(\bx - \bx_r)) = 	(A - BK)(\bx - \bx_r) 
+\end{equation*}
+In a controllable system we can select a matrix $K$ to make the real parts of all eigenvalues of  $A - BK$ have negative values.  This creates a stable system.  
+
+To select our matrix $K$, we define two diagonal matrices $Q$ and $R$. $Q$ contains weights for the cost of deviating from the goal state and $R$ weights the cost of our control inputs. We use the Python \pythoninline{control.matlab.lqr} command to pick a $K$ that minimizes a cost function built from $Q$ and $R$. If the weight in $R$ is low relative to the weights in $Q$, our choice of $K$ will favor sticking close to our goal state with minimal limits on the size of motor torque. This can cause the robot to respond agressively to changes in state and make it overly sensitive to noise.  Typically, an LQR implementation will require some tuning of the weights in $Q$ and $R$ to meet the requirements of the system.
+\vspace{\baselineskip}
+\begin{python}
+	from control.matlab import lqr
+	
+	# equations of motion linearized about vertical pendulum position
+	A = np.array([[0, 1, 0, 0],\
+		[0, -d/M, -m*g/M, 0],\
+		[0, 0, 0, 1],\
+		[0, -d/(M*L), -(m+M)*g/(M*L), 0]])
+	
+	# linearization of control matrix
+	B = np.array([0,1/M,0,1/(M*L)]).reshape((4,1))
+	
+	Q = np.array([[1, 0, 0, 0],\
+		[0, 0.01, 0, 0],\
+		[0, 0, 10, 0],\
+		[0, 0, 0, 0.1]])
+	R = 1
+	K = lqr(A,B,Q,R)[0][0] 
+\end{python}
+
+A properly tuned $K$ matrix can be used in the control loop to compute the motor torque required to respond to the current state.  This value is then used to power the motors.
+\vspace{\baselineskip}
+\begin{python}
+	def loop_iteration():
+		theta, theta_dot = imu_sensor.angle_data()
+		x, x_dot = motors.position_data()
+		current_state = np.array([x, x_dot, theta, theta_dot])
+		u = -K@(current_state - x_r)
+		motors.run(u * duty_coeff)
+\end{python}
+
+\subsection*{Linear Quadratic Gaussian}
+A linear quadratic gaussian algortihm (LQG) is an extension of the LQR method with two advantages.  It doesn't require sensor readings for all of the state variables and it can filter out noisy sensor data. Instead of reading the current state directly from the sensors, the algorithm estimates the current state using predictions from the linear model, the control input and readings from the sensors. 
+Raw sensor data is averaged with the model prediction and state variables without sensors are estimated entirely. Our implementation estimates the full state from sensor readings  of the position $x$, angle $\theta$ and the angular velocity $\dot{\theta}$. 
+
+The matrix $C$ is our measurement model. 
+\begin{equation}
+	C = 
+	\begin{bmatrix}
+		1 & 0 & 0 & 0 \\
+		0 & 0 & 1 & 0 \\
+		0 & 0 & 0 & 1
+	\end{bmatrix}
+\end{equation}	
+
+Observable. Similar to controllable.
+\begin{equation}
+	\mathcal{O} = 
+	\begin{bmatrix}
+		C \\ CA \\ CA^2 \\ \vdots \\ CA^{n-1}
+	\end{bmatrix}
+\end{equation}
+\vspace{\baselineskip}
+\begin{python}
+	Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
+\end{python}
+\vspace{\baselineskip}
+
+
+
+Derive the Kalman filter matrix $K_f$ using the   \pythoninline{lqr} function from python control library.
+optimization of Q and R matrices
+\vspace{\baselineskip}
+\begin{python}
 	# This is our state disturbance matrix
 	Vd = np.eye(4) 
 	# This is our sensor noise matrix
 	Vn = np.array([[1, 0], \
 					[0, 1]])
 	Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
-	\end{python}
-	 \item To build the linear state space for our Kalman filter we build new matrices.
+\end{python}
+\vspace{\baselineskip}
+	To build the linear state space for our Kalman filter we build new matrices.
 	\begin{itemize}
 		\item $A_{kf} = A - K_fC$
 		\item $B_{kf} = \begin{bmatrix} B & K_f \end{bmatrix}$
@@ -197,9 +306,26 @@ and the linearized matrices
 		\by = &C_{kf} \bx + D \bu
 	\end{align}
 
-	\item Our input vector $\bu = [u, x_s, \omega_s]$ is our motor torque $u$ and our two sensor readings, position $x_s$ and angular velocity $\omega_s$
-	
-\end{itemize}
+Our input vector $\bu = [u, x_s, \theta_s, \dot{\theta}_s]$ is our motor torque $u$ and our two sensor readings, position $x_s$ and angular velocity $\dot{\theta}_s$
+
+\subsection{Simulations with Python}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.8\linewidth]{KFangle.pdf}
+	\caption{Simulation comparison of Kalman filter state estimation of angle with the true angle and noisy data.}
+	\label{fig:boat1}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.8\linewidth]{KFangular_velocity.pdf}
+	\caption{Simulation comparison of Kalman filter state estimation of angular velocity with the true angular velocity and noisy data.}
+	\label{fig:boat1}
+\end{figure}
+
+\subsection*{Continuous vs. Discrete Models}
+
+
 
 \section*{Experiments}
 

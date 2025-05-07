@@ -349,7 +349,7 @@ def kf_comparison_plot():
     
     for i in range(len(tspan)):
         av_noise = np.random.normal(0.0,sqrt(angle_vel_var))
-        a_noise = np.random.normal(0.0,0.0001)
+        a_noise = np.random.normal(0.0,0.001)
 
         dx_true = md.A@(x_true-xr) + md.B@u_true
         x_true = x_true + dx_true*dt
@@ -373,32 +373,29 @@ def kf_comparison_plot():
        
 
     # plt.rcParams['figure.figsize'] = [8, 8]
-    # plt.rcParams.update({'font.size': 18})
-    # plt.rcParams.update({
-    # "text.usetex": True,
-    # "font.family": "serif"
-    # })
+    plt.rcParams.update({'font.size': 12})
+    plt.rcParams.update({
+    "text.usetex": True,
+    })
     
     i = 3
     plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=('$\\dot{\\theta}$ true + noise'))
-    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\dot{\\theta}$ KF')
+    plt.plot(tspan,run_data_kf[:,i],linewidth=2,label='$\\dot{\\theta}$ Kalman filter')
     plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\dot{\\theta}$ true')
-    plt.title('Four Variable Solution')
-    plt.xlabel('Time')
-    plt.ylabel('State')
+    plt.xlabel('time')
+    plt.ylabel('angular velocity')
     plt.legend()
-    plt.savefig("KFangular_velocity.pdf", format="pdf", bbox_inches="tight")
+    plt.savefig("documents/KFangular_velocity.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
     i=2
     plt.plot(tspan,run_data_noise[:,i],linewidth=1,label='$\\theta$ true + noise')
-    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\theta$ KF')
+    plt.plot(tspan,run_data_kf[:,i],linewidth=2,label='$\\theta$ Kalman filter')
     plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\theta$ true')
-    plt.title('Four Variable Solution')
-    plt.xlabel('Time')
-    plt.ylabel('State')
+    plt.xlabel('time')
+    plt.ylabel('angle')
     plt.legend()
-    plt.savefig("KFangle.pdf", format="pdf", bbox_inches="tight")
+    plt.savefig("documents/KFangle.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
 
@@ -504,4 +501,7 @@ def kf_comparison_plot_angle_only():
     plt.show()
 
 
-kf_comparison_plot_angle_only()
+kf_comparison_plot()
+
+# from control.matlab import ctrb
+# print(np.linalg.matrix_rank(ctrb(md.A,md.B)))
