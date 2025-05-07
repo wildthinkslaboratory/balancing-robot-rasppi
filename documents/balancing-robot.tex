@@ -6,8 +6,8 @@
 \usepackage{bm}
 \usepackage{physics}
 \usepackage{graphicx}
-\usepackage[round]{natbib}
-\bibliographystyle{unsrtnat}
+%\usepackage[round]{natbib}
+%\bibliographystyle{unsrtnat}
 
 % this just sets up the page size and margins
 \setlength{\topmargin}{0pt}
@@ -66,11 +66,8 @@
 
 \begin{document}
 	\maketitle
-\section{Helpful Papers}
-\cite{nature_paper}
-\cite{two_var_system}
- \cite{brunton}
- \cite{mitcode}
+
+
  
 \section*{Robot Design}
 Should have list of all the components. Maybe a picture. Do we need to show circuit stuff?
@@ -81,7 +78,7 @@ The position $x$ and velocity $\dot{x}$ along the $x$ axis are computed from the
 \section*{Model}
 Need a drawing of model.
 
-We modeled our balancing robot as a pendulum cart system.The wheels and motors are considered to be the cart.  All other parts of the robot pivot around the axis created by the wheels and are considered part of the pendulum.  A thorough discussion of this model is found in \cite{brunton}.  Our system is described by the system of differential equations
+We modeled our balancing robot as a pendulum cart system.The wheels and motors are considered to be the cart.  All other parts of the robot pivot around the axis created by the wheels and are considered part of the pendulum.   Our system is described by the system of differential equations
 
 \begin{eqnarray}
 	\dot{x} & = & \dot{x} \label{dfx} \\ 
@@ -96,7 +93,7 @@ where $x$ is the cart position, $\dot{x}$ is the cart velocity, $\theta$ is the 
 where $\bx$ is the state vector $\bx = [x, \dot{x}, \theta, \dot{\theta}]$ and $\bu$ is the input vector $\bu=[u]$.
 
 \subsection*{Modeling Motors}
-Talk about how we didn't model motor circuit. We assumed that torque is a linear function of duty cycle.  We tuned the coefficient experimentally.  This model is probably pretty good as long as are not near their max duty cycle.
+Talk about how we didn't model motor circuit. We assumed that torque is a linear function of duty cycle.  We tuned the coefficient experimentally.  This model is probably pretty good as long as are not near their max duty cycle. Why?
 
 \subsection*{Linearization}
 To build a control system for our model we will linearize the non-linear system of equations \eqref{dfx}, \eqref{dfv}, \eqref{dftheta}, and \eqref{dfomega} around a fixed point $(\bx_r, \bu_r)$  where $\bx_r$ is the position where the robot is vertical, unmoving and positioned at the origin and $\bu_r$ is the input with motor torque at zero.
@@ -313,14 +310,14 @@ Our input vector $\bu = [u, x_s, \theta_s, \dot{\theta}_s]$ is our motor torque 
 	\centering
 	\includegraphics[width=0.8\linewidth]{KFangle.pdf}
 	\caption{Simulation comparison of Kalman filter state estimation of angle with the true angle and noisy data.}
-	\label{fig:boat1}
+	\label{fig:kfangle}
 \end{figure}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=0.8\linewidth]{KFangular_velocity.pdf}
 	\caption{Simulation comparison of Kalman filter state estimation of angular velocity with the true angular velocity and noisy data.}
-	\label{fig:boat1}
+	\label{fig:kfangvel}
 \end{figure}
 
 \subsection*{Continuous vs. Discrete Models}
@@ -330,5 +327,11 @@ Our input vector $\bu = [u, x_s, \theta_s, \dot{\theta}_s]$ is our motor torque 
 \section*{Experiments}
 
 \section*{Conclusions}
+
+
+
+\nocite{*}
+
+\bibliographystyle{annotate}
 \bibliography{references.bib}
 \end{document}
