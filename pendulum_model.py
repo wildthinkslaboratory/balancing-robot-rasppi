@@ -2,7 +2,6 @@ import numpy as np
 from control.matlab import lqr
 
 
-
 # m = 0.29        # mass of pendulum (kilograms)
 # M = 0.765       # mass of cart (kilograms)
 # L = 0.16        # length of pendulum (meters)
@@ -150,3 +149,8 @@ class SSPendModelTwoVar:
     def __setattr__(self, name, value):
         raise TypeError("Model values are immutable")
 
+
+from control.matlab import obsv
+md = SSPendModel()
+
+print(np.linalg.matrix_rank(obsv(md.A, md.C).transpose()))

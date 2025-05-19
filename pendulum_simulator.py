@@ -199,6 +199,7 @@ def kf_discrete(tspan, x0, xr):
     print('Time for', len(tspan), 'iterations of kf_discrete: ', perf_counter() - start_time)
     return run_data
 
+
 # ode simulation for two 
 # variables: angle, angular velocity
 # 
@@ -291,17 +292,20 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
     x_1 = method1.simulate(time_series, x0, xr)
     x_2 = method2.simulate(time_series, x0, xr)
 
-    plt.rcParams['figure.figsize'] = [8, 8]
-    plt.rcParams.update({'font.size': 18})
+    plt.rcParams.update({'font.size': 12})
+    plt.rcParams.update({
+    "text.usetex": True,
+    })
 
     state_labels = ('$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ')
     for i in range(4):
         plt.plot(time_series,x_1[:,i],linewidth=2,label=state_labels[i]+'1')
         plt.plot(time_series,x_2[:,i],linewidth=2,label=state_labels[i]+'2')
-        plt.xlabel('Time')
-        plt.ylabel('State')
-        plt.legend()
-        plt.show()
+    plt.xlabel('Time')
+    plt.ylabel('State')
+    plt.legend()
+    # plt.savefig("cont_vs_disc.pdf", format="pdf", bbox_inches="tight")
+    plt.show()
     
 
 def run_comparison():
@@ -309,8 +313,8 @@ def run_comparison():
     x0 = np.array([1,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(ode)
-    method2 = Method(kf_sim_with_noise)
+    method1 = Method(kf_sim)
+    method2 = Method(kf_discrete)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
@@ -500,8 +504,8 @@ def kf_comparison_plot_angle_only():
     plt.savefig("KFangle2.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
-
-kf_comparison_plot()
+run_comparison()
+# kf_comparison_plot()
 
 # from control.matlab import ctrb
 # print(np.linalg.matrix_rank(ctrb(md.A,md.B)))
