@@ -5,6 +5,7 @@ import numpy as np
 from control.matlab import ss, c2d
 from time import perf_counter
 from pendulum_model import SSPendModel, equations_of_motion, SSPendModelTwoVar, equations_of_motion_two_var
+from casadi_model import f as casadi_f
 from utilities import import_data, output_data
 from math import sqrt
 
@@ -38,6 +39,26 @@ def ode(tspan, x0, xr):
         run_data[i] = x
 
     print('Time for', len(tspan), 'iterations of it_ode_sim: ', perf_counter() - start_time)
+    return run_data
+
+# Casadi symbolically defined equations of motion
+# use true equations of motion to iteratively move the state forward
+def casadi_ode(tspan, x0, xr):
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = x0
+    u = 0.0
+    y = np.array([0.0, 0.0])
+    dt = tspan[1]-tspan[0]
+    start_time = perf_counter()
+    for i in range(len(tspan)):
+        dx = np.array(casadi_f(x,u))
+        dx = np.array([a.item() for a in dx]) # flatten the array
+        x = x + dx*dt
+        u = -md.K@(x - xr)
+        run_data[i] = x
+
+    print('Time for', len(tspan), 'iterations of it_casadi_ode_sim: ', perf_counter() - start_time)
     return run_data
 
 
@@ -271,6 +292,31 @@ def kf_angle_only(tspan, x0, xr):
     return run_data
 
 
+
+
+
+
+
+from casadi_model import CasadiModel
+def mpc(tspan, x0, xr):
+    
+    run_data = np.empty([len(tspan),4])
+    run_data[0] = x0
+    x = x0
+    u = 0.0
+    dt = tspan[1]-tspan[0]
+    csolver = CasadiModel(x0, xr, dt, 2)
+    start_time = perf_counter()
+    for i in range(len(tspan)):
+        dx = equations_of_motion(x,0.0,u)
+        x = x + dx*dt
+        u = csolver.get_control(x)
+        run_data[i] = x
+
+    print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
+    return run_data
+
+
 #########################################################
 # This is a simple wrapper class for simulation functions
 # 
@@ -309,12 +355,12 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
     
 
 def run_comparison():
-    tspan = np.arange(0,10,0.01)
-    x0 = np.array([1,0,np.pi+0.2,0]) # Initial condition
+    tspan = np.arange(0,0.3,0.01)
+    x0 = np.array([0,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(kf_sim)
-    method2 = Method(kf_discrete)
+    method1 = Method(ode)
+    method2 = Method(mpc)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
