@@ -38,9 +38,15 @@ RHS = ca.vertcat(
     )
 f = ca.Function('f', [state, u], [RHS])
 
+from pendulum_model import SSPendModel
+md = SSPendModel()
+
+f_linear = md.A @ state + md.B * u
+
+print(f_linear)
 
 
-class CasadiModel:
+class NLMPC:
     def __init__(self, x_0, x_goal, dt, horizon):
         self.x_0 = ca.DM(x_0)       # starting state at beginning of run
         self.x = ca.DM(x_0)         # current state
@@ -233,3 +239,92 @@ class CasadiModel:
 
 #     ss_error = ca.norm_2(state_init - state_target)
 
+
+
+class LMPC:
+    def __init__(self, x_0, x_goal, dt, horizon):
+        self.x_0 = ca.DM(x_0)       # starting state at beginning of run
+        self.x = ca.DM(x_0)         # current state
+        self.x_goal = ca.DM(x_goal)
+        self.dt = dt
+        self.N = horizon
+
+        X = ca.SX.sym('X', num_states, self.N + 1)     # state variables for each time step
+        U = ca.SX.sym('U', num_controls, self.N)       # control variables for each time step
+        P = ca.SX.sym('P', 2 * num_states)             # stores initial state and target state
+        Q = ca.diagcat(1, 0.01, 10, 0.1)   # weights for cost of state errors
+        R = ca.diagcat(1)                  # weight for cost of motors
+
+        # now we build up the cost function and the constraints for
+        # state consistency g
+        g = X[:, 0] - P[:num_states]  
+        cost = 0.0
+        for k in range(self.N):
+            state_k = X[:, k]    # state at time step k
+            control_k = U[:, k]  # control at time step k
+
+            # build up the cost function
+            state_error_cost = (state_k - P[num_states:]).T @ Q @ (state_k - P[num_states:])
+            control_cost = control_k.T @ R @ control_k
+            cost = cost + state_error_cost + control_cost
+
+            # now we build up the discrete constraints for the state
+            # with the runge kutta method
+            next_state = X[:, k+1]
+            k1 = f(state_k, control_k)
+            k2 = f(state_k + self.dt/2*k1, control_k)
+            k3 = f(state_k + self.dt/2*k2, control_k)
+            k4 = f(state_k + self.dt * k3, control_k)
+            next_state_RK4 = state_k + (self.dt / 6) * (k1 + 2 * k2 + 2 * k3 + k4)
+            g = ca.vertcat(g, next_state - next_state_RK4)
+
+        # these are all of our optimization variables
+        OPT_variables = ca.vertcat(
+            X.reshape((-1, 1)),   # Example: 3x11 ---> 33x1 where 3=states, 11=N+1
+            U.reshape((-1, 1))
+        )
+
+        # dictionary for defining our solver
+        nlp_prob = {
+            'f': cost,
+            'x': OPT_variables,
+            'g': g,
+            'p': P
+        }
+
+        # dictionary for our solver options
+        opts = {
+            'ipopt': {
+                'max_iter': 2000,
+                'print_level': 0,
+                'acceptable_tol': 1e-8,
+                'acceptable_obj_change_tol': 1e-6
+            },
+            'print_time': 0
+        }
+        self.solver = ca.nlpsol('solver', 'ipopt', nlp_prob, opts)
+    
+    def get_control(self, state):
+        self.x = ca.DM(state) 
+        self.P = ca.vertcat(
+            self.x,   
+            self.x_goal   
+        )
+        # build up our starting guess structure
+        # is there a better way to build these?
+        x0 = ca.reshape(ca.repmat(self.x, 1, self.N+1), num_states*(self.N+1),1)
+        u0 = ca.reshape(ca.DM.zeros((num_controls, self.N)), num_controls*self.N, 1)
+        self.starting_guess = ca.vertcat(x0, u0)
+        self.solution = self.solver(
+            x0=self.starting_guess,
+            p=self.P
+        )
+        u = self.solution['x'][num_states * (self.N+1)]
+        return u
+
+    def get_state(self):
+        pass
+
+
+
+    
