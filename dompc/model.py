@@ -3,6 +3,7 @@ import casadi as ca
 from casadi import sin, cos
 import do_mpc
 
+
 def model(symvar_type='SX'):
 
     # Initialize the model
@@ -38,9 +39,14 @@ def model(symvar_type='SX'):
 
     model.setup()
 
+
     # Steady state values
     uss = np.array([[0.0]])
     xss = np.array([[0.0],[0.0],[np.pi],[0.0]])
+
+    
+
+    # model.set_expression('cost', cost)
 
     # Linearize the non-linear model
     linearmodel = do_mpc.model.linearize(model, xss, uss)

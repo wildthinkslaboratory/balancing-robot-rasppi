@@ -1,5 +1,3 @@
-import numpy as np
-import casadi as cas
 import do_mpc
 
 # The simulator class increments the state during a simulation 

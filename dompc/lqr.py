@@ -1,5 +1,5 @@
 import numpy as np
-import do_mpc
+from do_mpc import controller
 
 # an lqr can calculate the input u from the state x
 def LQR(model, dt):
@@ -8,7 +8,7 @@ def LQR(model, dt):
     model_dc = model.discretize(dt)
     
     # Initialize the controller
-    lqr = do_mpc.controller.LQR(model_dc)
+    lqr = controller.LQR(model_dc)
     
     # Initialize the parameters
     lqr.settings.t_step = dt
