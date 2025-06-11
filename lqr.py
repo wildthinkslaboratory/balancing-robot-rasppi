@@ -4,7 +4,7 @@ from time import sleep, perf_counter
 from motors import BRMotors
 from imu2 import ImuSensor
 from InterruptTimer import InterruptTimer
-from pendulum_model import SSPendModel
+from model import SSPendModel
 
 md = SSPendModel()
 

@@ -1,9 +1,9 @@
 import numpy as np
 from time import sleep
 from InterruptTimer import InterruptTimer
-from pendulum_model import SSPendModelTwoVar
+from model import SSPendModelTwoVar
 from motors import BRMotors
-from imu3 import ImuSensor
+from imu import ImuSensor
 from utilities import output_data
 
 md = SSPendModelTwoVar()
@@ -13,7 +13,7 @@ output_data_to_file = True
 
 duty_coeff = 0.4
 dT = 0.01
-timeout = 20
+timeout = 30
 
 
 imu_sensor = ImuSensor()        # mpu6050 gyro/accelorometer access                    
