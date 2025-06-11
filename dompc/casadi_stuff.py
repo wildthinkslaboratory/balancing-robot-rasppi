@@ -4,6 +4,8 @@
 # We compare the generated A and B matrices to our values
 # from our original model.
 
+# it's not being used for anything. Just cool that it's so easy to do.
+
 
 import casadi as ca
 from casadi import sin, cos

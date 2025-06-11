@@ -15,7 +15,7 @@ store_results = False
 dt = 0.1
 model,linearmodel = model()
 mpc = MPC(model, dt)
-sim = simulator(model, dt)
+sim = simulator(model, dt, True)
 estimator = estimator.StateFeedback(model)
 
 

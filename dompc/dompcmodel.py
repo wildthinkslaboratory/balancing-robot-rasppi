@@ -3,18 +3,18 @@ import casadi as ca
 from casadi import sin, cos
 import do_mpc
 
+import sys
+import os
+subfolder_path = os.path.join(os.path.dirname(__file__), "../")
+sys.path.append(subfolder_path)
+
+from model_constants import *
 
 def model(symvar_type='SX'):
 
     # Initialize the model
     model_type = 'continuous' 
     model = do_mpc.model.Model(model_type, symvar_type)
-    
-    M = 0.29        # wheels plus motors (kilograms) 
-    m = 0.765       # rest of the robot (kilograms)
-    L = 0.09        # length of pendulum (meters)
-    g = -9.81       # gravity, (meters / sec^2)
-    d = 0.001       # d is a damping factor
 
     # state variables
     x = model.set_variable(var_type='_x', var_name='x', shape=(1,1))
@@ -44,11 +44,8 @@ def model(symvar_type='SX'):
     uss = np.array([[0.0]])
     xss = np.array([[0.0],[0.0],[np.pi],[0.0]])
 
-    
-
-    # model.set_expression('cost', cost)
-
     # Linearize the non-linear model
     linearmodel = do_mpc.model.linearize(model, xss, uss)
     
+    # this returns both the non-linear model and the linear model
     return model,linearmodel
