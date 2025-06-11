@@ -1,0 +1,75 @@
+@Book{brunton,
+  author = {Steven Brunton and J. Nathan Kutx},
+  year = {2019},
+  title = {Data Driven Science \& Engineering: Machine Learning, Dynamical Systems, and Control},
+  publisher = {Cambridge University Press},
+  annotate = {A {\bf pdf} for this textbook is available online. It has a chapter on Linear Control Theory and their primary example is the pendulum cart problem. There is accompanying code in both MatLab and Python Jupiter notebooks. Their emphasis in on modeling and simulation rather than real-world implementations. Steve Brunton also has a great series of videos that  closely follow the Linear Control chapter on YouTube.},
+}
+
+@Article{nature_paper,
+	author={Rani, Monika
+	and Kamlu, Sushma S.},
+	title={Optimal LQG controller design for inverted pendulum systems using a comprehensive approach},
+	journal={Scientific Reports},
+	year={2025},
+	month={Feb},
+	day={08},
+	volume={15},
+	number={1},
+	pages={4692},
+	issn={2045-2322},
+	doi={10.1038/s41598-025-85581-3},
+	url={https://doi.org/10.1038/s41598-025-85581-3},
+	annotate = {This provides a comparison of PID, LQR, LQG and Model Predictive Control methods for implementing a balancing robot.  It is well written and easy to follow. It uses a simple pendulum cart model. The paper focuses on simulations and provides no real-world implementation details.}
+}
+
+@article{two_var_system, 
+	title={Balancing Control of Two-Wheeled Robot by Using Linear Quadratic Gaussian (LQG)}, volume={12}, url={https://jtec.utem.edu.my/jtec/article/view/5619},  number={3}, journal={Journal of Telecommunication, Electronic and Computer Engineering (JTEC)}, author={Feriyonika, Feriyonika and Hidayat, Asep}, year={2020}, month={Aug.}, pages={55–59},
+	annotate = {This paper gives good real-world implementation details for an LQG implementation of a balancing robot. It uses a two state variable model that controls the robot's angle and angular velocity.}
+	}
+
+@misc{githubcode,
+	author = {Akshay S Rao},
+	title = {LQR-BalanceBot},
+	year = {2020},
+	publisher = {GitHub},
+	journal = {GitHub repository},
+	howpublished = {https://github.com/iamAkshayrao/LQR-BalanceBot/tree/master},
+	annotate = {This appears to be a school project for an LQR balancing robot. It provides C++ Arduino code and a very detailed write up of their model and algorithm. Their model is more detailed than the simple pendulum cart model. They do a more sophisticated analysis of moments of inertia and they model their motor circuit behaviour in their equations of motion. }
+}
+
+@Article{Andersson2018,
+  Author = {Joel A E Andersson and Joris Gillis and Greg Horn
+            and James B Rawlings and Moritz Diehl},
+  Title = {{CasADi} -- {A} software framework for nonlinear optimization
+           and optimal control},
+  Journal = {Mathematical Programming Computation},
+  Year = {2018},
+}
+
+@misc{Keller,
+	author = {Nils Keller and Jan Schilliger and Yannick Schnider},
+	title = {Predictive Control of a Two-Wheeled Balancing Robot: Lab Practice Control Systems Experiment Script},
+	year = {2024},
+	howpublished = {https://ethz.ch/content/dam/ethz/special-interest/mavt/dynamic-systems-n-control/idsc-dam/Lectures/Control-Lab/SigiStudent.pdf},
+	annotate = {This is a set of lecture notes for a control theory lab experiment. It has a really well written explanation of model predictive control and it's relation to LQR and control theory in general. The experiment is to implement linear MPC control for a balancing robot. }
+}
+
+@book{book,
+	author = {Rawlings, J. and Mayne, D.Q. and Diehl, Moritz},
+	year = {2017},
+	month = {01},
+	pages = {},
+	title = {Model Predictive Control: Theory, Computation, and Design}
+}
+
+
+@misc{gh_kerrj,
+	author = {Justin Kerr},
+	title = {Self-Balancing Robot},
+	year = {2020},
+	publisher = {GitHub},
+	journal = {GitHub repository},
+	howpublished = {https://github.com/kerrj/segway},
+	annotate = {This is a series of balancing robot implementations including, LQR and MPC. It is implemented in Python and the linear MPC is implementation uses the osqp solver.  It also uses the ROS operating system. }
+}
