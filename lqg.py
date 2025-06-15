@@ -11,7 +11,7 @@ md = SSPendModelTwoVar()
 debug = False
 output_data_to_file = True
 
-duty_coeff = 0.4
+duty_coeff = 0.00001
 dT = 0.01
 timeout = 30
 

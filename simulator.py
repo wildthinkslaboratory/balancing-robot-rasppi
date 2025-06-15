@@ -313,8 +313,8 @@ def run_comparison():
     x0 = np.array([1,0,np.pi+0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
-    method1 = Method(kf_sim)
-    method2 = Method(kf_discrete)
+    method1 = Method(ode_angle_only)
+    method2 = Method(lss_angle_only)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
