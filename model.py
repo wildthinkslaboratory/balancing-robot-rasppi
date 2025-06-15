@@ -45,9 +45,9 @@ class SSPendModelConstants:
     D = np.zeros_like(B)
 
     Q = np.array([[1, 0, 0, 0],\
-                [0, 0.01, 0, 0],\
-                [0, 0, 10, 0],\
-                [0, 0, 0, 0.1]])
+                [0, 1, 0, 0],\
+                [0, 0, 1, 0],\
+                [0, 0, 0, 1]])
     R = 1
     K = lqr(A,B,Q,R)[0][0] 
 
@@ -91,36 +91,36 @@ class SSPendModel:
 def equations_of_motion_two_var(x,t,u):
     Sx = np.sin(x[0])
     Cx = np.cos(x[0])
-    D = m*L*L*(M+m*(1-Cx**2))
+    D = (M+m*(Sx**2))
     
     dx = np.zeros(2)
     dx[0] = x[1]
-    dx[1] = (1/D)*((m+M)*m*g*L*Sx - m*L*Cx*(m*L*(x[1]**2)*Sx)) - m*L*Cx*(1/D)*u
+    dx[1] = (1/(D*L))*((m+M)*g*Sx - Cx*(m*L*(x[1]**2)*Sx) - Cx*u)
 
     return dx
 
 class SSPendModelTwoVarConstants:
-        # equations of motion linearized about vertical pendulum position
-        A = np.array([[0, 1],\
-                    [-(m+M)*g/(M*L), 0]])
+    # equations of motion linearized about vertical pendulum position
+    A = np.array([[0, 1],\
+                [-(m+M)*g/(M*L), 0]])
 
-        # linearization of control matrix
-        B = np.array([0,1/(M*L)]).reshape((2,1))
+    # linearization of control matrix
+    B = np.array([0,1/(M*L)]).reshape((2,1))
 
-        Q = np.array([[1, 0],\
-                    [0, 1]])
-        R = 0.3
-        K = lqr(A,B,Q,R)[0][0] 
-        C = np.eye(2)
+    Q = np.array([[10, 0],\
+                [0, 0.1]])
+    R = 10
+    K = lqr(A,B,Q,R)[0][0] 
+    C = np.eye(2)
 
-        Vd = np.eye(2) 
-        Vn = np.eye(2)
-        Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
+    Vd = np.eye(2) 
+    Vn = np.eye(2)
+    Kf = lqr(A.transpose(), C.transpose(), Vd, Vn)[0].transpose()
 
-        A_kf = A - (Kf @ C)    
-        B_kf = np.concatenate((B, Kf), axis=1)
-        C_kf = np.eye(2)
-        D_kf = np.zeros_like(B_kf)
+    A_kf = A - (Kf @ C)    
+    B_kf = np.concatenate((B, Kf), axis=1)
+    C_kf = np.eye(2)
+    D_kf = np.zeros_like(B_kf)
 
 # This just makes it easy to access our model constants as 
 # a class. This way we can have multiple models and not

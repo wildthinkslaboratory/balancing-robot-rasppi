@@ -219,6 +219,7 @@ def ode_angle_only(tspan, x0, xr):
         u[0] = -ma.K@(x - xra)
         run_data[i] = np.array([0.0, 0.0, x[0], x[1]])
 
+
     print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
     return run_data
 
@@ -309,8 +310,8 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
     
 
 def run_comparison():
-    tspan = np.arange(0,10,0.01)
-    x0 = np.array([1,0,np.pi+0.2,0]) # Initial condition
+    tspan = np.arange(0,1,0.01)
+    x0 = np.array([1,0,np.pi + 0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
     method1 = Method(ode_angle_only)
