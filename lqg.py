@@ -5,13 +5,13 @@ from model import SSPendModelTwoVar
 from motors import BRMotors
 from imu import ImuSensor
 from utilities import output_data
+from model_constants import speed_from_u
 
 md = SSPendModelTwoVar()
 
 debug = False
 output_data_to_file = True
 
-duty_coeff = 0.00001
 dT = 0.01
 timeout = 30
 
@@ -64,7 +64,7 @@ def loop_iteration():
     # uy[0] = -(md.K[0]* error[0] + md.K[1]* error[1])
 
     uy[0] = -md.K@(x - x_r)  
-    motors.run(uy[0] * duty_coeff)
+    motors.run(speed_from_u(uy[0]))
     
 
 # the main functions are called in timers that

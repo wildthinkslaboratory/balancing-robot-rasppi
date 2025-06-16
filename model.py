@@ -107,9 +107,10 @@ class SSPendModelTwoVarConstants:
     # linearization of control matrix
     B = np.array([0,1/(M*L)]).reshape((2,1))
 
-    Q = np.array([[4/(5*np.pi), 0],\
+
+    Q = np.array([[4 / (5 * np.pi), 0],\
                 [0, 0.01]])
-    R = 1
+    R = 1 / max_torque
     K = lqr(A,B,Q,R)[0][0] 
     C = np.eye(2)
 
