@@ -13,7 +13,7 @@ debug = False
 output_data_to_file = True
 
 dT = 0.01
-timeout = 30
+timeout = 3
 
 
 imu_sensor = ImuSensor()        # mpu6050 gyro/accelorometer access                    
