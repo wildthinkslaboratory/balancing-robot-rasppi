@@ -19,3 +19,6 @@ duty_coeff = 0.8 / max_torque
 # motor.
 def speed_from_u(u):
     return u * r * duty_coeff * 0.5
+
+
+# test Izzy's collaborator status
