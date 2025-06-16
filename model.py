@@ -44,11 +44,13 @@ class SSPendModelConstants:
     
     D = np.zeros_like(B)
 
-    Q = np.array([[1, 0, 0, 0],\
-                [0, 1, 0, 0],\
-                [0, 0, 1, 0],\
-                [0, 0, 0, 1]])
-    R = 1
+    Q = np.array([[0.1, 0, 0, 0],\
+                [0, 0.1, 0, 0],\
+                [0, 0, 4 / (5 * np.pi), 0],\
+                [0, 0, 0, 0.01]])
+    
+    R = 1 / max_torque
+
     K = lqr(A,B,Q,R)[0][0] 
 
     # This is our state disturbance matrix
@@ -153,7 +155,7 @@ def print_two_var_eigenvalues():
 
 
 # print the system eigenvalues
-print_two_var_eigenvalues()
+# print_two_var_eigenvalues()
 
 # test that the system is observable
 # print(np.linalg.matrix_rank(obsv(md.A, md.C).transpose()))

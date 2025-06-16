@@ -6,11 +6,22 @@ d = 0.001       # d is a damping factor
 r = 0.0325      # radius of the wheels
 
 
-# the max torque of the motors is 5 kg cm or approximately 0.5 Nm
-# each motor provides torque so the total max torque is 1 Nm
-# we are setting the max value to 80% of that
-max_torque = 1.0 * 0.8
-duty_coeff = 0.8 / max_torque
+# this is the maximum input u that we allow. 
+# we use this in our R matrix when computing gain K
+# it's a soft constraint really
+# each motor has a maximum torque of 0.5 Nm
+# we want to stay under 80% of that max
+# divide by the radius to get the force in the horizontal direction
+# we have two motors so double it
+max_input_value = ((0.5 * 0.8) / r) * 2.0
+
+print('max input', max_input_value)
+
+max_torque = 0.5 * 0.8
+
+# the duty coeffiecent maps a desired torque range (-0.5, 0.5) to a motor
+# speed that is between -1 and 1. 
+duty_coeff = 1 / 0.5
 
 # Take the input force u and multiply by radius r
 # to get desired torque. Then we scale it to the motor
@@ -18,7 +29,5 @@ duty_coeff = 0.8 / max_torque
 # we divide it in half to send half the torque to each 
 # motor.
 def speed_from_u(u):
-    return u * r * duty_coeff * 0.5
+    return ((u * r) / 2) * duty_coeff 
 
-
-# test Izzy's collaborator status

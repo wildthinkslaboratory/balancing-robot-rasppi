@@ -7,6 +7,7 @@ from time import perf_counter
 from model import SSPendModel, equations_of_motion, SSPendModelTwoVar, equations_of_motion_two_var
 from utilities import import_data, output_data
 from math import sqrt
+from model_constants import r, max_input_value
 
 
 md = SSPendModel()
@@ -24,8 +25,8 @@ angle_vel_var = 0.0000026
 
 # use true equations of motion to iteratively move the state forward
 def ode(tspan, x0, xr):
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = x0
     u = 0.0
     y = np.array([0.0, 0.0])
@@ -35,7 +36,7 @@ def ode(tspan, x0, xr):
         dx = equations_of_motion(x,0.0,u)
         x = x + dx*dt
         u = -md.K@(x - xr)
-        run_data[i] = x
+        run_data[i] = np.array([x[0], x[1], x[2], x[3], u])
 
     print('Time for', len(tspan), 'iterations of it_ode_sim: ', perf_counter() - start_time)
     return run_data
@@ -45,8 +46,8 @@ def ode(tspan, x0, xr):
 # Ax + Bu. 
 def lss(tspan, x0, xr):
     
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = x0
     u = np.array([0.0])
     dt = tspan[1]-tspan[0]
@@ -56,7 +57,7 @@ def lss(tspan, x0, xr):
         dx = md.A@(x-xr) + md.B@u
         x = x + dx*dt
         u[0] = -md.K@(x - xr)
-        run_data[i] = x
+        run_data[i] = np.array([x[0], x[1], x[2], x[3], u[0]])
 
     print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
     return run_data
@@ -67,8 +68,8 @@ def lss(tspan, x0, xr):
 # linear state space system simulation with added noise
 # Ax + Bu. 
 def lss_with_noise(tspan, x0, xr):
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = x0
     y = np.array([1.0, 0.0])
     u = np.array([0.0])
@@ -81,7 +82,7 @@ def lss_with_noise(tspan, x0, xr):
         u[0] = -md.K@(x - xr)
         x[0] += np.random.normal(0.0, 0.0001)
         x[3] += np.random.normal(0.0,sqrt(angle_vel_var))
-        run_data[i] = x
+        run_data[i] = np.array([x[0], x[1], x[2], x[3], u[0]])
 
     print('Time for', len(tspan), 'iterations of it_ls_sim_with_noise:', perf_counter() - start_time)
     return run_data
@@ -97,8 +98,8 @@ def lss_discrete(tspan, x0, xr):
     sys_c = ss(md.A, md.B, np.eye(4), np.zeros_like(md.B))
     sys_d = c2d(sys_c, dt, 'zoh')
 
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = x0
     u = 0.0
     uy = np.array([0, x0[0], x0[2], x0[3]])
@@ -109,7 +110,7 @@ def lss_discrete(tspan, x0, xr):
         x = sys_d.A@(x-xr) + sys_d.B@([u]) + xr
         u = -md.K@(x - xr)
         uy = np.array([u, x[0], x[2], x[3]])
-        run_data[i] = x
+        run_data[i] = np.array([x[0], x[1], x[2], x[3], uy[0]])
 
     print('Time for', len(tspan), 'iterations of ls_discrete: ', perf_counter() - start_time)
     return run_data
@@ -121,8 +122,8 @@ def lss_discrete(tspan, x0, xr):
 # measured variables: position, angle and angular velocity
 def kf_sim(tspan, x0, xr):
     
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = x0
     u = 0.0
     uy = np.array([0, x0[0], x0[2], x0[3]])
@@ -135,7 +136,7 @@ def kf_sim(tspan, x0, xr):
         x = x + dx*dt
         u = -md.K@(x - xr)
         uy = np.array([u, x[0], x[2], x[3]])
-        run_data[i] = x
+        run_data[i] = np.array([x[0], x[1], x[2], x[3], uy[0]])
 
     print('Time for', len(tspan), 'iterations of kf_sim: ', perf_counter() - start_time)
     return run_data
@@ -148,8 +149,8 @@ def kf_sim(tspan, x0, xr):
 # measured variables: position, angle and angular velocity
 def kf_sim_with_noise(tspan, x0, xr):
     
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = x0
     u = 0.0
     uy = np.array([0, x0[0], x0[2], x0[3]])
@@ -165,7 +166,7 @@ def kf_sim_with_noise(tspan, x0, xr):
         angle = x[2] + np.random.normal(0.0,sqrt(angle_vel_var))
         angle_vel = x[3] + np.random.normal(0.0,sqrt(angle_vel_var))
         uy = np.array([u, position, angle, angle_vel])
-        run_data[i] = x
+        run_data[i] = np.array([x[0], x[1], x[2], x[3], uy[0]])
 
 
     print('Time for', len(tspan), 'iterations of kf_sim_with_noise: ', perf_counter() - start_time)
@@ -182,8 +183,8 @@ def kf_discrete(tspan, x0, xr):
     sys_c = ss(md.A_kf, md.B_kf, md.C_kf, md.D_kf)
     sys_d = c2d(sys_c, dt, 'zoh')
 
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = x0
     u = 0.0
     uy = np.array([0, x0[0], x0[2], x0[3]])
@@ -194,7 +195,7 @@ def kf_discrete(tspan, x0, xr):
         x = sys_d.A@(x-xr) + sys_d.B@((uy-uy_r)) + xr
         u = -md.K@(x - xr)
         uy = np.array([u, x[0], x[2], x[3]])
-        run_data[i] = x
+        run_data[i] = np.array([x[0], x[1], x[2], x[3], uy[0]])
 
     print('Time for', len(tspan), 'iterations of kf_discrete: ', perf_counter() - start_time)
     return run_data
@@ -206,8 +207,8 @@ from model_constants import speed_from_u
 # 
 def ode_angle_only(tspan, x0, xr):
     
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = np.array([x0[2], x0[3]])
     xra = np.array([xr[2], xr[3]])
     u = np.array([0.0])
@@ -219,7 +220,7 @@ def ode_angle_only(tspan, x0, xr):
         dx = equations_of_motion_two_var(x,0.0,u[0])
         x = x + dx*dt
         u[0] = -ma.K@(x - xra)
-        run_data[i] = np.array([0.0, 0.0, x[0], x[1]])
+        run_data[i] = np.array([0.0, 0.0, x[0], x[1], u[0]])
 
 
     print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
@@ -230,8 +231,8 @@ def ode_angle_only(tspan, x0, xr):
 # Ax + Bu. 
 def lss_angle_only(tspan, x0, xr):
     
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = np.array([x0[2], x0[3]])
     xra = np.array([xr[2], xr[3]])
     u = np.array([0.0])
@@ -242,7 +243,7 @@ def lss_angle_only(tspan, x0, xr):
         dx = ma.A@(x-xra) + ma.B@u
         x = x + dx*dt
         u[0] = -ma.K@(x - xra)
-        run_data[i] = np.array([0.0, 0.0, x[0], x[1]])
+        run_data[i] = np.array([0.0, 0.0, x[0], x[1], u[0]])
 
     print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
     return run_data
@@ -254,8 +255,8 @@ def lss_angle_only(tspan, x0, xr):
 # Ax + Bu. 
 def kf_angle_only(tspan, x0, xr):
     
-    run_data = np.empty([len(tspan),4])
-    run_data[0] = x0
+    run_data = np.empty([len(tspan),5])
+    run_data[0] = np.array([x0[0], x0[1], x0[2], x0[3], 0.0])
     x = np.array([x0[2], x0[3]])
     xra = np.array([xr[2], xr[3]])
     uy = np.array([0.0, x0[2], x0[3]])
@@ -268,7 +269,7 @@ def kf_angle_only(tspan, x0, xr):
         x = x + dx*dt
         u = -ma.K@(x - xra)
         uy = np.array([u, x[0], x[1]])
-        run_data[i] = np.array([0.0, 0.0, x[0], x[1]])
+        run_data[i] = np.array([0.0, 0.0, x[0], x[1], u[0]])
 
     print('Time for', len(tspan), 'iterations of it_ls_sim:', perf_counter() - start_time)
     return run_data
@@ -306,13 +307,24 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
         plt.plot(time_series,x_2[:,i],linewidth=2,label=state_labels[i]+'2')
     plt.xlabel('Time')
     plt.ylabel('State')
-    plt.legend()
+    plt.legend(loc='lower right')
     # plt.savefig("cont_vs_disc.pdf", format="pdf", bbox_inches="tight")
+    plt.show()
+
+    plt.plot(time_series,x_1[:,4],linewidth=2,label='u1')
+    plt.plot(time_series,x_2[:,4],linewidth=2,label='u1')
+    max = np.full(len(time_series), max_input_value)
+    min = np.full(len(time_series), -max_input_value)
+    plt.plot(time_series,max)
+    plt.plot(time_series,min)
+    plt.xlabel('Time')
+    plt.ylabel('Input')
+    plt.legend()
     plt.show()
     
 
 def run_comparison():
-    tspan = np.arange(0,0.2,0.01)
+    tspan = np.arange(0,1,0.01)
     x0 = np.array([1,0,np.pi + 0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
@@ -508,6 +520,7 @@ def kf_comparison_plot_angle_only():
     plt.show()
 
 run_comparison()
+# kf_comparison_plot_angle_only()
 # kf_comparison_plot()
 
 # from control.matlab import ctrb
