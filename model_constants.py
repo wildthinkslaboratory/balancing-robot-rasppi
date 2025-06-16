@@ -7,9 +7,15 @@ r = 0.0325      # radius of the wheels
 
 
 # the max torque of the motors is 5 kg cm or approximately 0.5 Nm
+# each motor provides torque so the total max torque is 1 Nm
 # we are setting the max value to 80% of that
-max_torque = 0.5 * 0.8
+max_torque = 1.0 * 0.8
 duty_coeff = 0.8 / max_torque
 
+# Take the input force u and multiply by radius r
+# to get desired torque. Then we scale it to the motor
+# speed by muliplying by the duty coefficient. Finally,
+# we divide it in half to send half the torque to each 
+# motor.
 def speed_from_u(u):
-    return u * r * duty_coeff
+    return u * r * duty_coeff * 0.5
