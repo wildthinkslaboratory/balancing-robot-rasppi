@@ -107,9 +107,9 @@ class SSPendModelTwoVarConstants:
     # linearization of control matrix
     B = np.array([0,1/(M*L)]).reshape((2,1))
 
-    Q = np.array([[10, 0],\
-                [0, 0.1]])
-    R = 10
+    Q = np.array([[4/(5*np.pi), 0],\
+                [0, 0.01]])
+    R = 1
     K = lqr(A,B,Q,R)[0][0] 
     C = np.eye(2)
 
@@ -121,6 +121,7 @@ class SSPendModelTwoVarConstants:
     B_kf = np.concatenate((B, Kf), axis=1)
     C_kf = np.eye(2)
     D_kf = np.zeros_like(B_kf)
+
 
 # This just makes it easy to access our model constants as 
 # a class. This way we can have multiple models and not
@@ -141,4 +142,17 @@ class SSPendModelTwoVar:
 from control.matlab import obsv
 md = SSPendModel()
 
-print(np.linalg.matrix_rank(obsv(md.A, md.C).transpose()))
+def print_two_var_eigenvalues():
+    md2 = SSPendModelTwoVar()
+    K = md2.K.reshape((1,2))
+    sys_matrix = md2.A - md2.B @ K
+    eigenvalues, eigenvectors = np.linalg.eig(sys_matrix)
+    print('A-BK', sys_matrix)
+    print('eigenvalues: \n', eigenvalues)
+
+
+# print the system eigenvalues
+print_two_var_eigenvalues()
+
+# test that the system is observable
+# print(np.linalg.matrix_rank(obsv(md.A, md.C).transpose()))

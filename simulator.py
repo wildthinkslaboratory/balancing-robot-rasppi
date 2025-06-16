@@ -214,9 +214,16 @@ def ode_angle_only(tspan, x0, xr):
 
     start_time = perf_counter()
     for i in range(len(tspan)):
+        # print('state', x)
+        # print('u', u)
         dx = equations_of_motion_two_var(x,0.0,u[0])
         x = x + dx*dt
-        u[0] = -ma.K@(x - xra)
+        error = x - xra
+        u[0] = -(ma.K[0] * error[0])
+        # print('theta K', u[0])
+        u[0] += -(ma.K[1] * error[1])
+        # print('thetadot K', u[0])
+        # u[0] = -ma.K@(x - xra)
         run_data[i] = np.array([0.0, 0.0, x[0], x[1]])
 
 
@@ -310,12 +317,12 @@ def compare_solution_methods(method1, method2, time_series, x0, xr,):
     
 
 def run_comparison():
-    tspan = np.arange(0,1,0.01)
+    tspan = np.arange(0,3,0.01)
     x0 = np.array([1,0,np.pi + 0.2,0]) # Initial condition
     xr = np.array([0,0,np.pi,0])      # Reference position 
 
     method1 = Method(ode_angle_only)
-    method2 = Method(lss_angle_only)
+    method2 = Method(ode_angle_only)
 
     compare_solution_methods(method1, method2, tspan, x0, xr)
 
