@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from do_mpc import graphics, estimator
 from do_mpc.data import save_results
 
-from model import model
+from dompcmodel import model
 from mpc import MPC
 from simulator import simulator
 
@@ -15,7 +15,7 @@ store_results = False
 dt = 0.1
 model,linearmodel = model()
 mpc = MPC(model, dt)
-sim = simulator(model, dt, True)
+sim = simulator(model, dt)
 estimator = estimator.StateFeedback(model)
 
 
