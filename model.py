@@ -110,9 +110,9 @@ class SSPendModelTwoVarConstants:
     B = np.array([0,1/(M*L)]).reshape((2,1))
 
 
-    Q = np.array([[1, 0],\
+    Q = np.array([[np.pi / 4, 0],\
                 [0, 1]])
-    R = 100
+    R = 1 / max_torque
     K = lqr(A,B,Q,R)[0][0] 
     C = np.eye(2)
 

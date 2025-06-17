@@ -13,7 +13,7 @@ debug = False
 output_data_to_file = True
 
 dT = 0.01
-timeout = 3
+timeout = 8
 
 
 imu_sensor = ImuSensor()        # mpu6050 gyro/accelorometer access                    
@@ -67,6 +67,10 @@ def loop_iteration():
     motors.run(speed_from_u(uy[0]))
     
 
+def test_loop():
+    motors.run(speed_from_u(0.1))
+
+    
 # the main functions are called in timers that
 # keep strict time deltas between calls
 loop_timer = InterruptTimer(dT, loop_iteration, timeout)
