@@ -1,5 +1,8 @@
-M = 0.05        # wheels plus motors (kilograms) 
-m = 1       # rest of the robot (kilograms)
+# M = 0.05        # wheels plus motors (kilograms) 
+# m = 1       # rest of the robot (kilograms)
+M = 0.5        # wheels plus motors (kilograms) 
+m = 0.5       # rest of the robot (kilograms)
+
 L = 0.06        # length of pendulum (meters)
 g = -9.81       # gravity, (meters / sec^2)
 d = 0.001       # d is a damping factor
@@ -28,3 +31,5 @@ duty_coeff = 1 / max_torque
 def speed_from_u(u):
     return ((u * r) / 2) * duty_coeff 
 
+def u_from_speed(speed):
+    return ((speed / duty_coeff) * 2) / r
