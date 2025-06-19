@@ -1,13 +1,10 @@
 import numpy as np
 from time import sleep
 from InterruptTimer import InterruptTimer
-from model import SSPendModelTwoVar
 from motors import BRMotors
 from imu import ImuSensor
+from balance_bot import balanceBot as bb
 from utilities import output_data
-from model_constants import speed_from_u
-
-md = SSPendModelTwoVar()
 
 debug = False
 output_data_to_file = True
@@ -55,16 +52,10 @@ def loop_iteration():
     uy[2] = imu_sensor.raw_angular_velocity_rad()
 
     # estimate the state
-    dx = md.A_kf@(x - x_r) + md.B_kf@(uy-uy_r)
-    x = x + dx*dT
+    x = bb.get_next_state_kf(x, uy, dT)
 
-    # compute the control value u, and update motor duty cycle
-    # for testing purposes we'll break this into parts
-    # error = x - x_r
-    # uy[0] = -(md.K[0]* error[0] + md.K[1]* error[1])
-
-    uy[0] = -md.K@(x - x_r)  
-    motors.run(speed_from_u(uy[0]))
+    uy[0] = bb.get_control_input(x)
+    motors.run(uy[0])
     
 
 # the main functions are called in timers that

@@ -67,7 +67,7 @@ constants_ = [mc.M, mc.m, mc.L, mc.g, mc.d]
 # linearize in the pendulum up position
 linearized_up = f_jacobian(state = [0.0, 0.0, np.pi, 0.0], u=0.0, constants = constants_)
 
-from model import SSPendModel
+from localmodel import SSPendModel
 md = SSPendModel()
 
 # test to see if we get same results as our model

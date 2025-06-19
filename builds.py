@@ -1,12 +1,14 @@
-# M = 0.05        # wheels plus motors (kilograms) 
-# m = 1       # rest of the robot (kilograms)
-M = 0.5        # wheels plus motors (kilograms) 
-m = 0.5       # rest of the robot (kilograms)
 
-L = 0.06        # length of pendulum (meters)
-g = -9.81       # gravity, (meters / sec^2)
-d = 0.001       # d is a damping factor
+
+M_ = 0.05        # wheels plus motors (kilograms) 
+m_ = 1       # rest of the robot (kilograms)
+L_ = 0.06        # length of pendulum (meters)
+g_ = -9.81       # gravity, (meters / sec^2)
+d_ = 0.001       # d is a damping factor
 r = 0.0325      # radius of the wheels
+
+R_ = 4           # motor coil resistance in Ohms
+K_ = 0.0815       # motor constant in Nm / sqrt(W)
 
 motor_stall_torque = 0.5
 max_torque = motor_stall_torque * 0.9
