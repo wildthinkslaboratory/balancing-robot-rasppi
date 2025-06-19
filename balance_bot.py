@@ -91,10 +91,11 @@ if __name__ == "__main__":
     u0 = np.array([0.0])
     x0 = np.array([1,0,np.pi + 0.2, 0.0]) # Initial condition
     dt = 0.01
-    simulator = Simulator(balanceBot, x0, u0, 4, dt)
+    sim_length = 2 # in seconds
+    simulator = Simulator(balanceBot, x0, u0, sim_length, dt)
     simulator.run()
         
 
     # we can make a noisy simulator
-    noisy_sim = NoisySimulator(balanceBot, x0, u0, 4, dt)
+    noisy_sim = NoisySimulator(balanceBot, x0, u0, sim_length, dt)
     noisy_sim.run()
