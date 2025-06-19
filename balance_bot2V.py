@@ -7,14 +7,10 @@ import matplotlib.pyplot as plt
 from builds import *
 
 # We create Casadi symbolic variables for the state
-x = ca.MX.sym('x')  
-xdot = ca.MX.sym('xdot')
 theta = ca.MX.sym('theta')
 thetadot = ca.MX.sym('thetadot')
 u = ca.MX.sym('u')             # control input
 state = ca.vertcat(
-    x,
-    xdot,
     theta,
     thetadot,
 )
@@ -33,11 +29,9 @@ constants = ca.vertcat( M, m, L, g, d )
 # we begin with some partial expressions to make the formulas easier to build
 denominator = M + m*(sin(theta)**2)
 n0 = -m*g*sin(theta)*cos(theta)
-n1 = m*L*(sin(theta))*(thetadot)**2 - d*xdot + u
+n1 = m*L*(sin(theta))*(thetadot)**2 + u
 n2 = (m + M)*g*sin(theta)
 RHS = ca.vertcat( 
-    xdot, 
-    (n0 + n1) / denominator, 
     thetadot, 
     (n2+(-cos(theta))*(n1)) / (L*denominator)
     )
@@ -46,7 +40,7 @@ RHS = ca.vertcat(
 constant_values = [M_, m_, L_, g_, d_]
 
 # I made latex names for my states. They look nice in the simulation plots
-state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
+state_names = ['$\\theta$ ','$\\dot{\\theta}$ ']
 
 # Now we make our model.
 balanceBot = LinearModel(state, 
@@ -54,17 +48,15 @@ balanceBot = LinearModel(state,
                               u, 
                               constants, 
                               constant_values, 
-                              name='balancing robot LQG', 
+                              name='2 var balancing robot LQG', 
                               state_names=state_names)
 
 # set the goal state
-balanceBot.set_goal_state([0.0, 0.0, np.pi, 0.0])
+balanceBot.set_goal_state([np.pi, 0.0])
 
 # we add our Q and R matrices
-Q = np.array([[0.1, 0, 0, 0],\
-            [0, 0.1, 0, 0],\
-            [0, 0, 4 / (5 * np.pi), 0],\
-            [0, 0, 0, 0.01]])
+Q = np.array([[4 / (5 * np.pi), 0],
+              [0, 0.01]])
 
 R = np.array([[1 / 10]])
 balanceBot.set_Q(Q)
@@ -74,13 +66,12 @@ balanceBot.set_R(R)
 balanceBot.set_up()
 
 # If we want a Kalman Filter we need to pass in a measurement model
-C = np.array([[1, 0, 0, 0], \
-            [0, 0, 1, 0], \
-            [0, 0, 0, 1]]) 
+C = np.array([[1, 0], 
+              [0, 1]]) 
 
 # disturbance and noise matrices
-Q_kf = np.eye(4)
-R_kf = np.eye(3)
+Q_kf = np.eye(2)
+R_kf = np.eye(2)
 
 # then we compute all the Kalman Filter matrices
 balanceBot.set_up_Kalman_Filter(C, Q_kf, R_kf)
@@ -89,7 +80,7 @@ balanceBot.est_method = 'kf'
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([1,0,np.pi + 0.2, 0.0]) # Initial condition
+    x0 = np.array([np.pi + 0.2, 0.0]) # Initial condition
     dt = 0.01
     simulator = Simulator(balanceBot, x0, u0, 4, dt)
     simulator.run()

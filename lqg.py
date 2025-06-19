@@ -3,7 +3,7 @@ from time import sleep
 from InterruptTimer import InterruptTimer
 from motors import BRMotors
 from imu import ImuSensor
-from balance_bot import balanceBot as bb
+from balance_bot2V import balanceBot as bb
 from utilities import output_data
 
 debug = False
