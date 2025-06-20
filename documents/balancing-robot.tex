@@ -253,6 +253,17 @@ A properly tuned $K$ matrix can be used in the control loop to compute the motor
 		motors.run(u * duty_coeff)
 \end{python}
 
+\subsubsection*{Notes on tuning Q and R matrices}
+
+Too fast dynamics are a problem. Makes the system more sensitive to modeling errors, noise, requires smaller time steps can require more input resources.
+
+Slow dynamics, system may take a while to reach goal, more sensitive to disturbances. Possible lag between estimation of state and current state. If the state changes quickly, may be too slow to respond.
+
+
+So there is a lot to learn about tuning here. The basic idea is that if we make an element of the $Q$ diagonal larger, that means we will tolerate less error in that variable.  It should make the eigenvalue for that variable larger in the negative direction. This corresponds to a $K$ matrix that moves aggressively to correct an error in that variable.  There's two problems with this. Quick aggressive moves can cause a strain on the motors and a fast moving aggressive system can cause our model to be less accurate if our time step is not small enough to accurately capture such aggressive moves.  
+
+Some of this depends on the design of our robot and can't be fully fixed by $Q$ and $R$ values. A short pendulum length just requires a more aggressive response and a faster response time. The amount of torque might be small, but we'll need to make our time step small enough to accurately model such fast moves. This stuff is good to work on in the simulation phase so it can inform your build design. Simulating will also give you an idea of how fast your inner loop is so you can measure your minimal time step. Should rerun all these experiments with discrete systems to see if they are any different.
+
 \subsection*{Linear Quadratic Gaussian}
 Need a discussion here of why we switched to LQG. What were the drawbacks of LQR approach? Like we don't have a way to measure velocity directly, we can only estimate it from the change in position over a short time window.  It's better to let the model estimate it because the model knows more about the behaviour of the system.
 
