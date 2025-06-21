@@ -6,7 +6,7 @@ from model import LQRModel, LQGModel, LQGDiscreteModel
 from simulator import Simulator, NoisySimulator
 import numpy as np
 import matplotlib.pyplot as plt
-from builds import *
+from builds import ExperimentalConstants
 
 # We create Casadi symbolic variables for the state
 theta = ca.MX.sym('theta')
@@ -41,7 +41,8 @@ RHS = ca.vertcat(
     )
 
 # the constant values are imported from the build file
-constant_values = [M_, m_, L_, g_, d_]
+pmc = ExperimentalConstants()
+constant_values = [pmc.M, pmc.m, pmc.L, pmc.g, pmc.d]
 
 # I made latex names for my states. They look nice in the simulation plots
 state_names = ['$\\theta$ ','$\\dot{\\theta}$ ']
@@ -61,13 +62,9 @@ balanceBot = LQRModel(state,
 # set the goal state
 balanceBot.set_goal_state([np.pi, 0.0])
 
-# we add our Q and R matrices
-Q = np.array([[1, 0],
-              [0, 1]])
 
-R = np.array([[1]])
-balanceBot.set_Q(Q)
-balanceBot.set_R(R)
+balanceBot.set_Q(pmc.Q2V)
+balanceBot.set_R(pmc.R2V)
 
 # now we can do the set up that will build all our matrices
 balanceBot.set_up()

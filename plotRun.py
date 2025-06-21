@@ -18,9 +18,14 @@ plt.rcParams.update({
 })
 
 ns=4
+num_points = 10
+if num_points > len(data):
+     num_points = len(data)
+
+
 state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
 for i in range(ns):
-    plt.plot(plot_data[i],linewidth=2,label=state_names[i])
+    plt.plot(plot_data[i][:num_points],linewidth=2,label=state_names[i])
 plt.xlabel('Time')
 plt.ylabel('State')
 plt.legend(loc='lower right')
@@ -31,10 +36,10 @@ nu = 1
 fig, axs = plt.subplots(ns + nu)
 fig.set_figheight(8)
 for i in range(ns):
-    axs[i].plot(plot_data[i],linewidth=2)
+    axs[i].plot(plot_data[i][:num_points],linewidth=2)
     axs[i].set_ylabel(state_names[i])
 for i in range(nu):
-    axs[i+ns].plot(plot_data[i+ns],linewidth=2)
+    axs[i+ns].plot(plot_data[i+ns][:num_points],linewidth=2)
     axs[i+ns].set_ylabel('u')
     
 plt.xlabel('Time')

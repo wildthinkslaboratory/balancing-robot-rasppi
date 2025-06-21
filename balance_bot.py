@@ -8,7 +8,8 @@ from control_lib.model import LQRModel, LQGModel, LQRDiscreteModel, LQGDiscreteM
 from control_lib.simulator import Simulator, NoisySimulator
 import numpy as np
 import matplotlib.pyplot as plt
-from builds import *
+from builds import ExperimentalConstants
+
 
 # We create Casadi symbolic variables for the state
 x = ca.MX.sym('x')  
@@ -47,34 +48,29 @@ RHS = ca.vertcat(
     )
 
 # the constant values are imported from the build file
-constant_values = [M_, m_, L_, g_, d_]
+pmc = ExperimentalConstants()
+constant_values = [pmc.M, pmc.m, pmc.L, pmc.g, pmc.d]
 
 # I made latex names for my states. They look nice in the simulation plots
 state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
 
-dt = 0.005
+
 # Now we make our model.
 lqrBot = LQRModel(state, 
                 RHS, 
                 u, 
                 constants, 
                 constant_values, 
-                dt,
+                pmc.dt,
                 name='balancing robot LQR', 
                 state_names=state_names)
 
 # set the goal state
 lqrBot.set_goal_state([0.0, 0.0, np.pi, 0.0])
 
-# we add our Q and R matrices
-Q = np.array([[0.1, 0, 0, 0],\
-            [0, 0.1, 0, 0],\
-            [0, 0, 4 / (5 * np.pi), 0],\
-            [0, 0, 0, 0.01]])
 
-R = np.array([[1 / 10]])
-lqrBot.set_Q(Q)
-lqrBot.set_R(R)
+lqrBot.set_Q(pmc.Q)
+lqrBot.set_R(pmc.R)
 
 # now we can do the set up that will build all our matrices
 lqrBot.set_up()
@@ -99,9 +95,9 @@ lqgdBot = LQGDiscreteModel(lqgBot, name='Discrete LQG Balance Bot')
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([1,0,np.pi + 0.1, 0.0]) # Initial condition
+    x0 = np.array([1.0,0,np.pi + 0.3, 0.0]) # Initial condition
     dt = 0.01
-    sim_length = 10 # in seconds
+    sim_length = 1 # in seconds
 
     simulator = Simulator(lqrBot, x0, u0, sim_length, dt)
     simulator.run()
