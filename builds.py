@@ -2,7 +2,7 @@
 
 M_ = 0.05       # wheels plus motors (kilograms) 
 m_ = 1          # rest of the robot (kilograms)
-L_ = 1.2        # length of pendulum (meters)
+L_ = 0.06        # length of pendulum (meters)
 g_ = -9.81       # gravity, (meters / sec^2)
 d_ = 0.001       # d is a damping factor
 r_ = 0.0325      # radius of the wheels

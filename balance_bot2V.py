@@ -2,7 +2,7 @@
 
 import casadi as ca
 from casadi import sin, cos
-from model import LinearModel
+from model import LQRModel, LQGModel, LQGDiscreteModel
 from simulator import Simulator, NoisySimulator
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,12 +46,15 @@ constant_values = [M_, m_, L_, g_, d_]
 # I made latex names for my states. They look nice in the simulation plots
 state_names = ['$\\theta$ ','$\\dot{\\theta}$ ']
 
+dt = 0.005
+
 # Now we make our model.
-balanceBot = LinearModel(state, 
+balanceBot = LQRModel(state, 
                               RHS, 
                               u, 
                               constants, 
                               constant_values, 
+                              dt,
                               name='2 var balancing robot LQG', 
                               state_names=state_names)
 
@@ -77,14 +80,14 @@ C = np.array([[1, 0],
 Q_kf = np.eye(2)
 R_kf = np.eye(2)
 
-# then we compute all the Kalman Filter matrices
-balanceBot.set_up_Kalman_Filter(C, Q_kf, R_kf)
-balanceBot.est_method = 'kf'
+lqgBot = LQGModel(balanceBot, C, Q_kf, R_kf)
+
+lqgdBot = LQGDiscreteModel(lqgBot)
 
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([np.pi + 0.2, 0.0]) # Initial condition
+    x0 = np.array([np.pi + 0.1, 0.0]) # Initial condition
     dt = 0.01
     sim_length = 0.4 # in seconds
     simulator = Simulator(balanceBot, x0, u0, sim_length, dt)
@@ -92,7 +95,14 @@ if __name__ == "__main__":
     simulator.add_intput_bound(input_bounds)
     simulator.run()
         
+    simulator = Simulator(lqgBot, x0, u0, sim_length, dt)
+    simulator.run()
 
-    # we can make a noisy simulator
-    noisy_sim = NoisySimulator(balanceBot, x0, u0, sim_length, dt)
-    noisy_sim.run()
+    simulator = Simulator(lqgdBot, x0, u0, sim_length, dt)
+    input_bounds = np.array([[-14,14]])
+    simulator.add_intput_bound(input_bounds)
+    simulator.run()
+
+    # # we can make a noisy simulator
+    # noisy_sim = NoisySimulator(balanceBot, x0, u0, sim_length, dt)
+    # noisy_sim.run()

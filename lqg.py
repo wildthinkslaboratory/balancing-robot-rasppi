@@ -3,15 +3,14 @@ from time import sleep
 from InterruptTimer import InterruptTimer
 from motors import BRMotors
 from imu import ImuSensor
-from balance_bot2V import balanceBot as bb
-from utilities import output_data
+from balance_bot import lqgdBot as bb
+from utilities import output_data, clip
 
 debug = False
 output_data_to_file = True
 
-dT = 0.01
 timeout = 8
-
+dT = bb.dt
 
 imu_sensor = ImuSensor()        # mpu6050 gyro/accelorometer access                    
 motors = BRMotors(dT)           # DC motors with encoder
@@ -25,10 +24,10 @@ sleep(3)
 
 angle_init = imu_sensor.raw_angle_rad()
 
-x = np.array([angle_init,0.0])               # this is our estimated state
-x_r = np.array([np.pi+(2*np.pi/180),0.0])             # Reference position / Goal state                        
-uy = np.array([0.0, x[0], x[1]])          # our input values [ u, x_sensor, a_sensor, av_sensor]   
-uy_r = np.array([0.0, x_r[0], x_r[1]])    # input values goal state
+x = np.array([0.0, 0.0, angle_init,0.0])                # this is our estimated state
+x_r = np.array([0.0, 0.0, np.pi+(2*np.pi/180),0.0])     # Reference position / Goal state                        
+uy = np.array([0.0, x[0], x[2], x[3]])                  # our input values [ u, x_sensor, a_sensor, av_sensor]   
+uy_r = np.array([0.0, x_r[0], x_r[2], x_r[3]])          # input values goal state
 
 
 
@@ -42,24 +41,23 @@ uy_r = np.array([0.0, x_r[0], x_r[1]])    # input values goal state
 
 def update_run_data():
     global run_data
-    run_data.append([x[0], x[1], uy[0], uy[1], uy[2]])
+    run_data.append([x[0], x[1], x[2], x[3], uy[0], uy[1], uy[2], uy[3]])
 
 def loop_iteration():
     global x
     global uy
 
-    uy[1] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
-    uy[2] = imu_sensor.raw_angular_velocity_rad()
+    uy[1] = motors.position()
+    uy[2] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
+    uy[3] = imu_sensor.raw_angular_velocity_rad()
 
     # estimate the state
-    x = bb.get_next_state_kf(x, uy, dT)
+    x = bb.get_next_state(x, uy)
 
-    uy[0] = bb.get_control_input(x)
+    # constrain the input to the duty cycle
+    uy[0] = clip(bb.get_control_input(x) / 13.95, -0.9, 0.9)
     motors.run(uy[0])
-    
 
-def test_loop():
-    motors.run(speed_from_u(0.1))
 
     
 # the main functions are called in timers that

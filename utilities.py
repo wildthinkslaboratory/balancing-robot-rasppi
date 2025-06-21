@@ -25,3 +25,12 @@ def distance(v1, v2):
     for i in range(len(v1)):
         sum += (v1[i] - v2[i])**2
     return sqrt(sum)
+
+
+# some helper functions we will need
+def clip(value, min, max):
+       if value < min:
+               return min
+       if value > max:
+               return max
+       return value

@@ -48,7 +48,7 @@ constant_values = [M_, m_, L_, g_, d_]
 # I made latex names for my states. They look nice in the simulation plots
 state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
 
-dt = 0.01
+dt = 0.005
 # Now we make our model.
 lqrBot = LQRModel(state, 
                 RHS, 
@@ -97,18 +97,20 @@ if __name__ == "__main__":
     u0 = np.array([0.0])
     x0 = np.array([1,0,np.pi + 0.1, 0.0]) # Initial condition
     dt = 0.01
-    sim_length = 2 # in seconds
+    sim_length = 10 # in seconds
 
-    # simulator = Simulator(lqrBot, x0, u0, sim_length, dt)
-    # simulator.run()
+    simulator = Simulator(lqrBot, x0, u0, sim_length, dt)
+    simulator.run()
         
-    # simulator = Simulator(lqgBot, x0, u0, sim_length, dt)
-    # simulator.run()
+    simulator = Simulator(lqgBot, x0, u0, sim_length, dt)
+    simulator.run()
 
     # simulator = Simulator(lqrdBot, x0, u0, sim_length, dt)
     # simulator.run()
 
     simulator = Simulator(lqgdBot, x0, u0, sim_length, dt)
+    input_bounds = np.array([[-14,14]])
+    simulator.add_intput_bound(input_bounds)
     simulator.run()
 
 
