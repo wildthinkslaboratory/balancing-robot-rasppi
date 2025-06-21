@@ -56,7 +56,7 @@ balanceBot = LQRModel(state,
                               constants, 
                               constant_values, 
                               dt,
-                              name='2 var balancing robot LQG', 
+                              name='2 var balancing robot LQR', 
                               state_names=state_names)
 
 # set the goal state
@@ -77,25 +77,24 @@ C = np.array([[1, 0],
 Q_kf = np.eye(2)
 R_kf = np.eye(2)
 
-lqgBot = LQGModel(balanceBot, C, Q_kf, R_kf)
+lqgBot = LQGModel(balanceBot, C, Q_kf, R_kf, name='2 var balancing robot LQG')
 
-lqgdBot = LQGDiscreteModel(lqgBot)
+lqgdBot = LQGDiscreteModel(lqgBot, name='2 var balancing robot discrete LQG')
 
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
     x0 = np.array([np.pi + 0.1, 0.0]) # Initial condition
-    dt = 0.01
     sim_length = 0.4 # in seconds
-    simulator = Simulator(balanceBot, x0, u0, sim_length, dt)
+    simulator = Simulator(balanceBot, x0, u0, sim_length)
     input_bounds = np.array([[-12, 12]])
     simulator.add_intput_bound(input_bounds)
     simulator.run()
         
-    simulator = Simulator(lqgBot, x0, u0, sim_length, dt)
+    simulator = Simulator(lqgBot, x0, u0, sim_length)
     simulator.run()
 
-    simulator = Simulator(lqgdBot, x0, u0, sim_length, dt)
+    simulator = Simulator(lqgdBot, x0, u0, sim_length)
     input_bounds = np.array([[-14,14]])
     simulator.add_intput_bound(input_bounds)
     simulator.run()

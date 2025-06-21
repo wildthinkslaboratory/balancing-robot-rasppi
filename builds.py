@@ -34,4 +34,17 @@ class ModelConstants:
 
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
-    L = 0.2        # length of pendulum (meters)
+    #L = 0.2        # length of pendulum (meters)
+
+    Q = np.array([[100, 0, 0, 0],\
+            [0, 1, 0, 0],\
+            [0, 0, 4 / (5 * np.pi), 0],\
+            [0, 0, 0, 1]])
+
+    R = np.array([[1]])
+    Q2V = np.array([[1,0],\
+                    [0, 1]])
+
+    R2V = np.array([[1]])
+
+    pass
