@@ -96,17 +96,17 @@ if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
     x0 = np.array([1.0,0,np.pi + 0.3, 0.0]) # Initial condition
-    sim_length = 4 # in seconds
+    sim_length = 0.5 # in seconds
 
-    simulator = Simulator(lqrBot, x0, u0, sim_length)
-    input_bounds = np.array([[-14,14]])
-    simulator.add_intput_bound(input_bounds)
-    simulator.run()
+    # simulator = Simulator(lqrBot, x0, u0, sim_length)
+    # input_bounds = np.array([[-14,14]])
+    # simulator.add_intput_bound(input_bounds)
+    # simulator.run()
         
-    simulator = Simulator(lqgBot, x0, u0, sim_length)
-    input_bounds = np.array([[-14,14]])
-    simulator.add_intput_bound(input_bounds)
-    simulator.run()
+    # simulator = Simulator(lqgBot, x0, u0, sim_length)
+    # input_bounds = np.array([[-14,14]])
+    # simulator.add_intput_bound(input_bounds)
+    # simulator.run()
 
     # simulator = Simulator(lqrdBot, x0, u0, sim_length)
     # simulator.run()

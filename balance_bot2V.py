@@ -2,8 +2,12 @@
 
 import casadi as ca
 from casadi import sin, cos
-from model import LQRModel, LQGModel, LQGDiscreteModel
-from simulator import Simulator, NoisySimulator
+
+import sys
+sys.path.append('..')
+
+from control_lib.model import LQRModel, LQGModel, LQRDiscreteModel, LQGDiscreteModel
+from control_lib.simulator import Simulator, NoisySimulator
 import numpy as np
 import matplotlib.pyplot as plt
 from builds import ExperimentalConstants
@@ -84,21 +88,21 @@ lqgdBot = LQGDiscreteModel(lqgBot, name='2 var balancing robot discrete LQG')
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([np.pi + 0.1, 0.0]) # Initial condition
-    sim_length = 0.4 # in seconds
-    simulator = Simulator(balanceBot, x0, u0, sim_length)
-    input_bounds = np.array([[-12, 12]])
-    simulator.add_intput_bound(input_bounds)
-    simulator.run()
+    x0 = np.array([np.pi + 0.2, 0.0]) # Initial condition
+    sim_length = 2 # in seconds
+    # simulator = Simulator(balanceBot, x0, u0, sim_length)
+    # input_bounds = np.array([[-12, 12]])
+    # simulator.add_intput_bound(input_bounds)
+    # simulator.run()
         
-    simulator = Simulator(lqgBot, x0, u0, sim_length)
-    input_bounds = np.array([[-14,14]])
-    simulator.add_intput_bound(input_bounds)
-    simulator.run()
+    # simulator = Simulator(lqgBot, x0, u0, sim_length)
+    # input_bounds = np.array([[-14,14]])
+    # simulator.add_intput_bound(input_bounds)
+    # simulator.run()
 
     simulator = Simulator(lqgdBot, x0, u0, sim_length)
-    input_bounds = np.array([[-14,14]])
-    simulator.add_intput_bound(input_bounds)
+    # input_bounds = np.array([[-14,14]])
+    # simulator.add_intput_bound(input_bounds)
     simulator.run()
 
     # # we can make a noisy simulator
