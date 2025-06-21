@@ -55,8 +55,8 @@ def loop_iteration():
     x = bb.get_next_state(x, uy)
 
     # constrain the input to the duty cycle
-    uy[0] = clip(bb.get_control_input(x) / 13.95, -0.9, 0.9)
-    motors.run(uy[0])
+    uy[0] = clip(bb.get_control_input(x) / 13.85, -0.9, 0.9) * 13.85
+    motors.run(uy[0] / 13.85)
 
 
     

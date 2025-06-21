@@ -72,7 +72,7 @@ class BRMotors:
 		if speed >= 0:
 			self.count_inc = -1
 			self.motors.backward()
-		print(speed)
+
 		self.pwmA.value = abs(speed)
 		self.pwmB.value = abs(speed)
 		

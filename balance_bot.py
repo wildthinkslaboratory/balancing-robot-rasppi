@@ -1,7 +1,11 @@
 import casadi as ca
 from casadi import sin, cos
-from model import LQRModel, LQGModel, LQRDiscreteModel, LQGDiscreteModel
-from simulator import Simulator, NoisySimulator
+
+import sys
+sys.path.append('..')
+
+from control_lib.model import LQRModel, LQGModel, LQRDiscreteModel, LQGDiscreteModel
+from control_lib.simulator import Simulator, NoisySimulator
 import numpy as np
 import matplotlib.pyplot as plt
 from builds import *
