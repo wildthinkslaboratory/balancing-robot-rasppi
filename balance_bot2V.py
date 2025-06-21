@@ -85,11 +85,11 @@ if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
     x0 = np.array([np.pi + 0.2, 0.0]) # Initial condition
-    dt = 0.001
+    dt = 0.01
     sim_length = 0.4 # in seconds
     simulator = Simulator(balanceBot, x0, u0, sim_length, dt)
-    # input_bounds = np.array([[-12, 12]])
-    # simulator.add_intput_bound(input_bounds)
+    input_bounds = np.array([[-12, 12]])
+    simulator.add_intput_bound(input_bounds)
     simulator.run()
         
 

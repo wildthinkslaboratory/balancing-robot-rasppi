@@ -1,6 +1,6 @@
 import casadi as ca
 from casadi import sin, cos
-from model import LinearModel
+from model import LQRModel, LQGModel, LQRDiscreteModel, LQGDiscreteModel
 from simulator import Simulator, NoisySimulator
 import numpy as np
 import matplotlib.pyplot as plt
@@ -48,17 +48,19 @@ constant_values = [M_, m_, L_, g_, d_]
 # I made latex names for my states. They look nice in the simulation plots
 state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
 
+dt = 0.01
 # Now we make our model.
-balanceBot = LinearModel(state, 
-                              RHS, 
-                              u, 
-                              constants, 
-                              constant_values, 
-                              name='balancing robot LQG', 
-                              state_names=state_names)
+lqrBot = LQRModel(state, 
+                RHS, 
+                u, 
+                constants, 
+                constant_values, 
+                dt,
+                name='balancing robot LQR', 
+                state_names=state_names)
 
 # set the goal state
-balanceBot.set_goal_state([0.0, 0.0, np.pi, 0.0])
+lqrBot.set_goal_state([0.0, 0.0, np.pi, 0.0])
 
 # we add our Q and R matrices
 Q = np.array([[0.1, 0, 0, 0],\
@@ -67,11 +69,12 @@ Q = np.array([[0.1, 0, 0, 0],\
             [0, 0, 0, 0.01]])
 
 R = np.array([[1 / 10]])
-balanceBot.set_Q(Q)
-balanceBot.set_R(R)
+lqrBot.set_Q(Q)
+lqrBot.set_R(R)
 
 # now we can do the set up that will build all our matrices
-balanceBot.set_up()
+lqrBot.set_up()
+
 
 # If we want a Kalman Filter we need to pass in a measurement model
 C = np.array([[1, 0, 0, 0], \
@@ -82,20 +85,33 @@ C = np.array([[1, 0, 0, 0], \
 Q_kf = np.eye(4)
 R_kf = np.eye(3)
 
-# then we compute all the Kalman Filter matrices
-balanceBot.set_up_Kalman_Filter(C, Q_kf, R_kf)
-balanceBot.est_method = 'kf'
+lqgBot = LQGModel(lqrBot, C, Q_kf, R_kf)
+
+# lqrdBot = LQRDiscreteModel(lqrBot)
+
+lqgdBot = LQGDiscreteModel(lqgBot)
+
 
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([1,0,np.pi + 0.2, 0.0]) # Initial condition
+    x0 = np.array([1,0,np.pi + 0.1, 0.0]) # Initial condition
     dt = 0.01
     sim_length = 2 # in seconds
-    simulator = Simulator(balanceBot, x0, u0, sim_length, dt)
-    simulator.run()
-        
 
-    # we can make a noisy simulator
-    noisy_sim = NoisySimulator(balanceBot, x0, u0, sim_length, dt)
-    noisy_sim.run()
+    # simulator = Simulator(lqrBot, x0, u0, sim_length, dt)
+    # simulator.run()
+        
+    # simulator = Simulator(lqgBot, x0, u0, sim_length, dt)
+    # simulator.run()
+
+    # simulator = Simulator(lqrdBot, x0, u0, sim_length, dt)
+    # simulator.run()
+
+    simulator = Simulator(lqgdBot, x0, u0, sim_length, dt)
+    simulator.run()
+
+
+    # # we can make a noisy simulator
+    # noisy_sim = NoisySimulator(lqrBot, x0, u0, sim_length, dt)
+    # noisy_sim.run()
