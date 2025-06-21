@@ -89,11 +89,11 @@ C = np.array([[1, 0, 0, 0], \
 Q_kf = np.eye(4)
 R_kf = np.eye(3)
 
-lqgBot = LQGModel(lqrBot, C, Q_kf, R_kf)
+lqgBot = LQGModel(lqrBot, C, Q_kf, R_kf, name='LQG Balance Bot')
 
 # lqrdBot = LQRDiscreteModel(lqrBot)
 
-lqgdBot = LQGDiscreteModel(lqgBot)
+lqgdBot = LQGDiscreteModel(lqgBot, name='Discrete LQG Balance Bot')
 
 
 if __name__ == "__main__":
