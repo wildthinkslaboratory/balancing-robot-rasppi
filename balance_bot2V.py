@@ -92,6 +92,8 @@ if __name__ == "__main__":
     simulator.run()
         
     simulator = Simulator(lqgBot, x0, u0, sim_length)
+    input_bounds = np.array([[-14,14]])
+    simulator.add_intput_bound(input_bounds)
     simulator.run()
 
     simulator = Simulator(lqgdBot, x0, u0, sim_length)

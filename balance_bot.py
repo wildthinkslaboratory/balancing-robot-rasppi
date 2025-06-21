@@ -99,9 +99,13 @@ if __name__ == "__main__":
     sim_length = 4 # in seconds
 
     simulator = Simulator(lqrBot, x0, u0, sim_length)
+    input_bounds = np.array([[-14,14]])
+    simulator.add_intput_bound(input_bounds)
     simulator.run()
         
     simulator = Simulator(lqgBot, x0, u0, sim_length)
+    input_bounds = np.array([[-14,14]])
+    simulator.add_intput_bound(input_bounds)
     simulator.run()
 
     # simulator = Simulator(lqrdBot, x0, u0, sim_length)

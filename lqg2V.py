@@ -5,6 +5,9 @@ from motors import BRMotors
 from imu import ImuSensor
 from balance_bot2V import lqgdBot as bb
 from utilities import output_data, clip
+from builds import ModelConstants
+
+mc = ModelConstants()
 
 debug = False
 output_data_to_file = True
@@ -53,9 +56,10 @@ def loop_iteration():
     # estimate the state
     x = bb.get_next_state(x, uy)
 
-    # constrain the input to the duty cycle
-    uy[0] = clip(bb.get_control_input(x) / 13.95, -0.9, 0.9)
-    motors.run(uy[0])
+    # constrain the input to the allowed motor speeds
+    motor_speed = clip(bb.get_control_input(x) / mc.SC, -0.9, 0.9)
+    uy[0] = motor_speed * mc.SC    # this is the force our motors can actually apply
+    motors.run(motor_speed)
 
 
     
