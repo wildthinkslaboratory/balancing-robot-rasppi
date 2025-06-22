@@ -83,7 +83,11 @@ R_kf = np.eye(2)
 
 lqgBot = LQGModel(balanceBot, C, Q_kf, R_kf, name='2 var balancing robot LQG')
 
+lqrdBot = LQRDiscreteModel(lqgBot, name='2 var Discrete LQR balance bot')
+
 lqgdBot = LQGDiscreteModel(lqgBot, name='2 var balancing robot discrete LQG')
+
+
 
 if __name__ == "__main__":
     # now we can rum a simulation
@@ -100,10 +104,11 @@ if __name__ == "__main__":
     # simulator.add_intput_bound(input_bounds)
     # simulator.run()
 
-    simulator = Simulator(lqgdBot, x0, u0, sim_length)
-    # input_bounds = np.array([[-14,14]])
-    # simulator.add_intput_bound(input_bounds)
+    simulator = Simulator(lqrdBot, x0, u0, sim_length)
     simulator.run()
+
+    # simulator = Simulator(lqgdBot, x0, u0, sim_length)
+    # simulator.run()
 
     # # we can make a noisy simulator
     # noisy_sim = NoisySimulator(balanceBot, x0, u0, sim_length, dt)
