@@ -17,7 +17,7 @@ class ModelConstants:
     ST = 0.45        # motor stall torque in Nm
     t = 1           # this is for tuning the horz force to speed translation
     SC = t * ST / r   # this is used to translate horizontal force to speed
-    dt = 0.005
+    dt = 0.01
     # we add our Q and R matrices
     Q = np.array([[0.001, 0, 0, 0],\
             [0, 1, 0, 0],\
@@ -34,10 +34,9 @@ class ModelConstants:
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
     #L = 0.06        # length of pendulum (meters)
-
-    Q = np.array([[100, 0, 0, 0],\
+    Q = np.array([[10, 0, 0, 0],\
             [0, 1, 0, 0],\
-            [0, 0, 1, 0],\
+            [0, 0, 100, 0],\
             [0, 0, 0, 1]])
 
     R = np.array([[1]])
@@ -45,5 +44,4 @@ class ExperimentalConstants(ModelConstants):
                     [0, 1]])
 
     R2V = np.array([[1]])
-
     pass

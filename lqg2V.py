@@ -57,7 +57,8 @@ def loop_iteration():
     x = bb.get_next_state(x, uy)
 
     # constrain the input to the allowed motor speeds
-    motor_speed = clip(bb.get_control_input(x) / mc.SC, -0.9, 0.9)
+    uy = bb.get_control_input(x)
+    motor_speed = clip(uy[0] / mc.SC, -0.9, 0.9)
     uy[0] = motor_speed * mc.SC    # this is the force our motors can actually apply
     motors.run(motor_speed)
 
