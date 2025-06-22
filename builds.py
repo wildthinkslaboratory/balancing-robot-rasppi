@@ -25,23 +25,25 @@ class ModelConstants:
             [0, 0, 0, 1]])
 
     R = np.array([[1]])
-    Q2V = np.array([[4 / (5 * np.pi), 0],\
+    Q2V = np.array([[1,0],\
                     [0, 1]])
 
-    R2V = np.array([[1]])
+    R2V = np.array([[0.001]])
+    Q_kf = np.eye(2)
+    R_kf = np.eye(2)
 
 
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
     #L = 0.06        # length of pendulum (meters)
-    Q = np.array([[10, 0, 0, 0],\
-            [0, 1, 0, 0],\
-            [0, 0, 100, 0],\
-            [0, 0, 0, 1]])
 
-    R = np.array([[0.001]])
     Q2V = np.array([[1,0],\
                     [0, 1]])
 
     R2V = np.array([[0.001]])
+    Q_kf = np.array([[1,0],\
+                    [0, 1]])
+    R_kf = np.array([[1,0],\
+                    [0,1]])
+
     pass
