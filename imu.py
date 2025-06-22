@@ -11,7 +11,7 @@
 from mpu6050 import mpu6050 
 from time import sleep
 import math
-import json
+from utilities import countdown
 
 
 class ImuSensor:
@@ -23,15 +23,19 @@ class ImuSensor:
         self.oZ = 0.0
         self.sY = 0.0
         self.sZ = 0.0
-        print('Beginning calibration.')
-        print('Waiting 2 minutes for chip to warm up')
-        sleep(1200)
-        print('\nCalibrating gyro')
-        self.calibrate_gyro(5000)
-        print('\n\t done!')
-        print('Calibrating accelerometer')
-        self.calibrate_accel(500)
-        print('\n\t done!')
+        print('Calibrate gyro [y/n]')
+        run_gyro = input()
+        if run_gyro == 'y':
+            print('\nCalibrating gyro')
+            self.calibrate_gyro(5000)
+            print('\n\t done!')
+
+        print('Calibrate accelerometer [y/n]')
+        run_accel = input()
+        if run_accel == 'y':
+            print('Calibrating accelerometer')
+            self.calibrate_accel(500)
+            print('\n\t done!')
 
     def raw_angular_velocity_rad(self):
         gyro_data = self.sensor.get_gyro_data()
@@ -73,7 +77,7 @@ class ImuSensor:
         # 2 pose calibration
         g = 9.80665
         print('place bot in upright position')
-        sleep(5)
+        countdown(8)
         print('calibrating... \n')
         Ay0 = 0.0
         Az0 = 0.0
@@ -86,7 +90,7 @@ class ImuSensor:
         Az0 = Az0 / samples 
 
         print('place bot at - 45 degrees')
-        sleep(5)
+        countdown(8)
         print('calibrating... \n')
         Ay45 = 0.0
         Az45 = 0.0
@@ -104,31 +108,16 @@ class ImuSensor:
         self.sZ = -(Az45 - self.oZ) / (g * math.cos(math.pi/4))
 
 
-def verify_accelerometer():   
+def verify_accelerometer(imu):   
     print("testing angular accelleration readings")
-    imu = ImuSensor() 
-    angle_data = []
+    print('position your bot upright')
+    countdown(8)
+    timespan = 2
 
-    def callback():
-        global imu
-        global angle_data
-        raw_angle = imu.raw_angle_rad()
-        raw_angular_velocity = imu.raw_angular_velocity_rad()
-        angle_data.append([raw_angle, raw_angular_velocity])
-        
-    # query the gyro in a timer
-    timer = InterruptTimer(0.01, callback, 5)
-    timer.start()
-
-    while timer.running: # wait for the trial to end
-        sleep(1)
-
-    print("gyro noise variance", np.var([a[0] for a in angle_data]))
-
-    plt.plot([a[0] for a in angle_data])
-    plt.xlabel('Time')
-    plt.ylabel('angular velocity')
-    plt.show()
+    for _ in range(timespan * 10):
+        imu.raw_accel_data()
+        print(imu.ay_raw, imu.az_raw)
+        sleep(0.1)
 
 
 def verify_gyro(imu):
@@ -147,13 +136,14 @@ def verify_gyro(imu):
     while timer.running: # wait for the trial to end
         sleep(1)
 
-    print("gyro noise variance", np.var([a[0] for a in angle_data]))
-    print(data)
-    # for i in range(3):
-    #     plt.plot([a[i] for a in angle_data])
-    # plt.xlabel('Time')
-    # plt.ylabel('angular velocity')
-    # plt.show()
+    print("gyro noise variance", np.var([a[0] for a in data]))
+    print("average error: ", np.average([abs(a[0]) for a in data]))
+
+    for i in range(3):
+        plt.plot([a[i] for a in data])
+    plt.xlabel('Time')
+    plt.ylabel('angular velocity')
+    plt.show()
 
 # test the sensor and compute the sensor variance
 if __name__ == "__main__":
@@ -162,5 +152,5 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     imu = ImuSensor()
-    verify_gyro(imu)
-    # verify_accelerometer(imu)
+    # verify_gyro(imu)
+    verify_accelerometer(imu)

@@ -1,5 +1,11 @@
 import json
 from math import sqrt
+from time import sleep
+
+def countdown(count):
+     for i in range(count, 0, -1):
+        print("\rCountdown: {}".format(i), end="")
+        sleep(1)
 
 def output_data(data, filename):
     # Serializing json
