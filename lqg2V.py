@@ -27,11 +27,8 @@ countdown(5)
 
 angle_init = imu_sensor.raw_angle_rad()
 
-x = np.array([angle_init,0.0])               # this is our estimated state
-x_r = np.array([np.pi + (40*np.pi/180),0.0])             # Reference position / Goal state                        
+x = np.array([angle_init,0.0])               # this is our estimated state                    
 uy = np.array([0.0, x[0], x[1]])          # our input values [ u, x_sensor, a_sensor, av_sensor]   
-uy_r = np.array([0.0, x_r[0], x_r[1]])    # input values goal state
-
 
 
 ############################################

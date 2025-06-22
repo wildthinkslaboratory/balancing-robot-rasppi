@@ -81,11 +81,7 @@ C = np.array([[1, 0, 0, 0], \
             [0, 0, 1, 0], \
             [0, 0, 0, 1]]) 
 
-# disturbance and noise matrices
-Q_kf = np.eye(4)
-R_kf = np.eye(3)
-
-lqgBot = LQGModel(lqrBot, C, Q_kf, R_kf, name='LQG Balance Bot')
+lqgBot = LQGModel(lqrBot, C, pmc.Q_kf, pmc.R_kf, name='LQG Balance Bot')
 
 lqrdBot = LQRDiscreteModel(lqrBot, name='Discrete LQR balance bot')
 

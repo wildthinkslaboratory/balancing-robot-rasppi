@@ -51,15 +51,13 @@ constant_values = [pmc.M, pmc.m, pmc.L, pmc.g, pmc.d]
 # I made latex names for my states. They look nice in the simulation plots
 state_names = ['$\\theta$ ','$\\dot{\\theta}$ ']
 
-dt = 0.005
-
 # Now we make our model.
 balanceBot = LQRModel(state, 
                               RHS, 
                               u, 
                               constants, 
                               constant_values, 
-                              dt,
+                              pmc.dt,
                               name='2 var balancing robot LQR', 
                               state_names=state_names)
 
@@ -77,11 +75,8 @@ balanceBot.set_up()
 C = np.array([[1, 0], 
               [0, 1]]) 
 
-# disturbance and noise matrices
-Q_kf = np.eye(2)
-R_kf = np.eye(2)
 
-lqgBot = LQGModel(balanceBot, C, Q_kf, R_kf, name='2 var balancing robot LQG')
+lqgBot = LQGModel(balanceBot, C, pmc.Q_kf2V, pmc.R_kf2V, name='2 var balancing robot LQG')
 
 lqrdBot = LQRDiscreteModel(lqgBot, name='2 var Discrete LQR balance bot')
 
@@ -107,8 +102,8 @@ if __name__ == "__main__":
     simulator = Simulator(lqrdBot, x0, u0, sim_length)
     simulator.run()
 
-    # simulator = Simulator(lqgdBot, x0, u0, sim_length)
-    # simulator.run()
+    simulator = Simulator(lqgdBot, x0, u0, sim_length)
+    simulator.run()
 
     # # we can make a noisy simulator
     # noisy_sim = NoisySimulator(balanceBot, x0, u0, sim_length, dt)

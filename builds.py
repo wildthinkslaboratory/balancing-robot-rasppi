@@ -11,7 +11,7 @@ class ModelConstants:
     m = 1          # rest of the robot (kilograms)
     L = 0.06        # length of pendulum (meters)
     g = -9.81       # gravity, (meters / sec^2)
-    d = 0.001       # d is a damping factor
+    d = 0.01       # d is a damping factor
     r = 0.0325      # radius of the wheels
     R = 4           # motor coil resistance in Ohms
     ST = 0.45        # motor stall torque in Nm
@@ -19,7 +19,7 @@ class ModelConstants:
     SC = t * ST / r   # this is used to translate horizontal force to speed
     dt = 0.01
     # we add our Q and R matrices
-    Q = np.array([[1, 0, 0, 0],\
+    Q = np.array([[100, 0, 0, 0],\
             [0, 1, 0, 0],\
             [0, 0, 1, 0],\
             [0, 0, 0, 1]])
@@ -29,8 +29,12 @@ class ModelConstants:
                     [0, 1]])
 
     R2V = np.array([[1]])
-    Q_kf = np.eye(2)
-    R_kf = np.eye(2)
+
+    Q_kf = np.eye(4)
+    R_kf = np.eye(3)
+
+    Q_kf2V = np.eye(2)
+    R_kf2V = np.eye(2)
 
 
 # inherit all the values of ModelConstants
@@ -41,9 +45,10 @@ class ExperimentalConstants(ModelConstants):
                     [0, 1]])
 
     R2V = np.array([[0.001]])
-    Q_kf = np.array([[0.001,0],\
+
+    Q_kf2V = np.array([[0.001,0],\
                     [0, 0.001]])
-    R_kf = np.array([[1,0],\
+    R_kf2V = np.array([[1,0],\
                     [0,1]])
 
     pass
