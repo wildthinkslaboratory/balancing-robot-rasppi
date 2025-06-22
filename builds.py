@@ -19,16 +19,16 @@ class ModelConstants:
     SC = t * ST / r   # this is used to translate horizontal force to speed
     dt = 0.01
     # we add our Q and R matrices
-    Q = np.array([[0.001, 0, 0, 0],\
+    Q = np.array([[1, 0, 0, 0],\
             [0, 1, 0, 0],\
-            [0, 0, 4 / (5 * np.pi), 0],\
+            [0, 0, 1, 0],\
             [0, 0, 0, 1]])
 
     R = np.array([[1]])
     Q2V = np.array([[1,0],\
                     [0, 1]])
 
-    R2V = np.array([[0.001]])
+    R2V = np.array([[1]])
     Q_kf = np.eye(2)
     R_kf = np.eye(2)
 
@@ -41,8 +41,8 @@ class ExperimentalConstants(ModelConstants):
                     [0, 1]])
 
     R2V = np.array([[0.001]])
-    Q_kf = np.array([[1,0],\
-                    [0, 1]])
+    Q_kf = np.array([[0.001,0],\
+                    [0, 0.001]])
     R_kf = np.array([[1,0],\
                     [0,1]])
 

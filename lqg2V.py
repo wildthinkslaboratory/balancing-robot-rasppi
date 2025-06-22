@@ -4,7 +4,7 @@ from InterruptTimer import InterruptTimer
 from motors import BRMotors
 from imu import ImuSensor
 from balance_bot2V import lqgdBot as bb
-from utilities import output_data, clip
+from utilities import output_data, clip, countdown
 from builds import ModelConstants
 
 mc = ModelConstants()
@@ -23,12 +23,12 @@ motors = BRMotors(dT)           # DC motors with encoder
 
 ############################################
 run_data = list()  
-sleep(3)
+countdown(5)
 
 angle_init = imu_sensor.raw_angle_rad()
 
 x = np.array([angle_init,0.0])               # this is our estimated state
-x_r = np.array([np.pi+(2*np.pi/180),0.0])             # Reference position / Goal state                        
+x_r = np.array([np.pi + (40*np.pi/180),0.0])             # Reference position / Goal state                        
 uy = np.array([0.0, x[0], x[1]])          # our input values [ u, x_sensor, a_sensor, av_sensor]   
 uy_r = np.array([0.0, x_r[0], x_r[1]])    # input values goal state
 
@@ -56,6 +56,8 @@ def loop_iteration():
     # estimate the state
     x = bb.get_next_state(x, uy)
 
+    print('xa', x[0], 'ya', uy[1])
+    
     # constrain the input to the allowed motor speeds
     uy = bb.get_control_input(x)
     motor_speed = clip(uy[0] / mc.SC, -0.9, 0.9)

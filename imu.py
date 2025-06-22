@@ -11,7 +11,7 @@
 from mpu6050 import mpu6050 
 from time import sleep
 import math
-from utilities import countdown
+from utilities import countdown, output_data, import_data
 
 g = 9.80665
 kick_stand_angle = math.radians(39)
@@ -33,13 +33,21 @@ class ImuSensor:
 
         if run_gyro == 'y':
             print('\nCalibrating gyro')
-            self.calibrate_gyro(5000)
+            self.calibrate_gyro(1000)
             print('\n\t done!')
+        else:
+            self.bias_x = import_data('gyro_bias.json')
 
         if run_accel == 'y':
             print('Calibrating accelerometer')
             self.calibrate_accel(500)
             print('\n\t done!')
+        else:
+            accel_bias = import_data('accel_bias.json')
+            self.oY = accel_bias['oY']
+            self.oZ = accel_bias['oZ']
+            self.sY = accel_bias['sY']
+            self.sZ = accel_bias['sZ']
 
     def raw_angular_velocity_rad(self):
         gyro_data = self.sensor.get_gyro_data()
@@ -68,11 +76,13 @@ class ImuSensor:
             sleep(0.005)
         self.bias_x = cum_bias_x / samples
         print("gyro x bias: ", self.bias_x)
+        output_data(self.bias_x, 'gyro_bias.json')
+        
 
     def calibrate_accel(self, samples):
         # 2 pose calibration
         print('place bot in upright position')
-        countdown(3)
+        countdown(5)
         print('calibrating... \n')
         Ay0 = 0.0
         Az0 = 0.0
@@ -85,7 +95,7 @@ class ImuSensor:
         Az0 = Az0 / samples 
 
         print('place bot at - 45 degrees')
-        countdown(3)
+        countdown(5)
         print('calibrating... \n')
         Ay45 = 0.0
         Az45 = 0.0
@@ -102,6 +112,13 @@ class ImuSensor:
         self.oY = Ay0
         self.sY = (Ay45 - Ay0) / (g*math.sin(kick_stand_angle))
 
+        accel_bias = {}
+        accel_bias['oY'] = self.oY
+        accel_bias['oZ'] = self.oZ
+        accel_bias['sY'] = self.sY
+        accel_bias['sZ'] = self.sZ
+        output_data(accel_bias, 'accel_bias.json')
+
 def verify_accelerometer(imu):   
     print("testing angular accelleration readings")
     print('position your bot upright')
@@ -111,7 +128,8 @@ def verify_accelerometer(imu):
     data = []
     for _ in range(timespan * 10):
         imu.raw_accel_data()
-        print('Y:', imu.ay_raw, 'Z:', imu.az_raw, 'angle', imu.raw_angle_rad())
+        angle = math.degrees(imu.raw_angle_rad() - math.pi) 
+        print('Y:', imu.ay_raw, 'Z:', imu.az_raw, 'angle', angle)
         data.append([imu.ay_raw, imu.az_raw])
         sleep(0.1)
 
