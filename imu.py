@@ -13,6 +13,8 @@ from time import sleep
 import math
 from utilities import countdown
 
+g = 9.80665
+kick_stand_angle = math.radians(39)
 
 class ImuSensor:
 
@@ -23,15 +25,17 @@ class ImuSensor:
         self.oZ = 0.0
         self.sY = 0.0
         self.sZ = 0.0
+
         print('Calibrate gyro [y/n]')
         run_gyro = input()
+        print('Calibrate accelerometer [y/n]')
+        run_accel = input()
+
         if run_gyro == 'y':
             print('\nCalibrating gyro')
             self.calibrate_gyro(5000)
             print('\n\t done!')
 
-        print('Calibrate accelerometer [y/n]')
-        run_accel = input()
         if run_accel == 'y':
             print('Calibrating accelerometer')
             self.calibrate_accel(500)
@@ -43,19 +47,11 @@ class ImuSensor:
 
     def raw_angle_rad(self):
         self.raw_accel_data()
-        accelerometer_angle = math.atan2(self.ay_raw, math.sqrt(self.ax_raw**2 + self.az_raw**2))
-        accelerometer_angle = accelerometer_angle + math.pi
-        if (accelerometer_angle >= 2 * math.pi):
-            accelerometer_angle -= 2 * math.pi
-        return  accelerometer_angle
+        angle_rad = math.atan2(-self.ay_raw, self.az_raw) + math.pi
+        if (angle_rad >= 2 * math.pi):
+            angle_rad -= 2 * math.pi
+        return  angle_rad
 
-    def raw_angle_rad2(self):
-        self.raw_accel_data()
-        angle = math.atan2(-self.ay_raw, -self.az_raw)
-        # accelerometer_angle = accelerometer_angle + math.pi
-        if (angle >= 2 * math.pi):
-            angle -= 2 * math.pi
-        return  angle
     
     def raw_accel_data(self):
         accelerometer_data = self.sensor.get_accel_data()
@@ -75,9 +71,8 @@ class ImuSensor:
 
     def calibrate_accel(self, samples):
         # 2 pose calibration
-        g = 9.80665
         print('place bot in upright position')
-        countdown(8)
+        countdown(3)
         print('calibrating... \n')
         Ay0 = 0.0
         Az0 = 0.0
@@ -90,7 +85,7 @@ class ImuSensor:
         Az0 = Az0 / samples 
 
         print('place bot at - 45 degrees')
-        countdown(8)
+        countdown(3)
         print('calibrating... \n')
         Ay45 = 0.0
         Az45 = 0.0
@@ -102,23 +97,31 @@ class ImuSensor:
         Ay45 = Ay45 / samples 
         Az45 = Az45 / samples 
 
-        self.sY = (Ay0 - Ay45) / g * (1 - math.cos(math.pi/4))
-        self.oY = Ay0 - self.sY * g
-        self.oZ = Az0 
-        self.sZ = -(Az45 - self.oZ) / (g * math.cos(math.pi/4))
-
+        self.sZ = (Az45 - Az0) / (g*(math.cos(kick_stand_angle) - 1))
+        self.oZ = Az0 - self.sZ*g
+        self.oY = Ay0
+        self.sY = (Ay45 - Ay0) / (g*math.sin(kick_stand_angle))
 
 def verify_accelerometer(imu):   
     print("testing angular accelleration readings")
     print('position your bot upright')
-    countdown(8)
+    countdown(3)
     timespan = 2
 
+    data = []
     for _ in range(timespan * 10):
         imu.raw_accel_data()
-        print(imu.ay_raw, imu.az_raw)
+        print('Y:', imu.ay_raw, 'Z:', imu.az_raw, 'angle', imu.raw_angle_rad())
+        data.append([imu.ay_raw, imu.az_raw])
         sleep(0.1)
 
+    print("\naccelerometer Y variance", np.var([(a[0]) for a in data]))
+    print("average accelerometer Y: ", np.average([abs(a[0]) for a in data]))
+    print('\n')
+
+    print("accelerometer Z variance", np.var([(a[1]) for a in data]))
+    print("average accelerometer Z: ", np.average([abs(a[1]) for a in data]))
+    print('\n')
 
 def verify_gyro(imu):
     data = []
@@ -137,19 +140,14 @@ def verify_gyro(imu):
         sleep(1)
 
     print("gyro noise variance", np.var([a[0] for a in data]))
-    print("average error: ", np.average([abs(a[0]) for a in data]))
+    print("average error gyro error: ", np.average([abs(a[0]) for a in data]))
+    print('\n')
 
-    for i in range(3):
-        plt.plot([a[i] for a in data])
-    plt.xlabel('Time')
-    plt.ylabel('angular velocity')
-    plt.show()
 
 # test the sensor and compute the sensor variance
 if __name__ == "__main__":
     from InterruptTimer import InterruptTimer
     import numpy as np  
-    import matplotlib.pyplot as plt
 
     imu = ImuSensor()
     # verify_gyro(imu)
