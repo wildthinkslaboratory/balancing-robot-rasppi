@@ -12,7 +12,7 @@ mc = ModelConstants()
 debug = False
 output_data_to_file = True
 
-timeout = 8
+timeout = 10
 dT = bb.dt
 
 imu_sensor = ImuSensor()        # mpu6050 gyro/accelorometer access                    
@@ -52,12 +52,10 @@ def loop_iteration():
 
     # estimate the state
     x = bb.get_next_state(x, uy)
-
-    print('angle', uy[1])
     
     # constrain the input to the allowed motor speeds
-    uy = bb.get_control_input(x)
-    motor_speed = clip(uy[0] / mc.SC, -0.9, 0.9)
+    u_temp = bb.get_control_input(x)
+    motor_speed = clip(u_temp[0] / mc.SC, -0.9, 0.9)
     uy[0] = motor_speed * mc.SC    # this is the force our motors can actually apply
     motors.run(motor_speed)
 

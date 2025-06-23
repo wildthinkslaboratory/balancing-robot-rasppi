@@ -62,7 +62,7 @@ balanceBot = LQRModel(state,
                               state_names=state_names)
 
 # set the goal state
-balanceBot.set_goal_state([np.pi, 0.0])
+balanceBot.set_goal_state([np.pi + (2*np.pi/180), 0.0])
 
 
 balanceBot.set_Q(pmc.Q2V)
