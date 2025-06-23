@@ -52,6 +52,8 @@ def loop_iteration():
 
     # estimate the state
     x = bb.get_next_state(x, uy)
+
+    print('angle', uy[1])
     
     # constrain the input to the allowed motor speeds
     uy = bb.get_control_input(x)
