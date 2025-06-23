@@ -2,6 +2,7 @@
 
 import casadi as ca
 from casadi import sin, cos
+import math
 
 import sys
 sys.path.append('..')
@@ -114,25 +115,30 @@ if __name__ == "__main__":
 
     dummy = 0
     for i in range(len(tspan)):
-        av_noise = np.random.normal(0.0,0.01)
-        a_noise = np.random.normal(0.0,0.001)
+        av_noise = np.random.normal(0.0,0.00025)
+        a_noise = np.random.normal(0.0,0.0025)
+
+        if i == math.floor((sim_length / balanceBot.dt) / 2):
+            # nudge the system
+            x_true = balanceBot.get_next_state_simulator(x_true, np.array([1.0]), dummy)
+            x_noise = balanceBot.get_next_state_simulator(x_noise, np.array([1.0]), dummy)
+            x_kf = lqgdBot.get_next_state(x_kf, np.array([1.0]), y)
 
         x_true = balanceBot.get_next_state_simulator(x_true, u_true, dummy)
         u_true = balanceBot.get_control_input(x_true)
         run_data_true[i] = np.reshape(x_true, (2,))
+ 
+        x_noise[0] = x_true[0] + a_noise
+        x_noise[1] = x_true[1] + av_noise
 
-        x_noise[0] += a_noise
-        x_noise[1] += av_noise  
-
-        x_noise = balanceBot.get_next_state_simulator(x_noise, u_noise, dummy)
-        u_noise = balanceBot.get_control_input(x_noise)
+        x_noise = balanceBot.get_next_state_simulator(x_noise, u_true, dummy)
         run_data_noise[i] = np.reshape(x_noise, (2,))
 
 
         y[0] = x_kf[0] + a_noise
         y[1] = x_kf[1] + av_noise
 
-        x_kf = lqgdBot.get_next_state_simulator(x_kf, u, y)
+        x_kf = lqgdBot.get_next_state(x_kf, u, y)
         u = lqgdBot.get_control_input(x_kf)
         run_data_kf[i] = np.reshape(x_kf, (2,))
 
@@ -143,18 +149,9 @@ if __name__ == "__main__":
     "text.usetex": True
     })
     
-    i = 0
-    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=('$\\dot{\\theta}$ true + noise'))
-    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\dot{\\theta}$ KF')
-    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\dot{\\theta}$ true')
-    plt.title('Two Variable Solution')
-    plt.xlabel('Time')
-    plt.ylabel('State')
-    plt.legend()
-    plt.savefig("KFangular_velocity2.pdf", format="pdf", bbox_inches="tight")
-    plt.show()
 
-    i=1
+
+    i=0
     plt.plot(tspan,run_data_noise[:,i],linewidth=1,label='$\\theta$ true + noise')
     plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\theta$ KF')
     plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\theta$ true')
@@ -165,3 +162,13 @@ if __name__ == "__main__":
     plt.savefig("KFangle2.pdf", format="pdf", bbox_inches="tight")
     plt.show()
 
+    i = 1
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=('$\\dot{\\theta}$ true + noise'))
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\dot{\\theta}$ KF')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\dot{\\theta}$ true')
+    plt.title('Two Variable Solution')
+    plt.xlabel('Time')
+    plt.ylabel('State')
+    plt.legend()
+    plt.savefig("KFangular_velocity2.pdf", format="pdf", bbox_inches="tight")
+    plt.show()

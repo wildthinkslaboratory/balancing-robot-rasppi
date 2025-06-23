@@ -45,7 +45,7 @@ for i in range(nu):
 plt.xlabel('Time')
 plt.show()
         
-i_to_plot = [1,4]
+i_to_plot = [0,3]
 for j in i_to_plot:
     plt.plot(plot_data[i][:num_points],linewidth=2,label=state_names[i])
 plt.xlabel('Time')
