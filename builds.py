@@ -15,7 +15,7 @@ class ModelConstants:
     r = 0.0325      # radius of the wheels
     R = 4           # motor coil resistance in Ohms
     ST = 0.45        # motor stall torque in Nm
-    t = 2           # this is for tuning the horz force to speed translation
+    t = 1           # this is for tuning the horz force to speed translation
     SC = 2 * t * ST / r   # this is used to translate horizontal force to speed
     dt = 0.01
     # we add our Q and R matrices
