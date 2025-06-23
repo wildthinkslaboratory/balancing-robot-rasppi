@@ -91,8 +91,8 @@ if __name__ == "__main__":
     sim_length = 2 # in seconds
 
 
-    # simulator = Simulator(lqgdBot, x0, u0, sim_length)
-    # simulator.run()
+    simulator = Simulator(lqgdBot, x0, u0, sim_length)
+    simulator.run()
 
     tspan = np.arange(0,sim_length,lqgdBot.dt)
 
@@ -115,8 +115,8 @@ if __name__ == "__main__":
 
     dummy = 0
     for i in range(len(tspan)):
-        av_noise = np.random.normal(0.0,0.00025)
-        a_noise = np.random.normal(0.0,0.0025)
+        av_noise = np.random.normal(0.0,0.025)
+        a_noise = np.random.normal(0.0,0.25)
 
         if i == math.floor((sim_length / balanceBot.dt) / 2):
             # nudge the system
@@ -152,9 +152,9 @@ if __name__ == "__main__":
 
 
     i=0
-    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label='$\\theta$ true + noise')
+    #plt.plot(tspan,run_data_noise[:,i],linewidth=1,label='$\\theta$ true + noise')
     plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\theta$ KF')
-    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\theta$ true')
+    #plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\theta$ true')
     plt.title('Two Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
@@ -163,9 +163,9 @@ if __name__ == "__main__":
     plt.show()
 
     i = 1
-    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=('$\\dot{\\theta}$ true + noise'))
+    #plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=('$\\dot{\\theta}$ true + noise'))
     plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\dot{\\theta}$ KF')
-    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\dot{\\theta}$ true')
+    #plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\dot{\\theta}$ true')
     plt.title('Two Variable Solution')
     plt.xlabel('Time')
     plt.ylabel('State')
