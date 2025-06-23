@@ -82,7 +82,7 @@ class ImuSensor:
     def calibrate_accel(self, samples):
         # 2 pose calibration
         print('place bot in upright position')
-        countdown(5)
+        countdown(3)
         print('calibrating... \n')
         Ay0 = 0.0
         Az0 = 0.0
