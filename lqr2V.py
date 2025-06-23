@@ -37,11 +37,12 @@ u = np.array([0.0])          # our input values [ u, x_sensor, a_sensor, av_sens
 ############################################
 
 
-
+motor_speed = 0
 
 def update_run_data():
     global run_data
-    run_data.append([x[0], x[1], u[0]])
+    global motor_speed
+    run_data.append([x[0], x[1], u[0], motor_speed])
 
 def loop_iteration():
     global x
