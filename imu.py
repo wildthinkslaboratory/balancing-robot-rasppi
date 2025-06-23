@@ -122,7 +122,7 @@ class ImuSensor:
 def verify_accelerometer(imu):   
     print("testing angular accelleration readings")
     print('position your bot upright')
-    countdown(3)
+    countdown(5)
     timespan = 2
 
     data = []
@@ -130,7 +130,7 @@ def verify_accelerometer(imu):
         imu.raw_accel_data()
         angle = math.degrees(imu.raw_angle_rad() - math.pi) 
         print('Y:', imu.ay_raw, 'Z:', imu.az_raw, 'angle', angle)
-        data.append([imu.ay_raw, imu.az_raw])
+        data.append([imu.ay_raw, imu.az_raw, angle])
         sleep(0.1)
 
     print("\naccelerometer Y variance", np.var([(a[0]) for a in data]))
@@ -139,6 +139,10 @@ def verify_accelerometer(imu):
 
     print("accelerometer Z variance", np.var([(a[1]) for a in data]))
     print("average accelerometer Z: ", np.average([abs(a[1]) for a in data]))
+    print('\n')
+
+    print("accelerometer angle variance", np.var([(a[2]) for a in data]))
+    print("average angle: ", np.average([abs(a[2]) for a in data]))
     print('\n')
 
 def verify_gyro(imu):
@@ -168,5 +172,5 @@ if __name__ == "__main__":
     import numpy as np  
 
     imu = ImuSensor()
-    # verify_gyro(imu)
+    verify_gyro(imu)
     verify_accelerometer(imu)

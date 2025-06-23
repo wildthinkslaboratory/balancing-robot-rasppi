@@ -15,7 +15,7 @@ class ModelConstants:
     r = 0.0325      # radius of the wheels
     R = 4           # motor coil resistance in Ohms
     ST = 0.45        # motor stall torque in Nm
-    t = 0.05           # this is for tuning the horz force to speed translation
+    t = 0.5           # this is for tuning the horz force to speed translation
     SC = t * ST / r   # this is used to translate horizontal force to speed
     dt = 0.01
     # we add our Q and R matrices
@@ -48,7 +48,7 @@ class ExperimentalConstants(ModelConstants):
 
     Q_kf2V = np.array([[1,0],\
                     [0, 1]])
-    R_kf2V = np.array([[0.01,0],\
-                    [0,0.01]])
+    R_kf2V = np.array([[0.07,0],\
+                    [0,0.00000225]])
 
     pass
