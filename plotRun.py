@@ -22,9 +22,9 @@ num_points = len(data)
 if num_points > len(data):
      num_points = len(data)
 
-
-state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
-for i in range(ns):
+state_names = ['$\\theta$ ','$\\dot{\\theta}$ ','u','$\\theta$ s', '$\\dot{\\theta}$ s']
+#state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
+for i in range(5):
     plt.plot(plot_data[i][:num_points],linewidth=2,label=state_names[i])
 plt.xlabel('Time')
 plt.ylabel('State')
@@ -45,8 +45,13 @@ for i in range(nu):
 plt.xlabel('Time')
 plt.show()
         
-
-
+i_to_plot = [1,4]
+for j in i_to_plot:
+    plt.plot(plot_data[i][:num_points],linewidth=2,label=state_names[i])
+plt.xlabel('Time')
+plt.ylabel('State')
+plt.legend(loc='lower right')
+plt.show()
 
 
 # # break our data into separate arrays for plotting

@@ -6,8 +6,8 @@ from casadi import sin, cos
 import sys
 sys.path.append('..')
 
-from control_lib.model import LQRModel, LQGModel, LQRDiscreteModel, LQGDiscreteModel
-from control_lib.simulator import Simulator, NoisySimulator
+from control_lib.model import LQRModel, LQGModel, LQGDiscreteModel2
+from control_lib.simulator import Simulator
 import numpy as np
 import matplotlib.pyplot as plt
 from builds import ExperimentalConstants
@@ -78,9 +78,8 @@ C = np.array([[1, 0],
 
 lqgBot = LQGModel(balanceBot, C, pmc.Q_kf2V, pmc.R_kf2V, name='2 var balancing robot LQG')
 
-lqrdBot = LQRDiscreteModel(lqgBot, name='2 var Discrete LQR balance bot')
 
-lqgdBot = LQGDiscreteModel(lqgBot, name='2 var balancing robot discrete LQG')
+lqgdBot = LQGDiscreteModel2(lqgBot, name='2 var balancing robot discrete LQG')
 
 
 
@@ -89,22 +88,80 @@ if __name__ == "__main__":
     u0 = np.array([0.0])
     x0 = np.array([np.pi + 0.2, 0.0]) # Initial condition
     sim_length = 2 # in seconds
-    # simulator = Simulator(balanceBot, x0, u0, sim_length)
-    # input_bounds = np.array([[-12, 12]])
-    # simulator.add_intput_bound(input_bounds)
-    # simulator.run()
-        
-    # simulator = Simulator(lqgBot, x0, u0, sim_length)
-    # input_bounds = np.array([[-14,14]])
-    # simulator.add_intput_bound(input_bounds)
+
+
+    # simulator = Simulator(lqgdBot, x0, u0, sim_length)
     # simulator.run()
 
-    simulator = Simulator(lqrdBot, x0, u0, sim_length)
-    simulator.run()
+    tspan = np.arange(0,sim_length,lqgdBot.dt)
 
-    simulator = Simulator(lqgdBot, x0, u0, sim_length)
-    simulator.run()
+    run_data_noise = np.empty([len(tspan),2])
+    run_data_kf = np.empty([len(tspan),2])
+    run_data_true = np.empty([len(tspan),2])
 
-    # # we can make a noisy simulator
-    # noisy_sim = NoisySimulator(balanceBot, x0, u0, sim_length, dt)
-    # noisy_sim.run()
+    run_data_noise[0] = x0
+    run_data_kf[0] = x0
+    run_data_true[0] = x0
+    
+    x_noise = x0
+    x_kf = x0
+    x_true = x0
+    y = x0
+
+    u = np.array([0.0])
+    u_noise = u
+    u_true = u
+
+    dummy = 0
+    for i in range(len(tspan)):
+        av_noise = np.random.normal(0.0,0.01)
+        a_noise = np.random.normal(0.0,0.001)
+
+        x_true = balanceBot.get_next_state_simulator(x_true, u_true, dummy)
+        u_true = balanceBot.get_control_input(x_true)
+        run_data_true[i] = np.reshape(x_true, (2,))
+
+        x_noise[0] += a_noise
+        x_noise[1] += av_noise  
+
+        x_noise = balanceBot.get_next_state_simulator(x_noise, u_noise, dummy)
+        u_noise = balanceBot.get_control_input(x_noise)
+        run_data_noise[i] = np.reshape(x_noise, (2,))
+
+
+        y[0] = x_kf[0] + a_noise
+        y[1] = x_kf[1] + av_noise
+
+        x_kf = lqgdBot.get_next_state_simulator(x_kf, u, y)
+        u = lqgdBot.get_control_input(x_kf)
+        run_data_kf[i] = np.reshape(x_kf, (2,))
+
+
+    plt.rcParams['figure.figsize'] = [10, 7]
+    # plt.rcParams.update({'font.size': 18})
+    plt.rcParams.update({
+    "text.usetex": True
+    })
+    
+    i = 0
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=('$\\dot{\\theta}$ true + noise'))
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\dot{\\theta}$ KF')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\dot{\\theta}$ true')
+    plt.title('Two Variable Solution')
+    plt.xlabel('Time')
+    plt.ylabel('State')
+    plt.legend()
+    plt.savefig("KFangular_velocity2.pdf", format="pdf", bbox_inches="tight")
+    plt.show()
+
+    i=1
+    plt.plot(tspan,run_data_noise[:,i],linewidth=1,label='$\\theta$ true + noise')
+    plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\theta$ KF')
+    plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\theta$ true')
+    plt.title('Two Variable Solution')
+    plt.xlabel('Time')
+    plt.ylabel('State')
+    plt.legend()
+    plt.savefig("KFangle2.pdf", format="pdf", bbox_inches="tight")
+    plt.show()
+
