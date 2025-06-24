@@ -7,7 +7,7 @@ import math
 import sys
 sys.path.append('..')
 
-from control_lib.model import LQRModel, LQGModel, LQGDiscreteModel2
+from control_lib.model import LQRModel, LQGModel, LQGDiscreteModel
 from control_lib.simulator import Simulator
 import numpy as np
 import matplotlib.pyplot as plt
@@ -80,7 +80,7 @@ C = np.array([[1, 0],
 lqgBot = LQGModel(balanceBot, C, pmc.Q_kf2V, pmc.R_kf2V, name='2 var balancing robot LQG')
 
 
-lqgdBot = LQGDiscreteModel2(lqgBot, name='2 var balancing robot discrete LQG')
+lqgdBot = LQGDiscreteModel(lqgBot, name='2 var balancing robot discrete LQG')
 
 
 
