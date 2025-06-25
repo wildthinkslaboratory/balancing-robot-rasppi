@@ -7,7 +7,7 @@ import math
 import sys
 sys.path.append('..')
 
-from control_lib.model import LQRModel, LQGModel, LQGDiscreteModel2, LQGDiscreteModel
+from control_lib.model import LQRModel, LQGModel, LQGDiscreteModel2
 from control_lib.simulator import Simulator, Comparison
 import numpy as np
 import matplotlib.pyplot as plt
@@ -79,9 +79,8 @@ C = np.array([[1, 0],
 
 lqgBot = LQGModel(balanceBot, C, pmc.Q_kf2V, pmc.R_kf2V, name='2 var balancing robot LQG')
 
-lqgdBot = LQGDiscreteModel(lqgBot, name='2 var balancing robot discrete LQG')
 
-lqgdBot2 = LQGDiscreteModel2(lqgBot, name='2 var balancing robot discrete LQG model 2')
+lqgdBot = LQGDiscreteModel2(lqgBot, name='2 var balancing robot discrete LQG model 2')
 
 
 
@@ -97,8 +96,8 @@ if __name__ == "__main__":
     # simulator = Simulator(lqgdBot2, x0, u0, sim_length)
     # simulator.run()
 
-    simulator = Comparison(lqgdBot, lqgdBot2, x0, u0, sim_length)
-    simulator.run()
+    # simulator = Comparison(lqgdBot, lqgdBot2, x0, u0, sim_length)
+    # simulator.run()
 
     # tspan = np.arange(0,sim_length,lqgdBot.dt)
 
