@@ -39,11 +39,11 @@ class ModelConstants:
 
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
-    # L = 1.2        # length of pendulum (meters)
+    #L = 1.2        # length of pendulum (meters)
+    dt = 0.01
 
-    Q2V = np.array([[1,0],\
-                    [0, 1]])
 
+    Q2V = np.diag([100, 0.001])
     R2V = np.array([[1]])
 
     Q_kf2V = np.array([[1,0],\
@@ -51,6 +51,9 @@ class ExperimentalConstants(ModelConstants):
     # R_kf2V = np.array([[2,0],\
     #                 [0,0.00125]])
 
-    R_kf2V = np.array([[0.01,0],\
-                    [0,0.01]])
+    R_kf2V = np.array([[1,0],\
+                    [0,1]])
+    
+
+    SC = 0.5 * 0.45 / 0.0325 # this is used to translate horizontal force to speed
     pass
