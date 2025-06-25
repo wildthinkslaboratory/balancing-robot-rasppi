@@ -45,7 +45,7 @@ class ExperimentalConstants(ModelConstants):
     
     Q_kf2V  = np.diag([0.00001, 0.001])
 
-    R_kf2V = np.diag([0.01, 0.0000026])
+    R_kf2V = np.diag([0.03, 0.0000026])
     
     SC = 0.5 * 0.45 / 0.0325 # this is used to translate horizontal force to speed
     pass

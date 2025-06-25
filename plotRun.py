@@ -45,7 +45,7 @@ for i in range(nu):
 plt.xlabel('Time')
 plt.show()
         
-i_to_plot = [1,4]
+i_to_plot = [0,3]
 print(len(plot_data))
 for j in range(2):
     print(i_to_plot[j])
@@ -55,6 +55,15 @@ plt.ylabel('State')
 plt.legend(loc='lower right')
 plt.show()
 
+i_to_plot = [1,4]
+print(len(plot_data))
+for j in range(2):
+    print(i_to_plot[j])
+    plt.plot(plot_data[i_to_plot[j]][:num_points],linewidth=2,label=state_names[i])
+plt.xlabel('Time')
+plt.ylabel('State')
+plt.legend(loc='lower right')
+plt.show()
 
 # # break our data into separate arrays for plotting
 # num_cols = len(data[0])
