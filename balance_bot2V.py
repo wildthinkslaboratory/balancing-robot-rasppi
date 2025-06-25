@@ -82,7 +82,8 @@ lqgBot = LQGModel(balanceBot, C, pmc.Q_kf2V, pmc.R_kf2V, name='2 var balancing r
 
 lqgdBot = LQGDiscreteModel2(lqgBot, name='2 var balancing robot discrete LQG model 2')
 
-
+print(lqgdBot.A)
+print(lqgdBot.B)
 
 if __name__ == "__main__":
     # now we can rum a simulation
