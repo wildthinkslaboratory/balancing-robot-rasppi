@@ -53,7 +53,7 @@ def loop_iteration():
 
     # estimate the state
     uy = np.array([u[0], y[0], y[1]])
-    x = bb.get_next_state(x, uy)
+    x = bb.get_next_state(x, uy, y)
     
     # constrain the input to the allowed motor speeds
     u = bb.get_control_input(x)
