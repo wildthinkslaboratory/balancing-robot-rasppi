@@ -123,15 +123,14 @@ def verify_accelerometer(imu):
     print("testing angular accelleration readings")
     print('position your bot upright')
     countdown(5)
-    timespan = 2
+    timespan = 5
 
     data = []
-    for _ in range(timespan * 10):
+    for _ in range(timespan * 100):
         imu.raw_accel_data()
         angle = math.degrees(imu.raw_angle_rad() - math.pi) 
-        print('Y:', imu.ay_raw, 'Z:', imu.az_raw, 'angle', angle)
         data.append([imu.ay_raw, imu.az_raw, angle])
-        sleep(0.1)
+        sleep(0.01)
 
     print("\naccelerometer Y variance", np.var([(a[0]) for a in data]))
     print("average accelerometer Y: ", np.average([abs(a[0]) for a in data]))
@@ -159,7 +158,7 @@ def verify_gyro(imu):
     timer.start()
 
     while timer.running: # wait for the trial to end
-        sleep(1)
+        sleep(5)
 
     print("gyro noise variance", np.var([a[0] for a in data]))
     print("average error gyro error: ", np.average([abs(a[0]) for a in data]))
@@ -172,5 +171,7 @@ if __name__ == "__main__":
     import numpy as np  
 
     imu = ImuSensor()
+    print('put bot on block for variance computation')
+    countdown(5)
     verify_gyro(imu)
     verify_accelerometer(imu)

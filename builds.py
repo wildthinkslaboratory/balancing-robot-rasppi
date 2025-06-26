@@ -41,7 +41,7 @@ class ModelConstants:
 class ExperimentalConstants(ModelConstants):
 
     t = 0.1
-    Q2V = np.array([[1,0],\
+    Q2V = np.array([[100,0],\
                     [0, 1]])
 
     R2V = np.array([[1]])
@@ -51,3 +51,22 @@ class ExperimentalConstants(ModelConstants):
     R_kf2V = np.array([[0.001,0],\
                     [0,0.000001]])
     pass
+
+"""Countdown: 1gyro noise variance 2.9101840876873906e-06
+average error gyro error:  0.0013880980414035858
+
+
+testing angular accelleration readings
+position your bot upright
+Countdown: 1
+accelerometer Y variance 0.0010923020283783833
+average accelerometer Y:  0.026022973756104836
+
+
+accelerometer Z variance 0.002279805119738938
+average accelerometer Z:  9.800067777614032
+
+
+accelerometer angle variance 0.037360315197735146
+average angle:  0.15215351475542477
+"""
