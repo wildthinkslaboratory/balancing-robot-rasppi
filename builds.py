@@ -48,6 +48,6 @@ class ExperimentalConstants(ModelConstants):
 
     Q_kf2V = np.array([[10,0],\
                     [0, 10]])
-    R_kf2V = np.array([[0.00001,0],\
-                    [0,0.0000001]])
+    R_kf2V = np.array([[0.000001,0],\
+                    [0,0.00000001]])
     pass
