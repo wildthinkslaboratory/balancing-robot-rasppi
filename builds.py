@@ -41,10 +41,10 @@ class ModelConstants:
 class ExperimentalConstants(ModelConstants):
 
     t = 0.1
-    Q2V = np.array([[1000,0],\
-                    [0, 600]])
+    Q2V = np.array([[1,0],\
+                    [0, 1]])
 
-    R2V = np.array([[0.0001]])
+    R2V = np.array([[1]])
 
     Q_kf2V = np.array([[10,0],\
                     [0, 10]])
