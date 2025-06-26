@@ -40,6 +40,7 @@ class ModelConstants:
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
 
+    t = 1
     Q2V = np.array([[1,0],\
                     [0, 1]])
 
@@ -47,6 +48,6 @@ class ExperimentalConstants(ModelConstants):
 
     Q_kf2V = np.array([[1,0],\
                     [0, 1]])
-    R_kf2V = np.array([[0.001,0],\
-                    [0,1]])
+    R_kf2V = np.array([[0.01,0],\
+                    [0,0.00001]])
     pass
