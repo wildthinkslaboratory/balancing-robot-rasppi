@@ -29,7 +29,7 @@ class ModelConstants:
     R2V = np.array([[1]])
 
     Q_kf = np.diag([1,1,1,1])
-    R_kf = np.diag([0.009,0.05,0.00003])
+    R_kf = np.diag([0.009,0.07,0.00003])
 
     Q_kf2V = np.eye(2)
     R_kf2V = np.eye(2)

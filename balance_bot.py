@@ -87,7 +87,7 @@ if __name__ == "__main__":
     simulator = Simulator(lqgdBot, x0, u0, sim_length)
     simulator.run()
 
-    variances = np.array([0.001, 0.03, 0.000003])
+    variances = np.array([0.001, 0.05, 0.000003])
     simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances)
     simulator.run()
 
