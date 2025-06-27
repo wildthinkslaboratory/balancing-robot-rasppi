@@ -19,7 +19,9 @@ class ModelConstants:
     SC = t * ST / r   # this is used to translate horizontal force to speed
     dt = 0.01
     # we add our Q and R matrices
-    Q = np.diag([1,1,1,1])
+    # focus on angle, ignore angular velocity
+    # it's volatile because of high magnitude eigenvalue
+    Q = np.diag([0.01,0.01, 1, 0.0001])
 
     R = np.array([[10]])
 

@@ -18,12 +18,12 @@ plt.rcParams.update({
 })
 
 ns=4
-num_points = len(data)
+num_points = 10
 if num_points > len(data):
      num_points = len(data)
 
-state_names = ['$\\theta$ ','$\\dot{\\theta}$ ','u','$\\theta$ s', '$\\dot{\\theta}$ s']
-#state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
+#state_names = ['$\\theta$ ','$\\dot{\\theta}$ ','u','$\\theta$ s', '$\\dot{\\theta}$ s']
+state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$', 'u']
 for i in range(5):
     plt.plot(plot_data[i][:num_points],linewidth=2,label=state_names[i])
 plt.xlabel('Time')

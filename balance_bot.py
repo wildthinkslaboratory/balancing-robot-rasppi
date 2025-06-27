@@ -38,7 +38,7 @@ pmc = ExperimentalConstants()
 # we build the nonlinear function f for the equations of motion
 # we begin with some partial expressions to make the formulas easier to build
 denominator = M + m*(sin(theta)**2)
-horz_acc = 2 * u + pmc.SC
+horz_acc = 2 * u * pmc.SC
 n0 = -m*g*sin(theta)*cos(theta)
 n1 = m*L*(sin(theta))*(thetadot)**2 - d*xdot + horz_acc
 n2 = (m + M)*g*sin(theta)
