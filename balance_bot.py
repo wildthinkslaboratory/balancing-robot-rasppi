@@ -4,11 +4,11 @@ from casadi import sin, cos
 import sys
 sys.path.append('..')
 
-from control_lib.model import LQRModel, LQGModel, LQRDiscreteModel, LQGDiscreteModel
-from control_lib.simulator import Simulator, NoisySimulator
+from model import LQRModel, LQGModel, LQRDModel, LQGDModel
+from simulator import Simulator, NoisySimulator, KalmanFilterTuner
 import numpy as np
-import matplotlib.pyplot as plt
 from builds import ExperimentalConstants
+from utilities import import_data
 
 
 # We create Casadi symbolic variables for the state
@@ -52,41 +52,31 @@ pmc = ExperimentalConstants()
 constant_values = [pmc.M, pmc.m, pmc.L, pmc.g, pmc.d]
 
 # I made latex names for my states. They look nice in the simulation plots
-state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
+my_state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
 
-
-# Now we make our model.
-lqrBot = LQRModel(state, 
+lqgdBot = LQGDModel(state, 
                 RHS, 
                 u, 
                 constants, 
                 constant_values, 
                 pmc.dt,
-                name='balancing robot LQR', 
-                state_names=state_names)
+                state_names=my_state_names,
+                name='balancing robot LQGD')
 
-# set the goal state
-lqrBot.set_goal_state([0.0, 0.0, np.pi, 0.0])
-
-
-lqrBot.set_Q(pmc.Q)
-lqrBot.set_R(pmc.R)
-
-# now we can do the set up that will build all our matrices
-lqrBot.set_up()
-
+# set up the K matrix
+goal_state = [0.0, 0.0, np.pi, 0.0]
+goal_u = [0.0]
 
 # If we want a Kalman Filter we need to pass in a measurement model
 C = np.array([[1, 0, 0, 0], \
             [0, 0, 1, 0], \
             [0, 0, 0, 1]]) 
 
-lqgBot = LQGModel(lqrBot, C, pmc.Q_kf, pmc.R_kf, name='LQG Balance Bot')
+lqgdBot.set_up_K(pmc.Q, pmc.R, goal_state, goal_u)
+lqgdBot.set_up_kalman_filter(C, pmc.Q_kf, pmc.R_kf)
 
-lqrdBot = LQRDiscreteModel(lqrBot, name='Discrete LQR balance bot')
 
-lqgdBot = LQGDiscreteModel(lqgBot, name='Discrete LQG Balance Bot')
-
+print(lqgdBot)
 
 if __name__ == "__main__":
     # now we can rum a simulation
@@ -94,24 +84,21 @@ if __name__ == "__main__":
     x0 = np.array([1.0,0,np.pi + 0.3, 0.0]) # Initial condition
     sim_length = 4 # in seconds
 
-    # simulator = Simulator(lqrBot, x0, u0, sim_length)
-    # input_bounds = np.array([[-14,14]])
-    # simulator.add_intput_bound(input_bounds)
-    # simulator.run()
-        
-    # simulator = Simulator(lqgBot, x0, u0, sim_length)
-    # input_bounds = np.array([[-14,14]])
-    # simulator.add_intput_bound(input_bounds)
-    # simulator.run()
-
-    simulator = Simulator(lqrdBot, x0, u0, sim_length)
+    simulator = Simulator(lqgdBot, x0, u0, sim_length)
     simulator.run()
 
-    # uy0 = np.array(([0.0,1.0,np.pi + 0.3, 0.0]))
-    # simulator = Simulator(lqgdBot, x0, uy0, sim_length)
-    # simulator.run()
+    variances = np.array([0.001, 0.03, 0.000003])
+    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances)
+    simulator.run()
 
+    run_data = import_data('data.json')
+    num_cols = len(run_data[0])
+    sensor_data = []
+    for col in range(num_cols):
+        A = [d[col] for d in run_data]
+        sensor_data.append(A)
 
-    # # we can make a noisy simulator
-    # noisy_sim = NoisySimulator(lqrBot, x0, u0, sim_length, dt)
-    # noisy_sim.run()
+    sensor_data = sensor_data[3:5]
+
+    filter_tuner = KalmanFilterTuner(lqgdBot, sensor_data)
+    filter_tuner.run()

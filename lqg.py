@@ -4,7 +4,7 @@ from InterruptTimer import InterruptTimer
 from motors import BRMotors
 from imu import ImuSensor
 from balance_bot import lqgdBot as bb
-from utilities import output_data, clip
+from utilities import output_data, clip, countdown
 from builds import ModelConstants
 
 mc = ModelConstants()
@@ -23,15 +23,13 @@ motors = BRMotors(dT)           # DC motors with encoder
 
 ############################################
 run_data = list()  
-sleep(3)
+countdown(5)
 
 angle_init = imu_sensor.raw_angle_rad()
 
-x = np.array([0.0, 0.0, angle_init,0.0])                # this is our estimated state                     
-uy = np.array([0.0, x[0], x[2], x[3]])                  # our input values [ u, x_sensor, a_sensor, av_sensor]   
-
-
-
+x = np.array([0.0, 0.0, angle_init,0.0])    # this is our estimated state                     
+u = np.array([0.0])                         # our input values 
+y = np.array([x[0], x[2], x[3]])            # sensor data
 
 ############################################
 # LQE implementation
@@ -43,26 +41,26 @@ uy = np.array([0.0, x[0], x[2], x[3]])                  # our input values [ u, 
 
 def update_run_data():
     global run_data
-    run_data.append([x[0], x[1], x[2], x[3], uy[0], uy[1], uy[2], uy[3]])
+    run_data.append([x[0], x[1], x[2], x[3], u[0], y[0], y[1], y[2]])
 
 def loop_iteration():
     global x
-    global uy
+    global u
+    global y
 
-    uy[1] = motors.position()
-    uy[2] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
-    uy[3] = imu_sensor.raw_angular_velocity_rad()
+    y[0] = motors.position()
+    y[1] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
+    y[2] = imu_sensor.raw_angular_velocity_rad()
 
     # estimate the state
-    x = bb.get_next_state(x, uy)
+    x = bb.get_next_state(x, u, y)
 
     # constrain the input to the allowed motor speeds
-    uy = bb.get_control_input(x)
-    motor_speed = clip(uy[0] / mc.SC, -0.9, 0.9)
-    uy[0] = motor_speed * mc.SC    # this is the force our motors can actually apply
+    u = bb.get_control_input(x)
+    motor_speed = clip(u[0] / mc.SC, -1, 1)
+    u[0] = motor_speed * mc.SC    # this is the force our motors can actually apply
     motors.run(motor_speed)
     
-
 
     
 # the main functions are called in timers that

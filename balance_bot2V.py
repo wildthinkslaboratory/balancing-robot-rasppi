@@ -1,17 +1,15 @@
-# This is a two variable version of the inverted pendulum problem 
-
 import casadi as ca
 from casadi import sin, cos
-import math
 
 import sys
 sys.path.append('..')
 
-from control_lib.model import LQRModel, LQGModel, LQGDiscreteModel2
-from control_lib.simulator import Simulator, Comparison
+from model import LQRModel, LQGModel, LQRDModel, LQGDModel
+from simulator import Simulator, NoisySimulator, KalmanFilterTuner
 import numpy as np
-import matplotlib.pyplot as plt
 from builds import ExperimentalConstants
+from utilities import import_data
+
 
 # We create Casadi symbolic variables for the state
 theta = ca.MX.sym('theta')
@@ -45,160 +43,67 @@ RHS = ca.vertcat(
     (n2+(-cos(theta))*(n1)) / (L*denominator)
     )
 
-# the constant values are imported from the build file
-pmc = ExperimentalConstants()
-constant_values = [pmc.M, pmc.m, pmc.L, pmc.g, pmc.d]
+
+mc = ExperimentalConstants()
+constant_values = [mc.M, mc.m, mc.L, mc.g, mc.d]
 
 # I made latex names for my states. They look nice in the simulation plots
-state_names = ['$\\theta$ ','$\\dot{\\theta}$ ']
-
-# Now we make our model.
-balanceBot = LQRModel(state, 
-                              RHS, 
-                              u, 
-                              constants, 
-                              constant_values, 
-                              pmc.dt,
-                              name='2 var balancing robot LQR', 
-                              state_names=state_names)
-
-# set the goal state
-balanceBot.set_goal_state([np.pi + (1*np.pi/180), 0.0])
+my_state_names = ['$\\theta$ ','$\\dot{\\theta}$ ']
 
 
-balanceBot.set_Q(pmc.Q2V)
-balanceBot.set_R(pmc.R2V)
-
-# now we can do the set up that will build all our matrices
-balanceBot.set_up()
+# set up the K matrix
+goal_state = [np.pi, 0.0]
+goal_u = [0.0]
 
 # If we want a Kalman Filter we need to pass in a measurement model
-C = np.array([[1, 0], 
-              [0, 1]]) 
+C = np.array([[1, 0], \
+            [0, 1]]) 
 
 
-lqgBot = LQGModel(balanceBot, C, pmc.Q_kf2V, pmc.R_kf2V, name='2 var balancing robot LQG')
+lqgdBot = LQGDModel(state, 
+                RHS, 
+                u, 
+                constants, 
+                constant_values, 
+                mc.dt,
+                state_names=my_state_names,
+                name='balancing robot LQGD')
 
 
-lqgdBot = LQGDiscreteModel2(lqgBot, name='2 var balancing robot discrete LQG model 2')
+lqgdBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
+lqgdBot.set_up_kalman_filter(C, mc.Q_kf2V, mc.R_kf2V)
 
-print(lqgdBot.A)
-print(lqgdBot.B)
+# lqgdBot.Kf = np.array([[0.2, 0.02], \
+#                         [0.1, 1]])
+
+# lqgdBot.Kf = np.array([[0.1, 0.01], \
+#                         [0.05, 0.8]])
+
+# lqgdBot.Kf = np.array([[0.1, 0], \
+#                         [0, 0.3]])
+
+print(lqgdBot)
 
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([np.pi + 0.2, 0.0]) # Initial condition
-    sim_length = 1 # in seconds
+    x0 = np.array([np.pi + 0.3, 0.0]) # Initial condition
+    sim_length = 4 # in seconds
 
     # simulator = Simulator(lqgdBot, x0, u0, sim_length)
     # simulator.run()
 
-    # simulator = Simulator(lqgdBot2, x0, u0, sim_length)
-    # simulator.run()
+    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length)
+    simulator.run()
 
-    # simulator = Comparison(lqgdBot, lqgdBot2, x0, u0, sim_length)
-    # simulator.run()
+    run_data = import_data('data.json')
+    num_cols = len(run_data[0])
+    sensor_data = []
+    for col in range(num_cols):
+        A = [d[col] for d in run_data]
+        sensor_data.append(A)
 
-    # tspan = np.arange(0,sim_length,lqgdBot.dt)
+    sensor_data = sensor_data[3:5]
 
-    # run_data_noise = np.empty([len(tspan),2])
-    # run_data_kf = np.empty([len(tspan),2])
-    # run_data_true = np.empty([len(tspan),2])
-    
-    # # x_noise = x0
-    # # x_kf = x0
-    # # x_true = x0
-    # # y = x0
-    # # y_true = x0
-    # # y_noise = x0
-
-    # # u = np.array([0.0])
-    # # u_noise = u
-    # # u_true = u
-
-    # # dummy = 0
-
-    # x = x0
-    # u = u0
-    # y = x0 # full state
-    # x2 = x0
-    # u2 = u0
-    # y2 = x0 # full state
-          
-    # for i in range(len(tspan)):
-    #     # av_noise = np.random.normal(0.0,0.025)
-    #     # a_noise = np.random.normal(0.0,0.25)
-
-    #     # if i == math.floor((sim_length / balanceBot.dt) / 2):
-    #     #     # nudge the system
-    #     #     x_true = balanceBot.get_next_state_simulator(x_true, np.array([1.0]), dummy)
-    #     #     x_noise = balanceBot.get_next_state_simulator(x_noise, np.array([1.0]), dummy)
-    #     #     x_kf = lqgdBot.get_next_state(x_kf, np.array([1.0]), y)
-
-
-
-    #     x = lqgdBot.get_next_state(x,u,y)
-    #     u = lqgdBot.get_control_input(x)
-    #     y = x # assume perfect sensors
-    #     run_data_true[i] =  x
-
-    #     print('b', x2, u2, y2)
-    #     x2 = lqgdBot2.get_next_state(x2,u2,y2)
-    #     u2 = lqgdBot2.get_control_input(x2)
-    #     y2 = x2 # assume perfect sensors
-    #     run_data_kf[i] =  x2
-
-
-
-        
-        # x_true = lqgdBot.get_next_state(x_true, u_true, y_true) # sensor data same as state
-        # u_true = lqgdBot.get_control_input(x_true)
-        # y_true = x_true
-        # run_data_true[i] = x_true
-
- 
-        # x_noise[0] = x_true[0] + a_noise
-        # x_noise[1] = x_true[1] + av_noise
-
-        # x_noise = balanceBot.get_next_state_simulator(x_noise, u_true, dummy)
-        # run_data_noise[i] = np.reshape(x_noise, (2,))
-
-        # y[0] = x_kf[0] + a_noise
-        # y[1] = x_kf[1] + av_noise
-        # x_kf = lqgdBot2.get_next_state(x_kf, u, y)
-        # u = lqgdBot2.get_control_input(x_kf)
-        # y = x_kf
-        # run_data_kf[i] = x_kf
-
-
-
-    # plt.rcParams['figure.figsize'] = [10, 7]
-    # # plt.rcParams.update({'font.size': 18})
-    # plt.rcParams.update({
-    # "text.usetex": True
-    # })
-    
-
-
-    # i=0
-    # #plt.plot(tspan,run_data_noise[:,i],linewidth=1,label='$\\theta$ true + noise')
-    # plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\theta$ KF')
-    # plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\theta$ true')
-    # plt.title('Two Variable Solution')
-    # plt.xlabel('Time')
-    # plt.ylabel('State')
-    # plt.legend()
-    # plt.savefig("KFangle2.pdf", format="pdf", bbox_inches="tight")
-    # plt.show()
-
-    # i = 1
-    # #plt.plot(tspan,run_data_noise[:,i],linewidth=1,label=('$\\dot{\\theta}$ true + noise'))
-    # plt.plot(tspan,run_data_kf[:,i],linewidth=1,label='$\\dot{\\theta}$ KF')
-    # plt.plot(tspan,run_data_true[:,i],linewidth=1,label='$\\dot{\\theta}$ true')
-    # plt.title('Two Variable Solution')
-    # plt.xlabel('Time')
-    # plt.ylabel('State')
-    # plt.legend()
-    # plt.savefig("KFangular_velocity2.pdf", format="pdf", bbox_inches="tight")
-    # plt.show()
+    filter_tuner = KalmanFilterTuner(lqgdBot, sensor_data)
+    filter_tuner.run()
