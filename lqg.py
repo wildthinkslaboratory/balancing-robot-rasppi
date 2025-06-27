@@ -12,7 +12,7 @@ mc = ModelConstants()
 debug = False
 output_data_to_file = True
 
-timeout = 8
+timeout = 3
 dT = bb.dt
 
 imu_sensor = ImuSensor()        # mpu6050 gyro/accelorometer access                    
@@ -31,6 +31,8 @@ x = np.array([0.0, 0.0, angle_init,0.0])    # this is our estimated state
 u = np.array([0.0])                         # our input values 
 y = np.array([x[0], x[2], x[3]])            # sensor data
 
+u_unclipped = u # for debugging
+
 ############################################
 # LQE implementation
 # 
@@ -41,12 +43,13 @@ y = np.array([x[0], x[2], x[3]])            # sensor data
 
 def update_run_data():
     global run_data
-    run_data.append([x[0], x[1], x[2], x[3], u[0], y[0], y[1], y[2]])
+    run_data.append([x[0], x[1], x[2], x[3], u[0], y[0], y[1], y[2], u_unclipped[0]])
 
 def loop_iteration():
     global x
     global u
     global y
+    global u_unclipped
 
     y[0] = motors.position()
     y[1] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
@@ -56,8 +59,8 @@ def loop_iteration():
     x = bb.next_state(x, u, y)
 
     # constrain the input to the allowed motor speeds
-    u = bb.control_input(x)
-    u[0] = clip(u[0], -1, 1)
+    u_unclipped = bb.control_input(x)
+    u[0] = clip(u_unclipped[0], -1, 1)
     motors.run(u[0])
     
 
