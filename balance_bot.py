@@ -30,15 +30,17 @@ m = ca.MX.sym('m')
 L = ca.MX.sym('L') 
 g = ca.MX.sym('g') 
 d = ca.MX.sym('d')
+ST = ca.MX.sym('ST')
+r = ca.MX.sym('r')
 
 
-constants = ca.vertcat( M, m, L, g, d )
-pmc = ExperimentalConstants()
+constants = ca.vertcat( M, m, L, g, d, ST, r )
+
 
 # we build the nonlinear function f for the equations of motion
 # we begin with some partial expressions to make the formulas easier to build
 denominator = M + m*(sin(theta)**2)
-horz_acc = 2 * u * pmc.SC
+horz_acc = 2 * u * ST / r
 n0 = -m*g*sin(theta)*cos(theta)
 n1 = m*L*(sin(theta))*(thetadot)**2 - d*xdot + horz_acc
 n2 = (m + M)*g*sin(theta)
@@ -50,8 +52,8 @@ RHS = ca.vertcat(
     )
 
 # the constant values are imported from the build file
-
-constant_values = [pmc.M, pmc.m, pmc.L, pmc.g, pmc.d]
+pmc = ExperimentalConstants()
+constant_values = [pmc.M, pmc.m, pmc.L, pmc.g, pmc.d, pmc.ST, pmc.r]
 
 # I made latex names for my states. They look nice in the simulation plots
 my_state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
@@ -83,14 +85,14 @@ print(lqgdBot)
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([1.0,0,np.pi + 0.3, 0.0]) # Initial condition
-    sim_length = 4 # in seconds
+    x0 = np.array([1.0,0,np.pi, 0.0]) # Initial condition
+    sim_length = 10 # in seconds
 
     simulator = Simulator(lqgdBot, x0, u0, sim_length)
     simulator.run()
 
     variances = np.array([0.001, 0.05, 0.000003])
-    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances)
+    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge = 0.5)
     simulator.run()
 
     run_data = import_data('data.json')
@@ -102,5 +104,5 @@ if __name__ == "__main__":
 
     sensor_data = sensor_data[3:5]
 
-    filter_tuner = KalmanFilterTuner(lqgdBot, sensor_data)
-    filter_tuner.run()
+    # filter_tuner = KalmanFilterTuner(lqgdBot, sensor_data)
+    # filter_tuner.run()

@@ -16,22 +16,21 @@ class ModelConstants:
     R = 4           # motor coil resistance in Ohms
     ST = 0.45        # motor stall torque in Nm
     t = 1           # this is for tuning the horz force to speed translation
-    SC = t * ST / r   # this is used to translate horizontal force to speed
     dt = 0.01
     # we add our Q and R matrices
     # focus on angle, ignore angular velocity
     # it's volatile because of high magnitude eigenvalue
-    Q = np.diag([0.01,0.01, 1, 0.0001])
+    Q = np.diag([0.001, 0.001, 1, 100])
 
-    R = np.array([[10]])
+    R = np.array([[1]])
 
     Q2V = np.array([[1,0],\
                     [0, 1]])
 
     R2V = np.array([[1]])
 
-    Q_kf = np.diag([1,1,1,1])
-    R_kf = np.diag([0.009,0.07,0.00003])
+    Q_kf = np.diag([1,1,1,10])
+    R_kf = np.diag([0.01,0.05,0.1])
 
     Q_kf2V = np.eye(2)
     R_kf2V = np.eye(2)
@@ -40,7 +39,6 @@ class ModelConstants:
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
 
-    t = 1
     Q2V = np.diag([1, 1])
     R2V = np.array([[1]])
     
