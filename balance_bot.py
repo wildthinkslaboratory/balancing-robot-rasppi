@@ -33,12 +33,14 @@ d = ca.MX.sym('d')
 
 
 constants = ca.vertcat( M, m, L, g, d )
+pmc = ExperimentalConstants()
 
 # we build the nonlinear function f for the equations of motion
 # we begin with some partial expressions to make the formulas easier to build
 denominator = M + m*(sin(theta)**2)
+horz_acc = 2 * u + pmc.SC
 n0 = -m*g*sin(theta)*cos(theta)
-n1 = m*L*(sin(theta))*(thetadot)**2 - d*xdot + u
+n1 = m*L*(sin(theta))*(thetadot)**2 - d*xdot + horz_acc
 n2 = (m + M)*g*sin(theta)
 RHS = ca.vertcat( 
     xdot, 
@@ -48,7 +50,7 @@ RHS = ca.vertcat(
     )
 
 # the constant values are imported from the build file
-pmc = ExperimentalConstants()
+
 constant_values = [pmc.M, pmc.m, pmc.L, pmc.g, pmc.d]
 
 # I made latex names for my states. They look nice in the simulation plots
