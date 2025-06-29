@@ -20,18 +20,15 @@ class ModelConstants:
     # we add our Q and R matrices
     # focus on angle, ignore angular velocity
     # it's volatile because of high magnitude eigenvalue
-    Q = np.diag([0.001, 0.001, 1, 100])
-
+    Q = np.diag([1, 1, 1, 1])
     R = np.array([[1]])
+
+    Q_kf = np.diag([1,1,1,1])
+    R_kf = np.diag([0.01,1,10])
 
     Q2V = np.array([[1,0],\
                     [0, 1]])
-
     R2V = np.array([[1]])
-
-    Q_kf = np.diag([1,1,1,10])
-    R_kf = np.diag([0.01,0.05,0.1])
-
     Q_kf2V = np.eye(2)
     R_kf2V = np.eye(2)
 
@@ -39,12 +36,9 @@ class ModelConstants:
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
 
-    Q2V = np.diag([1, 1])
-    R2V = np.array([[1]])
-    
-    Q_kf2V  = np.diag([1, 1])
+    L = 0.06
+    Q = np.diag([1,1,1,1])
+    R = np.array([[1]])
 
-    R_kf2V = np.diag([0.04, 0.0000026])
-    
-    SC = 0.5 * 0.45 / 0.0325 # this is used to translate horizontal force to speed
-    pass
+    Q_kf = np.diag([1,1,1,1])
+    R_kf = np.diag([0.000004,0.01,0.000003])

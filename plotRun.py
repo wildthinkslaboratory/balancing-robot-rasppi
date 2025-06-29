@@ -18,12 +18,12 @@ plt.rcParams.update({
 })
 
 ns=4
-num_points = 10
+num_points = 20
 if num_points > len(data):
      num_points = len(data)
 
 #state_names = ['$\\theta$ ','$\\dot{\\theta}$ ','u','$\\theta$ s', '$\\dot{\\theta}$ s']
-state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$', 'u']
+state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$', 'u', 'x s', 'theta s', 'av s', 'u unclip' ]
 for i in range(5):
     plt.plot(plot_data[i][:num_points],linewidth=2,label=state_names[i])
 plt.xlabel('Time')
@@ -45,21 +45,17 @@ for i in range(nu):
 plt.xlabel('Time')
 plt.show()
         
-i_to_plot = [0,3]
-print(len(plot_data))
-for j in range(2):
-    print(i_to_plot[j])
-    plt.plot(plot_data[i_to_plot[j]][:num_points],linewidth=2,label=state_names[i])
+i_to_plot = [4,8]
+for j in range(len(i_to_plot)):
+    plt.plot(plot_data[i_to_plot[j]][:num_points],linewidth=2,label=state_names[i_to_plot[j]])
 plt.xlabel('Time')
 plt.ylabel('State')
 plt.legend(loc='lower right')
 plt.show()
 
 i_to_plot = [1,4]
-print(len(plot_data))
-for j in range(2):
-    print(i_to_plot[j])
-    plt.plot(plot_data[i_to_plot[j]][:num_points],linewidth=2,label=state_names[i])
+for j in range(len(i_to_plot)):
+    plt.plot(plot_data[i_to_plot[j]][:num_points],linewidth=2,label=state_names[i_to_plot[j]])
 plt.xlabel('Time')
 plt.ylabel('State')
 plt.legend(loc='lower right')

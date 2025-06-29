@@ -118,7 +118,7 @@ def verify_accelerometer(imu):
     data = []
     for _ in range(timespan * 100):
         imu.raw_accel_data()
-        angle = math.degrees(imu.raw_angle_rad() - math.pi) 
+        angle = imu.raw_angle_rad() 
         data.append([imu.ay_raw, imu.az_raw, angle])
         sleep(0.01)
 
@@ -130,6 +130,7 @@ def verify_accelerometer(imu):
     print("average accelerometer Z: ", np.average([abs(a[1]) for a in data]))
     print('\n')
 
+    print('readings in radians')
     print("accelerometer angle variance", np.var([(a[2]) for a in data]))
     print("average angle: ", np.average([abs(a[2]) for a in data]))
     print('\n')
@@ -150,6 +151,7 @@ def verify_gyro(imu):
     while timer.running: # wait for the trial to end
         sleep(5)
 
+    print('gyro readings in rad/s')
     print("gyro noise variance", np.var([a[0] for a in data]))
     print("average error gyro error: ", np.average([abs(a[0]) for a in data]))
     print('\n')

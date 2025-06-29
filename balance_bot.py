@@ -33,6 +33,8 @@ d = ca.MX.sym('d')
 ST = ca.MX.sym('ST')
 r = ca.MX.sym('r')
 
+test = ca.MX.sym('p', 3)
+print(test.size1())
 
 constants = ca.vertcat( M, m, L, g, d, ST, r )
 
@@ -79,30 +81,28 @@ C = np.array([[1, 0, 0, 0], \
 lqgdBot.set_up_K(pmc.Q, pmc.R, goal_state, goal_u)
 lqgdBot.set_up_kalman_filter(C, pmc.Q_kf, pmc.R_kf)
 
-
 print(lqgdBot)
-
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([1.0,0,np.pi, 0.0]) # Initial condition
-    sim_length = 10 # in seconds
+    x0 = np.array([0.0,0,np.pi, 0.0]) # Initial condition
+    sim_length = 1 # in seconds
 
-    simulator = Simulator(lqgdBot, x0, u0, sim_length)
+    # simulator = Simulator(lqgdBot, x0, u0, sim_length)
+    # simulator.run()
+
+    variances = np.array([0.000004, 0.01, 0.000003])
+    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
     simulator.run()
 
-    variances = np.array([0.001, 0.05, 0.000003])
-    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge = 0.5)
-    simulator.run()
+    # run_data = import_data('data.json')
+    # num_cols = len(run_data[0])
+    # sensor_data = []
+    # for col in range(num_cols):
+    #     A = [d[col] for d in run_data]
+    #     sensor_data.append(A)
 
-    run_data = import_data('data.json')
-    num_cols = len(run_data[0])
-    sensor_data = []
-    for col in range(num_cols):
-        A = [d[col] for d in run_data]
-        sensor_data.append(A)
-
-    sensor_data = sensor_data[3:5]
+    # sensor_data = sensor_data[3:5]
 
     # filter_tuner = KalmanFilterTuner(lqgdBot, sensor_data)
     # filter_tuner.run()
