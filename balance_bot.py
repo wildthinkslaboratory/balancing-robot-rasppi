@@ -91,7 +91,7 @@ if __name__ == "__main__":
     # simulator = Simulator(lqgdBot, x0, u0, sim_length)
     # simulator.run()
 
-    variances = np.array([0.000004, 0.01, 0.000003])
+    variances = np.array([0.000004,0.000015,0.0000025])
     simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
     simulator.run()
 

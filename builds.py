@@ -41,4 +41,24 @@ class ExperimentalConstants(ModelConstants):
     R = np.array([[1]])
 
     Q_kf = np.diag([1,1,1,1])
-    R_kf = np.diag([0.000004,0.01,0.000003])
+    R_kf = np.diag([0.000004,0.000015,0.0000025])
+
+"""Countdown: 1gyro readings in rad/s
+gyro noise variance 2.5439875792968847e-06
+average error gyro error:  0.0014338266967203557
+
+
+testing angular accelleration readings
+position your bot upright
+Countdown: 1
+accelerometer Y variance 0.0014442795206713013
+average accelerometer Y:  0.028198192513327443
+
+
+accelerometer Z variance 0.00200945709510295
+average accelerometer Z:  9.80832927173857
+
+
+readings in radians
+accelerometer angle variance 1.5002323219619387e-05
+average angle:  3.1417278128868312"""
