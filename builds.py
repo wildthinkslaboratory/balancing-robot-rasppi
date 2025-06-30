@@ -36,13 +36,13 @@ class ModelConstants:
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
 
-    Q_kf2V = np.diag([1,1])  / 100000
+    Q_kf2V = np.diag([1,1]) 
     R_kf2V = np.diag([0.000015,0.0000025])
 
     Q = np.diag([1,1,1,1])
     R = np.array([[1]])
 
-    Q_kf = np.diag([1,1,1,1]) / 1000000
+    Q_kf = np.diag([1,1,1,1]) / 100000000
     R_kf = np.diag([0.000004,0.000015,0.0000025])
 
 """Countdown: 1gyro readings in rad/s

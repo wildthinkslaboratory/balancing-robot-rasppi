@@ -4,7 +4,7 @@ from casadi import sin, cos
 import sys
 sys.path.append('..')
 
-from control_lib.model import LQRModel, LQGModel, LQRDModel, LQGDModel
+from control_lib.model import LQRDModel, LQGDModel
 from control_lib.simulator import Simulator, NoisySimulator, KalmanFilterTuner
 import numpy as np
 from builds import ExperimentalConstants
@@ -60,7 +60,7 @@ constant_values = [pmc.M, pmc.m, pmc.L, pmc.g, pmc.d, pmc.ST, pmc.r]
 # I made latex names for my states. They look nice in the simulation plots
 my_state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
 
-lqgdBot = LQGDModel(state, 
+lqrdBot = LQRDModel(state, 
                 RHS, 
                 u, 
                 constants, 
@@ -79,12 +79,7 @@ C = np.array([[1, 0, 0, 0], \
             [0, 0, 0, 1]]) 
 
 
-lqgdBot.set_up_K(pmc.Q, pmc.R, goal_state, goal_u)
-lqgdBot.set_up_kalman_filter(C, pmc.Q_kf, pmc.R_kf)
-
-print(lqgdBot.Kf.shape)
-print(lqgdBot.C[0])
-print(lqgdBot)
+lqrdBot.set_up_K(pmc.Q, pmc.R, goal_state, goal_u)
 
 
 
@@ -94,23 +89,23 @@ if __name__ == "__main__":
     x0 = np.array([1.0,0,np.pi - 0.1, 0.0]) # Initial condition
     sim_length = 5 # in seconds
 
-    # simulator = Simulator(lqgdBot, x0, u0, sim_length)
-    # simulator.run()
+    simulator = Simulator(lqrdBot, x0, u0, sim_length)
+    simulator.run()
 
-    variances = np.array([0.000004,0.000015,0.0000025])
+    # variances = np.array([0.000004,0.000015,0.0000025])
 
     
-    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
-    simulator.run()
+    # simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
+    # simulator.run()
 
     # run_data = import_data('data.json')
     # num_cols = len(run_data[0])
-    # sensor_data = []
-    # for col in range(num_cols):
-    #     A = [d[col] for d in run_data]
-    #     sensor_data.append(A)
-
-    # sensor_data = sensor_data[3:5]
+    # sensor_i = [5,6,7]
+    # run_data = run_data[:30]
+    # sensor_data = np.empty((len(run_data),len(sensor_i)))
+    # for j, row in enumerate(run_data):
+    #     record = [row[i] for i in sensor_i]
+    #     sensor_data[j] = record
 
     # filter_tuner = KalmanFilterTuner(lqgdBot, sensor_data)
     # filter_tuner.run()

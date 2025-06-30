@@ -59,23 +59,38 @@ goal_u = [0.0]
 C = np.array([[1, 0], \
             [0, 1]]) 
 
-
-lqgdBot = LQGDModel(state, 
+lqrdBot = LQRDModel(state, 
                 RHS, 
                 u, 
                 constants, 
                 constant_values, 
                 mc.dt,
                 state_names=my_state_names,
-                name='balancing robot LQGD')
+                name='balancing robot LQRD')
 
 print(mc.R_kf2V)
 print(mc.Q_kf2V)
 
-lqgdBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
-lqgdBot.set_up_kalman_filter(C, mc.Q_kf2V, mc.R_kf2V)
+lqrdBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
 
-print(lqgdBot)
+
+# print(lqgdBot)
+# lqgdBot = LQGDModel(state, 
+#                 RHS, 
+#                 u, 
+#                 constants, 
+#                 constant_values, 
+#                 mc.dt,
+#                 state_names=my_state_names,
+#                 name='balancing robot LQGD')
+
+# print(mc.R_kf2V)
+# print(mc.Q_kf2V)
+
+# lqgdBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
+# lqgdBot.set_up_kalman_filter(C, mc.Q_kf2V, mc.R_kf2V)
+
+# print(lqgdBot)
 
 if __name__ == "__main__":
     # now we can rum a simulation
@@ -83,16 +98,16 @@ if __name__ == "__main__":
     x0 = np.array([np.pi - 0.1, 0.0]) # Initial condition
     sim_length = 4 # in seconds
 
-    # simulator = Simulator(lqgdBot, x0, u0, sim_length)
+    simulator = Simulator(lqrdBot, x0, u0, sim_length)
+    simulator.run()
+
+    # variances = np.array([0.000015,0.0000025])
+    # simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances)
     # simulator.run()
 
-    variances = np.array([0.000015,0.0000025])
-    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances)
-    simulator.run()
-
-    variances = np.array([0.000015,0.0000025])
-    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances)
-    simulator.run()
+    # variances = np.array([0.000015,0.0000025])
+    # simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances)
+    # simulator.run()
 
     # run_data = import_data('data.json')
     # num_cols = len(run_data[0])

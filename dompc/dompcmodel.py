@@ -8,7 +8,16 @@ import os
 subfolder_path = os.path.join(os.path.dirname(__file__), "../")
 sys.path.append(subfolder_path)
 
-from model_constants import *
+M = 0.05       # wheels plus motors (kilograms) 
+m = 1          # rest of the robot (kilograms)
+L = 0.6        # length of pendulum (meters)
+g = -9.81       # gravity, (meters / sec^2)
+d = 0.01       # d is a damping factor
+r = 0.0325      # radius of the wheels in meters
+R = 4           # motor coil resistance in Ohms
+ST = 0.45        # motor stall torque in Nm 
+t = 1           # this is for tuning the horz force to speed translation
+dt = 0.01
 
 def model(symvar_type='SX'):
 
