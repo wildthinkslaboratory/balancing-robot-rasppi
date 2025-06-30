@@ -12,9 +12,9 @@ class ModelConstants:
     L = 0.06        # length of pendulum (meters)
     g = -9.81       # gravity, (meters / sec^2)
     d = 0.01       # d is a damping factor
-    r = 0.0325      # radius of the wheels
+    r = 0.0325      # radius of the wheels in meters
     R = 4           # motor coil resistance in Ohms
-    ST = 0.45        # motor stall torque in Nm
+    ST = 0.45        # motor stall torque in Nm 
     t = 1           # this is for tuning the horz force to speed translation
     dt = 0.01
     # we add our Q and R matrices
@@ -36,11 +36,13 @@ class ModelConstants:
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
 
-    L = 0.06
+    Q_kf2V = np.diag([1,1])  / 100000
+    R_kf2V = np.diag([0.000015,0.0000025])
+
     Q = np.diag([1,1,1,1])
     R = np.array([[1]])
 
-    Q_kf = np.diag([1,1,1,1])
+    Q_kf = np.diag([1,1,1,1]) / 1000000
     R_kf = np.diag([0.000004,0.000015,0.0000025])
 
 """Countdown: 1gyro readings in rad/s

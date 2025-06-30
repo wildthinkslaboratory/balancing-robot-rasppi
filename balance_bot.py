@@ -78,20 +78,28 @@ C = np.array([[1, 0, 0, 0], \
             [0, 0, 1, 0], \
             [0, 0, 0, 1]]) 
 
+
 lqgdBot.set_up_K(pmc.Q, pmc.R, goal_state, goal_u)
 lqgdBot.set_up_kalman_filter(C, pmc.Q_kf, pmc.R_kf)
 
+print(lqgdBot.Kf.shape)
+print(lqgdBot.C[0])
 print(lqgdBot)
+
+
+
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([0.0,0,np.pi, 0.0]) # Initial condition
-    sim_length = 1 # in seconds
+    x0 = np.array([1.0,0,np.pi - 0.1, 0.0]) # Initial condition
+    sim_length = 5 # in seconds
 
     # simulator = Simulator(lqgdBot, x0, u0, sim_length)
     # simulator.run()
 
     variances = np.array([0.000004,0.000015,0.0000025])
+
+    
     simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
     simulator.run()
 
