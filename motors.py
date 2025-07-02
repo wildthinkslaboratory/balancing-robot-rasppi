@@ -94,9 +94,9 @@ def main():
 	try:
 		my_motors = BRMotors(0.01)
 		my_motors.run(0.25)
-		sleep(1)
-		my_motors.run(-0.25)
-		sleep(1)
+		sleep(2)
+		# my_motors.run(-0.25)
+		# sleep(1)
 		print(my_motors.position_data())
 	finally:
 		my_motors.cleanup()
