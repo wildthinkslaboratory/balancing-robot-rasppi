@@ -41,8 +41,12 @@ constants = ca.vertcat( M, m, L, g, d, ST, r )
 
 # we build the nonlinear function f for the equations of motion
 # we begin with some partial expressions to make the formulas easier to build
+
+# model for the motor torque
+# 821 * u + 4.39 converts PWM to grams measured on a scale with lever arm 9 cm
+torque = (821 * u + 4.39) * 9.81 * 0.09 / 1000
+horz_acc = 2 * torque / r
 denominator = M + m*(sin(theta)**2)
-horz_acc = 2 * u * ST / r
 n0 = -m*g*sin(theta)*cos(theta)
 n1 = m*L*(sin(theta))*(thetadot)**2 - d*xdot + horz_acc
 n2 = (m + M)*g*sin(theta)
