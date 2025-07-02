@@ -12,7 +12,7 @@ mc = ModelConstants()
 debug = False
 output_data_to_file = True
 
-timeout = 3
+timeout = 5
 dT = bb.dt
 
 imu_sensor = ImuSensor()        # mpu6050 gyro/accelorometer access                    
