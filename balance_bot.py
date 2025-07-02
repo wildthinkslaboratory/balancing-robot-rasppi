@@ -110,13 +110,7 @@ if __name__ == "__main__":
     # simulator = Simulator(lqgBot, x0, u0, sim_length)
     # simulator.run()
 
-    # simulator = Simulator(lqgdBot, x0, u0, sim_length)
-    # simulator.run()
-
     variances = np.array([0.004,0.00015,0.0000025])
-    # variances = np.array([0.004,0.0015,0.025])
-    # simulator = NoisySimulator(lqgBot, x0, u0, sim_length, noise=variances, nudge=0.0)
-    # simulator.run()
 
     simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
     simulator.run()
@@ -124,7 +118,7 @@ if __name__ == "__main__":
     run_data = import_data('data.json')
     num_cols = len(run_data[0])
     sensor_i = [5,6,7]
-    # run_data = run_data[:300]
+    run_data = run_data[:30]
     sensor_data = np.empty((len(run_data),len(sensor_i)))
     for j, row in enumerate(run_data):
         record = [row[i] for i in sensor_i]

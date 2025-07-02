@@ -1,6 +1,7 @@
 from utilities import import_data
 import sys
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 data = import_data('data.json')
@@ -18,7 +19,7 @@ plt.rcParams.update({
 })
 
 ns=4
-num_points = 100
+num_points = 40
 if num_points > len(data):
      num_points = len(data)
 
@@ -35,7 +36,11 @@ plt.show()
 nu = 1
 fig, axs = plt.subplots(ns + nu)
 fig.set_figheight(8)
+y = np.full(num_points, np.pi)
+
 for i in range(ns):
+    if (i == 2):
+        axs[i].plot(y)
     axs[i].plot(plot_data[i][:num_points],linewidth=2)
     axs[i].set_ylabel(state_names[i])
 for i in range(nu):
