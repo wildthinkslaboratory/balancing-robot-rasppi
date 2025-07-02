@@ -165,5 +165,10 @@ if __name__ == "__main__":
     imu = ImuSensor()
     print('put bot on block for variance computation')
     countdown(5)
-    verify_gyro(imu)
-    verify_accelerometer(imu)
+    # verify_gyro(imu)
+    # verify_accelerometer(imu)
+    for i in range(2 * 100):
+        imu.raw_accel_data()
+        if i % 10 == 0:
+            print(imu.raw_angle_rad(), imu.raw_angular_velocity_rad())
+        sleep(0.01)
