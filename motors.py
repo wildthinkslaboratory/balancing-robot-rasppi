@@ -93,8 +93,8 @@ def find_dead_level():
 def main():
 	try:
 		my_motors = BRMotors(0.01)
-		my_motors.run(0.25)
-		sleep(1)
+		my_motors.run(0.2)
+		sleep(0.5)
 		# my_motors.run(-0.25)
 		# sleep(1)
 		print(my_motors.position_data())
