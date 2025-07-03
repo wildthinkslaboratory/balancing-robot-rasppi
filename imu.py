@@ -167,8 +167,11 @@ if __name__ == "__main__":
     countdown(5)
     # verify_gyro(imu)
     # verify_accelerometer(imu)
-    for i in range(2 * 100):
+    data = []
+    for i in range(2 * 500):
         imu.raw_accel_data()
-        if i % 10 == 0:
-            print(imu.raw_angle_rad(), imu.raw_angular_velocity_rad())
+        data.append([imu.raw_angle_rad()])
+        # if i % 10 == 0:
+        #     print(imu.raw_angle_rad(), imu.raw_angular_velocity_rad())
         sleep(0.01)
+    print("average balance angle: ", np.average(data))

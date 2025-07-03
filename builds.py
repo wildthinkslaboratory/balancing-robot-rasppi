@@ -17,6 +17,8 @@ class ModelConstants:
     ST = 0.45        # motor stall torque in Nm 
     t = 1           # this is for tuning the horz force to speed translation
     dt = 0.01
+    balance_point = 3.18
+    
     # we add our Q and R matrices
     # focus on angle, ignore angular velocity
     # it's volatile because of high magnitude eigenvalue

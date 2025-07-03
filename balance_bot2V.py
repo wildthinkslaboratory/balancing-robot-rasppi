@@ -57,7 +57,7 @@ my_state_names = ['$\\theta$ ','$\\dot{\\theta}$ ']
 
 
 # set up the K matrix
-goal_state = [np.pi, 0.0]
+goal_state = [mc.balance_point, 0.0]
 goal_u = [0.0]
 
 # If we want a Kalman Filter we need to pass in a measurement model
