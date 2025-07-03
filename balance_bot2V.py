@@ -26,17 +26,22 @@ m = ca.MX.sym('m')
 L = ca.MX.sym('L') 
 g = ca.MX.sym('g') 
 d = ca.MX.sym('d')
+ST = ca.MX.sym('ST')
+r = ca.MX.sym('r')
 
-
-constants = ca.vertcat( M, m, L, g, d )
+constants = ca.vertcat( M, m, L, g, d, ST, r )
 
 # we build the nonlinear function f for the equations of motion
 # we begin with some partial expressions to make the formulas easier to build
 
+# model for the motor torque
+# 821 * u + 4.39 converts PWM to grams measured on a scale with lever arm 9 cm
+torque = (821 * u + 4.39) * 9.81 * 0.09 / 1000
+horz_acc = 2 * torque / r
 
 denominator = M + m*(sin(theta)**2)
 n0 = -m*g*sin(theta)*cos(theta)
-n1 = m*L*(sin(theta))*(thetadot)**2 + u
+n1 = m*L*(sin(theta))*(thetadot)**2 + horz_acc
 n2 = (m + M)*g*sin(theta)
 RHS = ca.vertcat( 
     thetadot, 
@@ -45,7 +50,7 @@ RHS = ca.vertcat(
 
 
 mc = ExperimentalConstants()
-constant_values = [mc.M, mc.m, mc.L, mc.g, mc.d]
+constant_values = [mc.M, mc.m, mc.L, mc.g, mc.d, mc.ST, mc.r]
 
 # I made latex names for my states. They look nice in the simulation plots
 my_state_names = ['$\\theta$ ','$\\dot{\\theta}$ ']
@@ -59,38 +64,26 @@ goal_u = [0.0]
 C = np.array([[1, 0], \
             [0, 1]]) 
 
-lqrdBot = LQRDModel(state, 
+
+
+lqgdBot = LQGDModel(state, 
                 RHS, 
                 u, 
                 constants, 
                 constant_values, 
                 mc.dt,
                 state_names=my_state_names,
-                name='balancing robot LQRD')
-
-print(mc.R_kf2V)
-print(mc.Q_kf2V)
-
-lqrdBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
+                name='balancing robot LQGD')
 
 
-# print(lqgdBot)
-# lqgdBot = LQGDModel(state, 
-#                 RHS, 
-#                 u, 
-#                 constants, 
-#                 constant_values, 
-#                 mc.dt,
-#                 state_names=my_state_names,
-#                 name='balancing robot LQGD')
 
-# print(mc.R_kf2V)
-# print(mc.Q_kf2V)
+lqgdBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
+lqgdBot.set_up_kalman_filter(C, mc.Q_kf2V, mc.R_kf2V)
 
-# lqgdBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
-# lqgdBot.set_up_kalman_filter(C, mc.Q_kf2V, mc.R_kf2V)
 
-# print(lqgdBot)
+
+
+print(lqgdBot)
 
 if __name__ == "__main__":
     # now we can rum a simulation
@@ -98,11 +91,13 @@ if __name__ == "__main__":
     x0 = np.array([np.pi - 0.1, 0.0]) # Initial condition
     sim_length = 4 # in seconds
 
-    simulator = Simulator(lqrdBot, x0, u0, sim_length)
+    simulator = Simulator(lqgdBot, x0, u0, sim_length)
     simulator.run()
 
-    # variances = np.array([0.000015,0.0000025])
-    # simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances)
+
+    # variances = np.array([0.00015,0.0000025])
+
+    # simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
     # simulator.run()
 
     # variances = np.array([0.000015,0.0000025])
