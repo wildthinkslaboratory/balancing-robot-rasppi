@@ -55,7 +55,7 @@ def loop_iteration():
     x = bb.next_state(x, u, y)
     
     # constrain the input to the allowed motor speeds
-    u_unclipped = bb.control_input(x)
+    u_unclipped = bb.control_input(x) * 0.1
     u[0] = clip(u_unclipped[0], -1, 1)
     motors.run(u[0])
 

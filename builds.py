@@ -38,7 +38,7 @@ class ExperimentalConstants(ModelConstants):
     dt = 0.01
 
     Q = np.diag([1, 1, 1, 1])
-    R = np.array([[200]])
+    R = np.array([[1000]])
 
     # Q_kf = np.diag([1,1,1,1]) / 5000
     # R_kf = np.diag([0.004,0.0001,0.00015])
