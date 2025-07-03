@@ -19,13 +19,13 @@ plt.rcParams.update({
 })
 
 ns=4
-num_points = 40
+num_points = len(data)
 if num_points > len(data):
      num_points = len(data)
 
-#state_names = ['$\\theta$ ','$\\dot{\\theta}$ ','u','$\\theta$ s', '$\\dot{\\theta}$ s']
-state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$', 'u', 'x s', 'theta s', 'av s', 'u unclip' ]
-for i in range(5):
+state_names = ['$\\theta$ ','$\\dot{\\theta}$ ','u','$\\theta$ s', '$\\dot{\\theta}$ s']
+# state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$', 'u', 'x s', 'theta s', 'av s', 'u unclip' ]
+for i in range(3):
     plt.plot(plot_data[i][:num_points],linewidth=2,label=state_names[i])
 plt.xlabel('Time')
 plt.ylabel('State')
@@ -39,8 +39,8 @@ fig.set_figheight(8)
 y = np.full(num_points, np.pi)
 
 for i in range(ns):
-    if (i == 2):
-        axs[i].plot(y)
+    # if (i == 2):
+    #     axs[i].plot(y)
     axs[i].plot(plot_data[i][:num_points],linewidth=2)
     axs[i].set_ylabel(state_names[i])
 for i in range(nu):
@@ -50,7 +50,7 @@ for i in range(nu):
 plt.xlabel('Time')
 plt.show()
         
-i_to_plot = [2,6]
+i_to_plot = [0,3]
 for j in range(len(i_to_plot)):
     plt.plot(plot_data[i_to_plot[j]][:num_points],linewidth=2,label=state_names[i_to_plot[j]])
 plt.xlabel('Time')
@@ -58,7 +58,7 @@ plt.ylabel('State')
 plt.legend(loc='lower right')
 plt.show()
 
-i_to_plot = [3,7]
+i_to_plot = [1,4]
 for j in range(len(i_to_plot)):
     plt.plot(plot_data[i_to_plot[j]][:num_points],linewidth=2,label=state_names[i_to_plot[j]])
 plt.xlabel('Time')

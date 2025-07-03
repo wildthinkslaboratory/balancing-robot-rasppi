@@ -41,17 +41,17 @@ class ExperimentalConstants(ModelConstants):
     Q = np.diag([1, 1, 1, 1])
     R = np.array([[100]])
 
-    # Q_kf2V = np.diag([1,1]) 
-    # R_kf2V = np.diag([0.000015,0.0000025])
-
-    # Q = np.diag([1,1,1,1])
-    # R = np.array([[1]])
-
-    # Q_kf = np.diag([1,1,1,1]) / 100
-    # R_kf = np.diag([0.000004,0.000015,0.0000025])
-
     Q_kf = np.diag([1,1,1,1]) / 2000
     R_kf = np.diag([0.004,0.0001,0.00015])
+
+    Q2V = np.array([[1,0],\
+                    [0, 1]])
+    R2V = np.array([[1]])
+
+    Q_kf2V = np.diag([1,1]) / 2000
+    R_kf2V = np.diag([0.00015,0.00015])
+
+
 
 """Countdown: 1gyro readings in rad/s
 gyro noise variance 2.5439875792968847e-06
