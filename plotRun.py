@@ -19,7 +19,7 @@ plt.rcParams.update({
 })
 
 ns=4
-num_points = len(data)
+num_points = 100
 if num_points > len(data):
      num_points = len(data)
 

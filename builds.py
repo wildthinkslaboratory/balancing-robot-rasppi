@@ -36,19 +36,18 @@ class ModelConstants:
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
     dt = 0.01
-    L = 4
 
     Q = np.diag([1, 1, 1, 1])
-    R = np.array([[100]])
+    R = np.array([[200]])
 
-    Q_kf = np.diag([1,1,1,1]) / 6000
-    R_kf = np.diag([0.004,0.0001,0.00015])
+    # Q_kf = np.diag([1,1,1,1]) / 5000
+    # R_kf = np.diag([0.004,0.0001,0.00015])
 
-    Q2V = np.array([[1,0],\
-                    [0, 1]])
-    R2V = np.array([[0.1]])
+    # Q2V = np.array([[1,0],\
+    #                 [0, 1]])
+    # R2V = np.array([[0.1]])
 
-    Q_kf2V = np.diag([1,1]) / 2000
+    Q_kf2V = np.diag([1,1]) / 6000
     R_kf2V = np.diag([0.00015,0.00015])
 
 
