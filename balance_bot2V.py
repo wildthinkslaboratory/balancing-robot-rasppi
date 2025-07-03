@@ -37,7 +37,7 @@ constants = ca.vertcat( M, m, L, g, d, ST, r )
 # model for the motor torque
 # 821 * u + 4.39 converts PWM to grams measured on a scale with lever arm 9 cm
 torque = (821 * u + 4.39) * 9.81 * 0.09 / 1000
-horz_acc = 2 * torque / r
+horz_acc = torque / r
 
 denominator = M + m*(sin(theta)**2)
 n0 = -m*g*sin(theta)*cos(theta)
