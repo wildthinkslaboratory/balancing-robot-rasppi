@@ -52,13 +52,12 @@ def loop_iteration():
     y[1] = imu_sensor.raw_angular_velocity_rad()
 
     # estimate the state
-    x = bb.get_next_state(x, u, y)
+    x = bb.next_state(x, u, y)
     
     # constrain the input to the allowed motor speeds
-    u = bb.get_control_input(x)
-    motor_speed = clip(u[0] / mc.SC, -1, 1)
-    u[0] = motor_speed * mc.SC   # this is the force our motors can actually apply
-    motors.run(motor_speed)
+    u_unclipped = bb.control_input(x)
+    u[0] = clip(u_unclipped[0], -1, 1)
+    motors.run(u[0])
 
 
     

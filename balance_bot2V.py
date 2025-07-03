@@ -4,8 +4,8 @@ from casadi import sin, cos
 import sys
 sys.path.append('..')
 
-from model import LQRModel, LQGModel, LQRDModel, LQGDModel
-from simulator import Simulator, NoisySimulator, KalmanFilterTuner
+from control_lib.model import LQGModel, LQGDModel
+from control_lib.simulator import Simulator, NoisySimulator, KalmanFilterTuner
 import numpy as np
 from builds import ExperimentalConstants
 from utilities import import_data
