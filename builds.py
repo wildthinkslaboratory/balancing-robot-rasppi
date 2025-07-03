@@ -41,7 +41,7 @@ class ExperimentalConstants(ModelConstants):
     Q = np.diag([1, 1, 1, 1])
     R = np.array([[100]])
 
-    Q_kf = np.diag([1,1,1,1]) / 2000
+    Q_kf = np.diag([1,1,1,1]) / 6000
     R_kf = np.diag([0.004,0.0001,0.00015])
 
     Q2V = np.array([[1,0],\
