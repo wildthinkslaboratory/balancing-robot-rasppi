@@ -4,7 +4,7 @@ from casadi import sin, cos
 import sys
 sys.path.append('..')
 
-from control_lib.model import LQGModel, LQGDModel
+from control_lib.model import LQRDModel, LQRModel, LQGModel, LQGDModel
 from control_lib.simulator import Simulator, NoisySimulator, KalmanFilterTuner
 import numpy as np
 from builds import ExperimentalConstants
@@ -34,14 +34,22 @@ constants = ca.vertcat( M, m, L, g, d, ST, r )
 # we build the nonlinear function f for the equations of motion
 # we begin with some partial expressions to make the formulas easier to build
 
+# # old values when it balanced
+# horz_acc = u / 0.4
+
+horz_acc = u 
+
+# horz_acc = u * ST / r
+
 # model for the motor torque
 # 821 * u + 4.39 converts PWM to grams measured on a scale with lever arm 9 cm
-torque = (821 * u + 4.39) * 9.81 * 0.09 / 1000
-horz_acc = 2 * torque / r
+# torque = (821 * u + 4.39) * 9.81 * 0.09 / 1000
+# horz_acc = 2 * torque / r
+
 
 denominator = M + m*(sin(theta)**2)
 n0 = -m*g*sin(theta)*cos(theta)
-n1 = m*L*(sin(theta))*(thetadot)**2 + horz_acc
+n1 = m*L*(sin(theta))*(thetadot)**2 + u
 n2 = (m + M)*g*sin(theta)
 RHS = ca.vertcat( 
     thetadot, 
@@ -66,7 +74,53 @@ C = np.array([[1, 0], \
 
 
 
-lqgdBot = LQGDModel(state, 
+lqrdBot = LQRDModel(state, 
+                RHS, 
+                u, 
+                constants, 
+                constant_values, 
+                mc.dt,
+                state_names=my_state_names,
+                name='balancing robot LQRD')
+
+
+
+lqrdBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
+
+print(lqrdBot)
+
+lqrBot = LQRModel(state, 
+                RHS, 
+                u, 
+                constants, 
+                constant_values, 
+                mc.dt,
+                state_names=my_state_names,
+                name='balancing robot LQR')
+
+
+
+lqrBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
+
+lqgBot = LQGModel(state, 
+                RHS, 
+                u, 
+                constants, 
+                constant_values, 
+                mc.dt,
+                state_names=my_state_names,
+                name='balancing robot LQG')
+
+
+
+lqgBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
+lqgBot.set_up_kalman_filter(C, mc.Q_kf2V, mc.R_kf2V)
+
+print(lqrdBot)
+
+print(lqrBot)
+
+lqgdBot = LQGModel(state, 
                 RHS, 
                 u, 
                 constants, 
@@ -80,38 +134,24 @@ lqgdBot = LQGDModel(state,
 lqgdBot.set_up_K(mc.Q2V, mc.R2V, goal_state, goal_u)
 lqgdBot.set_up_kalman_filter(C, mc.Q_kf2V, mc.R_kf2V)
 
-
-
-
-print(lqgdBot)
-
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
     x0 = np.array([np.pi - (2 * np.pi / 180), 0.0]) # Initial condition
-    sim_length = 4 # in seconds
+    sim_length = 0.5 # in seconds
 
-    simulator = Simulator(lqgdBot, x0, u0, sim_length)
+    # simulator = Simulator(lqrdBot, x0, u0, sim_length)
+    # simulator.run()
+
+    simulator = Simulator(lqgBot, x0, u0, sim_length)
     simulator.run()
+
 
 
     variances = np.array([0.000015,0.0000025])
 
-    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
+    simulator = NoisySimulator(lqgBot, x0, u0, sim_length, noise=variances, nudge=0.0)
     simulator.run()
 
-    # variances = np.array([0.000015,0.0000025])
-    # simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances)
-    # simulator.run()
-
-    # run_data = import_data('data.json')
-    # num_cols = len(run_data[0])
-    # sensor_data = []
-    # for col in range(num_cols):
-    #     A = [d[col] for d in run_data]
-    #     sensor_data.append(A)
-
-    # sensor_data = sensor_data[3:5]
-
-    # filter_tuner = KalmanFilterTuner(lqgdBot, sensor_data)
-    # filter_tuner.run()
+    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
+    simulator.run()

@@ -19,7 +19,7 @@ plt.rcParams.update({
 })
 
 ns=4
-num_points = 100
+num_points = 30
 if num_points > len(data):
      num_points = len(data)
 
@@ -50,7 +50,7 @@ for i in range(nu):
 plt.xlabel('Time')
 plt.show()
         
-i_to_plot = [3,0]
+i_to_plot = [3,0, 2]
 for j in range(len(i_to_plot)):
     plt.plot(plot_data[i_to_plot[j]][:num_points],linewidth=2,label=state_names[i_to_plot[j]])
 plt.xlabel('Time')
@@ -58,7 +58,7 @@ plt.ylabel('State')
 plt.legend(loc='lower right')
 plt.show()
 
-i_to_plot = [1,4]
+i_to_plot = [1,4,2]
 for j in range(len(i_to_plot)):
     plt.plot(plot_data[i_to_plot[j]][:num_points],linewidth=2,label=state_names[i_to_plot[j]])
 plt.xlabel('Time')
