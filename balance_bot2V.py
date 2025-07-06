@@ -37,19 +37,19 @@ constants = ca.vertcat( M, m, L, g, d, ST, r )
 # # old values when it balanced
 # horz_acc = u / 0.4
 
-horz_acc = u 
+# horz_acc = u 
 
-# horz_acc = u * ST / r
+horz_acc = u * ST / r
 
 # model for the motor torque
 # 821 * u + 4.39 converts PWM to grams measured on a scale with lever arm 9 cm
 # torque = (821 * u + 4.39) * 9.81 * 0.09 / 1000
-# horz_acc = 2 * torque / r
+# horz_acc = 2 * torque / 0.0325
 
 
 denominator = M + m*(sin(theta)**2)
 n0 = -m*g*sin(theta)*cos(theta)
-n1 = m*L*(sin(theta))*(thetadot)**2 + u
+n1 = m*L*(sin(theta))*(thetadot)**2 + horz_acc
 n2 = (m + M)*g*sin(theta)
 RHS = ca.vertcat( 
     thetadot, 
