@@ -44,13 +44,13 @@ class ExperimentalConstants(ModelConstants):
     M = 0.29       # wheels plus motors (kilograms) 
     m = 0.765          # rest of the robot (kilograms)
 
-    L = 0.7
+    L = 0.09
 
     Q2V = np.array([[0.01,0],\
                     [0, 1]])
     R2V = np.array([[100]])
 
-    Q_kf2V = np.diag([1,1]) / 500
+    Q_kf2V = np.diag([1,1]) / 5000
     R_kf2V = np.diag([0.000015, 0.0000025])
 
 """Countdown: 1gyro readings in rad/s
