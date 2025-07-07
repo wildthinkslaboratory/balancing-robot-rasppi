@@ -1,13 +1,13 @@
 import numpy as np
-from time import sleep
+from time import sleep, time
 from InterruptTimer import InterruptTimer
 from motors import BRMotors
 from imu import ImuSensor
 from segway import lqgBot as bb
 from utilities import output_data, clip, countdown
-from builds import ExperimentalConstants
+from builds import SegwayConstants
 
-mc = ExperimentalConstants()
+mc = SegwayConstants()
 
 debug = False
 output_data_to_file = True
@@ -81,6 +81,17 @@ if output_data_to_file:
     output_timer.start()
     while loop_timer.running:
         sleep(dT)
-    output_data(run_data, "data.json")
+    
+    # log data with tuning parameters and constants
+    log = {}
+    t = time()
+    log['time'] = t
+    log['constants'] = mc.dictionary()
+    log['rundata'] = run_data
+
+    notes = input('Enter any runtime notes: ')
+    log['notes'] = notes
+    output_data(log, 'run_data/' + t + '.json')
+    output_data(log, 'run_data/data.json')
 
 
