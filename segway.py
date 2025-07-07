@@ -71,7 +71,7 @@ RHS = ca.vertcat(
 
 
 # set up the K matrix
-goal_state = [0.0, 0.0, 0.0, 0.0]
+goal_state = [0.0, 0.0, sc.balance_point, 0.0]
 goal_u = [0.0]
 
 # If we want a Kalman Filter we need to pass in a measurement model
