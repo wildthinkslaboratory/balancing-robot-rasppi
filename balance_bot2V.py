@@ -37,7 +37,7 @@ constants = ca.vertcat( M, m, L, g, d, ST, r )
 # # old values when it balanced
 # horz_acc = u / 0.4
 
-# horz_acc = u 
+horz_acc = u
 
 # horz_acc = u * ST / r
 

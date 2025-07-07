@@ -30,7 +30,7 @@ class ModelConstants:
 
     Q2V = np.array([[1,0],\
                     [0, 1]])
-    R2V = np.array([[1]])
+    R2V = np.array([[1000]])
     Q_kf2V = np.eye(2)
     R_kf2V = np.eye(2)
 
