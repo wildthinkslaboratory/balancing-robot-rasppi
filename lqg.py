@@ -1,5 +1,6 @@
 import numpy as np
-from time import sleep, time
+from time import sleep
+from datetime import datetime
 from InterruptTimer import InterruptTimer
 from motors import BRMotors
 from imu import ImuSensor
@@ -84,13 +85,14 @@ if output_data_to_file:
     
     # log data with tuning parameters and constants
     log = {}
-    t = time()
+    t = datetime.now().strftime("%Y-%m-%d%H:%M:%S")
     log['time'] = t
     log['constants'] = mc.dictionary()
-    log['rundata'] = run_data
 
     notes = input('Enter any runtime notes: ')
     log['notes'] = notes
+
+    log['rundata'] = run_data
     output_data(log, 'run_data/' + t + '.json')
     output_data(log, 'run_data/data.json')
 

@@ -18,7 +18,7 @@ class ModelConstants:
     t = 1           # this is for tuning the horz force to speed translation
     dt = 0.01
     balance_point = 3.18
-    timeout = 10
+    timeout = 2
 
     # we add our Q and R matrices
     # focus on angle, ignore angular velocity
@@ -68,7 +68,7 @@ class SegwayConstants:
         self.I_b =  0.008553260629             # inertia of body kg m^2
         self.I_w = 0.000062147      # inertia of wheel kg m^2
         self.ST = 0.45               # stall torque
-        self.timeout = 5            # how many seconds the robot will run
+        self.timeout = 1            # how many seconds the robot will run
 
         self.Q = np.diag([1,1,1,1])
         self.R = np.diag([7])
