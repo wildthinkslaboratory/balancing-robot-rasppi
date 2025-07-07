@@ -60,7 +60,11 @@ s_1 = I_b + m * L**2
 s_2 = m * L
 s_3 = I_w / R**2 + M + M
 
-T = u * ST
+# T = u * ST
+# model for the motor torque
+# converts PWM to torque.  measured on a scale with lever arm 9 cm
+T = (0.821 * u + 0.00439) * 9.81 * 0.09 
+# T = u
 t_1 = -T + g * s_2 * sin(theta)
 t_2 = T / R + s_2 * thetadot**2 * sin(theta)
 
@@ -124,6 +128,7 @@ lqgdBot = LQGDModel(state,
 
 lqgdBot.set_up_K(Q, R, goal_state, goal_u)
 lqgdBot.set_up_kalman_filter(C, Q_kf, R_kf)
+print(lqgBot)
 
 if __name__ == "__main__":
     # now we can rum a simulation
@@ -138,7 +143,7 @@ if __name__ == "__main__":
     simulator.run()
 
     variances = np.array([0.004, 0.000015,0.0000025])
-    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
+    simulator = NoisySimulator(lqgBot, x0, u0, sim_length, noise=variances, nudge=0.0)
     simulator.run()
 
     # run_data = import_data('data.json')
