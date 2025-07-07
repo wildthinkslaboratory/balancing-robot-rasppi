@@ -54,22 +54,43 @@ class ExperimentalConstants(ModelConstants):
     # Q_kf2V = np.diag([1,1]) / 5000
     # R_kf2V = np.diag([0.000015, 0.0000025])
     pass
-"""Countdown: 1gyro readings in rad/s
-gyro noise variance 2.5439875792968847e-06
-average error gyro error:  0.0014338266967203557
 
 
-testing angular accelleration readings
-position your bot upright
-Countdown: 1
-accelerometer Y variance 0.0014442795206713013
-average accelerometer Y:  0.028198192513327443
+class SegwayConstants:
+    def __init__(self):
 
+        self.dt = 0.01
+        self.g = 9.81                # gravity m / s^2
+        self.R = 0.0325               # wheel radius m
+        self.M = 0.25435            # mass of body kg
+        self.m = 0.757536             # mass of wheels kg
+        self.L = 0.085                 # length from COM body and wheel axis m
+        self.I_b =  0.008553260629             # inertia of body kg m^2
+        self.I_w = 0.000062147      # inertia of wheel kg m^2
+        self.ST = 0.45               # stall torque
+        self.timeout = 5            # how many seconds the robot will run
 
-accelerometer Z variance 0.00200945709510295
-average accelerometer Z:  9.80832927173857
+        self.Q = np.diag([1,1,1,1])
+        self.R = np.diag([7])
 
+        self.Q_kf = np.diag([1,1,1,1]) / 10000
+        self.R_kf = np.diag([0.004,0.00015,0.0000025])
 
-readings in radians
-accelerometer angle variance 1.5002323219619387e-05
-average angle:  3.1417278128868312"""
+    def dictionary(self):
+        d = {}
+        d['dt'] = self.dt
+        d['timeout'] = self.timeout
+        d['g'] = self.g
+        d['R'] = self.R
+        d['M'] = self.M
+        d['m'] = self.m
+        d['L'] = self.L
+        d['I_b'] = self.I_b
+        d['I_w'] = self.I_w
+        d['ST'] = self.ST
+        d['Q'] = self.Q.diagonal().tolist()
+        d['R'] = self.R.diagonal().tolist()
+        d['Q_kf'] = self.Q_kf.diagonal().tolist()
+        d['R_kf'] = self.R_kf.diagonal().tolist()
+        return d
+

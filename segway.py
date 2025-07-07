@@ -7,19 +7,9 @@ sys.path.append('..')
 from control_lib.model import LQRModel, LQGModel, LQRDModel, LQGDModel
 from control_lib.simulator import Simulator, NoisySimulator, KalmanFilterTuner
 import numpy as np
-from builds import ExperimentalConstants
-from utilities import import_data
+from builds import SegwayConstants
 
-# create casadi constants
-dt = 0.01
-g_ = 9.81                # gravity m / s^2
-R_ = 0.0325               # wheel radius m
-M_ = 0.25435            # mass of body kg
-m_ = 0.757536             # mass of wheels kg
-L_ = 0.085                 # length from COM body and wheel axis m
-I_b_ =  0.008553260629             # inertia of body kg m^2
-I_w_ = 0.000062147      # inertia of wheel kg m^2
-ST_ = 0.45               # stall torque
+sc = SegwayConstants()
 
 
 
@@ -34,7 +24,7 @@ R = ca.MX.sym('R')
 ST = ca.MX.sym('ST')
 
 constants = ca.vertcat( M, m, I_b, I_w, L, g, R, ST)
-constant_values = [M_, m_, I_b_, I_w_, L_, g_, R_, ST_]
+constant_values = [sc.M, sc.m, sc.I_b, sc.I_w, sc.L, sc.g, sc.R, sc.ST]
 
 # We create Casadi symbolic variables for the state
 # Note that our angle theta is 0 when the robot is vertical
@@ -89,46 +79,40 @@ C = np.array([[1, 0, 0, 0], \
               [0, 0, 1, 0],
             [0, 0, 0, 1]]) 
 
-Q = np.diag([1,1,1,1])
-R = np.diag([7])
-
-Q_kf = np.diag([1,1,1,1]) / 10000
-R_kf = np.diag([0.004,0.00015,0.0000025])
-
 lqrBot = LQRModel(state, 
                 RHS, 
                 u, 
                 constants, 
                 constant_values, 
-                dt,
+                sc.dt,
                 state_names=my_state_names,
                 name='balancing robot LQR')
 
-lqrBot.set_up_K(Q, R, goal_state, goal_u)
+lqrBot.set_up_K(sc.Q, sc.R, goal_state, goal_u)
 
 lqgBot = LQGModel(state, 
                 RHS, 
                 u, 
                 constants, 
                 constant_values, 
-                dt,
+                sc.dt,
                 state_names=my_state_names,
                 name='balancing robot LQG')
 
-lqgBot.set_up_K(Q, R, goal_state, goal_u)
-lqgBot.set_up_kalman_filter(C, Q_kf, R_kf)
+lqgBot.set_up_K(sc.Q, sc.R, goal_state, goal_u)
+lqgBot.set_up_kalman_filter(C, sc.Q_kf, sc.R_kf)
 
 lqgdBot = LQGDModel(state, 
                 RHS, 
                 u, 
                 constants, 
                 constant_values, 
-                dt,
+                sc.dt,
                 state_names=my_state_names,
                 name='balancing robot LQG')
 
-lqgdBot.set_up_K(Q, R, goal_state, goal_u)
-lqgdBot.set_up_kalman_filter(C, Q_kf, R_kf)
+lqgdBot.set_up_K(sc.Q, sc.R, goal_state, goal_u)
+lqgdBot.set_up_kalman_filter(C, sc.Q_kf, sc.R_kf)
 print(lqgBot)
 
 if __name__ == "__main__":
