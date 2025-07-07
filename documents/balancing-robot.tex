@@ -77,6 +77,117 @@ Should have list of all the components. Maybe a picture. Do we need to show circ
 \subsection*{Measuring the Robot State}
 The position $x$ and velocity $\dot{x}$ along the $x$ axis are computed from the motor encoders. The encoders return a number of counts which is positive in the clockwise direction and negative in the counter clockwise direction. Using the number of counts per wheel rotation and the circumference of the wheel we can compute the distance in the $x$ direction. The instantaneous velocity can be estimated by computing the change in position over a very small time window times the length of the window. The angle $\theta$ is computed from the accelerometer and angular velocity $\dot{\theta}$ is given by the gyroscope.
 
+\section*{Segway Model}
+
+\subsection*{Constants}
+\begin{center}
+\begin{tabular}{ cl } 
+ $M$  & mass of the  wheel and drive train (kg) \\ 
+ $m$ & mass of the body (kg) \\ 
+ $R$ & wheel radius (m) \\ 
+ $L$ & distance from body COM to wheel axle (m) \\ 
+ $I_b$ & inertia of body (kg m$^2$)  \\ 
+$I_w$ & inertia of wheels (kg m$^2$)
+\end{tabular}
+\end{center}
+
+We have two ODE's the first is the sum of the rotational forces. 
+\begin{equation*}
+(I_b + mL^2) \ddot{\theta} - mgL \sin \theta + mL \ddot{x} \cos \theta = - T 
+\end{equation*}
+The next is the sum of the horizontal forces.
+\begin{equation*}
+\Big(\frac{I_w}{R^2} + M + m \Big) \ddot{x} + mL \ddot{\theta} \cos \theta - mL \dot{\theta}^2 \sin \theta = \frac{T}{R}
+\end{equation*}
+The state variable $\theta$ is $0$ in when the robot is balanced in the upright position.
+
+
+
+
+\begin{eqnarray*}
+s_1 & = & I_b + m L^2  \\
+s_2 & = & m L \\
+s_3 & = & \frac{I_w}{R^2} + M + M
+\end{eqnarray*}
+
+\begin{eqnarray*}
+s_1 \ddot{\theta} - g s_2 \sin \theta + s_2 \ddot{x} \cos \theta = - T  \\
+s_3 \ddot{x} + s_2 \ddot{\theta} \cos \theta - s_2 \dot{\theta}^2 \sin \theta = \frac{T}{R}
+\end{eqnarray*}
+
+you form a 2×2 linear system in the “accelerations” $\ddot\theta$ and $\ddot x$.  Write it as
+
+$$
+\underbrace{\begin{bmatrix}
+s_1 & s_2  \cos \theta  \\
+s_2 \cos \theta & s_3
+\end{bmatrix}}_{M(\theta)}
+\begin{bmatrix}\ddot\theta\\[3pt]\ddot x\end{bmatrix}
+=
+\begin{bmatrix}
+-T + g s_2 \sin \theta \\[6pt]
+\dfrac{T}{r} \; + \;s_2 \dot{\theta}^2 \sin \theta 
+\end{bmatrix}.
+$$
+
+Now we can multiply both sides of the equation by $M(\theta)^{-1}$
+
+$$
+\begin{bmatrix}\ddot\theta\\[3pt]\ddot x\end{bmatrix}
+=
+\begin{bmatrix}
+s_1 & s_2  \cos \theta  \\
+s_2 \cos \theta & s_3
+\end{bmatrix}
+^{-1}
+\begin{bmatrix}
+-T + g s_2 \sin \theta \\[6pt]
+\dfrac{T}{r} \; + \;s_2 \dot{\theta}^2 \sin \theta 
+\end{bmatrix}.
+$$
+
+
+Determinant of $M(\theta)$
+
+$$
+D(\theta) \;=\;\det M(\theta)\;=\;s_1\,s_3 \;-\;s_2^2\cos^2\theta,
+$$
+
+$$
+\begin{bmatrix}\ddot\theta\\[3pt]\ddot x\end{bmatrix}
+= \frac{1}{D(\theta)}
+\begin{bmatrix}
+s_3 & -s_2  \cos \theta  \\
+-s_2 \cos \theta & s_1
+\end{bmatrix}
+\begin{bmatrix}
+(-T + g s_2 \sin \theta) &  \\[6pt]
+\Big(\dfrac{T}{r} \; + \;s_2 \dot{\theta}^2 \sin \theta \Big)
+\end{bmatrix}.
+$$
+
+
+
+$$
+\begin{cases}
+\dot x = \dot x \\[8pt]
+\ddot \theta = \displaystyle
+  \frac{1}{D(\theta)}\Bigl[
+     s_3 (-T + g s_2 \sin \theta)
+     \;-\;
+     s_2  \cos \theta \Big(\dfrac{T}{r} \; + \;s_2 \dot{\theta}^2 \sin \theta \Big)
+  \Bigr] \\[10pt]
+\dot \theta = \dot \theta \\[8pt]
+\ddot x = \displaystyle
+  \frac{1}{D(\theta)}\Bigl[
+     -s_2 \cos \theta (-T + g s_2 \sin \theta) 
+     \;+\;
+      s_1 \Big(\dfrac{T}{r} \; + \;s_2 \dot{\theta}^2 \sin \theta \Big)
+  \Bigr]
+\end{cases}
+$$
+
+
 \section*{Model}
 Need a drawing of model.
 

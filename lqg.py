@@ -3,7 +3,7 @@ from time import sleep
 from InterruptTimer import InterruptTimer
 from motors import BRMotors
 from imu import ImuSensor
-from balance_bot import lqgdBot as bb
+from segway import lqgBot as bb
 from utilities import output_data, clip, countdown
 from builds import ModelConstants
 

@@ -38,21 +38,21 @@ class ModelConstants:
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
 
-    dt = 0.005
+    # dt = 0.005
 
-    # old constants
-    M = 0.29       # wheels plus motors (kilograms) 
-    m = 0.765          # rest of the robot (kilograms)
+    # # old constants
+    # M = 0.29       # wheels plus motors (kilograms) 
+    # m = 0.765          # rest of the robot (kilograms)
 
-    L = 0.09
+    # L = 0.1
 
-    Q2V = np.array([[0.01,0],\
-                    [0, 1]])
-    R2V = np.array([[100]])
+    # Q2V = np.array([[0.01,0],\
+    #                 [0, 1]])
+    # R2V = np.array([[1000]])
 
-    Q_kf2V = np.diag([1,1]) / 5000
-    R_kf2V = np.diag([0.000015, 0.0000025])
-
+    # Q_kf2V = np.diag([1,1]) / 5000
+    # R_kf2V = np.diag([0.000015, 0.0000025])
+    pass
 """Countdown: 1gyro readings in rad/s
 gyro noise variance 2.5439875792968847e-06
 average error gyro error:  0.0014338266967203557
