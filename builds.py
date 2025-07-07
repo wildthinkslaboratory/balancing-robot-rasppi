@@ -18,6 +18,7 @@ class ModelConstants:
     t = 1           # this is for tuning the horz force to speed translation
     dt = 0.01
     balance_point = 3.18
+    timeout = 10
 
     # we add our Q and R matrices
     # focus on angle, ignore angular velocity
@@ -37,7 +38,7 @@ class ModelConstants:
 
 # inherit all the values of ModelConstants
 class ExperimentalConstants(ModelConstants):
-
+    timeout = 3
     # dt = 0.005
 
     # # old constants

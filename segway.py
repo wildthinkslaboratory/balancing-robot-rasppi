@@ -63,8 +63,9 @@ s_3 = I_w / R**2 + M + M
 # T = u * ST
 # model for the motor torque
 # converts PWM to torque.  measured on a scale with lever arm 9 cm
-T = (0.821 * u + 0.00439) * 9.81 * 0.09 
-# T = u
+
+T = (0.821 * u + 0.00439) * 9.81 * 0.09
+
 t_1 = -T + g * s_2 * sin(theta)
 t_2 = T / R + s_2 * thetadot**2 * sin(theta)
 
@@ -89,7 +90,7 @@ C = np.array([[1, 0, 0, 0], \
             [0, 0, 0, 1]]) 
 
 Q = np.diag([1,1,1,1])
-R = np.diag([100])
+R = np.diag([5000])
 
 Q_kf = np.diag([1,1,1,1]) / 10000
 R_kf = np.diag([0.004,0.00015,0.0000025])

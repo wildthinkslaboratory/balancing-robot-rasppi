@@ -5,14 +5,14 @@ from motors import BRMotors
 from imu import ImuSensor
 from segway import lqgBot as bb
 from utilities import output_data, clip, countdown
-from builds import ModelConstants
+from builds import ExperimentalConstants
 
-mc = ModelConstants()
+mc = ExperimentalConstants()
 
 debug = False
 output_data_to_file = True
 
-timeout = 0.5
+timeout = mc.timeout
 dT = bb.dt
 
 imu_sensor = ImuSensor()        # mpu6050 gyro/accelorometer access                    
@@ -60,9 +60,10 @@ def loop_iteration():
     x = bb.next_state(x, u, y)
 
     # constrain the input to the allowed motor speeds
+    # divide the torque between the wheels
     u_unclipped = bb.control_input(x)
-    u[0] = clip(u_unclipped[0], -1, 1)
-    motors.run(u[0])
+    u[0] = clip(u_unclipped[0], -2, 2)
+    motors.run(u[0]/2)
     
 
     
