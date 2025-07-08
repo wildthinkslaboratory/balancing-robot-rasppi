@@ -64,7 +64,7 @@ class SegwayConstants:
         self.r = 0.0325               # wheel radius m
         self.M = 0.25435            # mass of body kg
         self.m = 0.757536             # mass of wheels kg
-        self.L = 0.085                 # length from COM body and wheel axis m
+        self.L = 0.08495273492                 # length from COM body and wheel axis m
         self.I_b =  0.008553260629             # inertia of body kg m^2
         self.I_w = 0.000062147      # inertia of wheel kg m^2
         self.ST = 0.45               # stall torque
@@ -74,8 +74,8 @@ class SegwayConstants:
         self.Q = np.diag([1,1,100,10])
         self.R = np.diag([0.1])
 
-        self.Q_kf = np.diag([1,1,1,1]) / 1000
-        self.R_kf = np.diag([0.004,0.00015,0.0000025])
+        self.Q_kf = np.diag([10,1,1,1]) / 100000
+        self.R_kf = np.diag([0.0004,0.00015,0.0000025])
 
         # this stuff all helps with making run data plots
         # I made latex names for my states. They look nice in the simulation plots

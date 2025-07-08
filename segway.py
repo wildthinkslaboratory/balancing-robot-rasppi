@@ -55,7 +55,7 @@ s_3 = I_w / r**2 + M + M
 
 T = (0.821 * u + 0.00439) * 9.81 * 0.09
 
-t_1 = -T + g * s_2 * sin(theta)
+t_1 = T - g * s_2 * sin(theta)
 t_2 = T / r + s_2 * thetadot**2 * sin(theta)
 
 # Determinant of our matrix M(theta)
@@ -70,7 +70,8 @@ RHS = ca.vertcat(
 
 
 # set up the K matrix
-goal_state = [0.0, 0.0, sc.balance_point, 0.0]
+# goal_state = [0.0, 0.0, sc.balance_point, 0.0]
+goal_state = [0.0, 0.0, 0.0, 0.0]
 goal_u = [0.0]
 
 # If we want a Kalman Filter we need to pass in a measurement model
@@ -117,7 +118,7 @@ print(lqgBot)
 if __name__ == "__main__":
     # now we can rum a simulation
     u0 = np.array([0.0])
-    x0 = np.array([-1.0,0, 0.0, 0.0]) # Initial condition
+    x0 = np.array([0.0, 0.0, 0.02, 0.0]) # Initial condition
     sim_length = 10 # in seconds
 
     # simulator = Simulator(lqrBot, x0, u0, sim_length)
@@ -126,7 +127,7 @@ if __name__ == "__main__":
     simulator = Simulator(lqgdBot, x0, u0, sim_length)
     simulator.run()
 
-    variances = np.array([0.004, 0.000015,0.0000025])
+    variances = np.array([0.04, 0.000015,0.0000025])
     simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
     simulator.run()
 
