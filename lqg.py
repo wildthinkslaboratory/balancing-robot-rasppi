@@ -83,6 +83,8 @@ if output_data_to_file:
     while loop_timer.running:
         sleep(dT)
     
+    motors.stop()
+    
     # log data with tuning parameters and constants
     log = {}
     t = datetime.now().strftime("%Y-%m-%d%H:%M:%S")

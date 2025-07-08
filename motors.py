@@ -10,7 +10,7 @@ def scale(value, low, high, target_low, target_high):
 
 
 
-ENCODER1_C1 = 23
+ENCODER1_C1 = 22
 
 PWMA = 12
 PWMB = 18
@@ -20,7 +20,7 @@ BIN1 = 13
 BIN2 = 19
 STBY = 26
 
-count_per_rotation = 310
+count_per_rotation = 560
 wheel_circ = 0.21
 distance_per_count = wheel_circ / count_per_rotation
 
@@ -32,9 +32,13 @@ class BRMotors:
 		self.pwmA = PWMOutputDevice(PWMA)
 		self.pwmB = PWMOutputDevice(PWMB)
 		self.standby = DigitalOutputDevice(STBY)
-		self.encoder1C1 = Button(ENCODER1_C1)
+		# self.encoder1C1 = Button(ENCODER1_C1)
+		self.encoder1C1 = Button(ENCODER1_C1, pull_up=True, bounce_time=None)
+		self.encoder1C1.when_activated   = self.inc_counts
+		self.encoder1C1.when_deactivated = self.inc_counts
+		# self.encoder1C1.when_pressed = self.inc_counts
+
 		self.standby.off()
-		self.encoder1C1.when_pressed = self.inc_counts
 		self.counts = 0
 		self.count_inc = 1
 		self.last_position = 0
@@ -48,6 +52,7 @@ class BRMotors:
 		self.counts += self.count_inc
 		  
 	def position_data(self):
+		print(self.counts)
 		position = self.counts * distance_per_count		
 		self.velocity = (position - self.last_position) / self.dT
 		self.last_position = position
@@ -94,7 +99,7 @@ def main():
 	try:
 		my_motors = BRMotors(0.01)
 		my_motors.run(0.2)
-		sleep(0.5)
+		sleep(1)
 		# my_motors.run(-0.25)
 		# sleep(1)
 		print(my_motors.position_data())
