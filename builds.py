@@ -71,10 +71,10 @@ class SegwayConstants:
         self.timeout = 3            # how many seconds the robot will run
         self.balance_point = 0.04
 
-        self.Q = np.diag([1,1,1,1])
-        self.R = np.diag([1])
+        self.Q = np.diag([1,1,100,10])
+        self.R = np.diag([0.1])
 
-        self.Q_kf = np.diag([1,1,1,1]) / 10000
+        self.Q_kf = np.diag([1,1,1,1]) / 1000
         self.R_kf = np.diag([0.004,0.00015,0.0000025])
 
         # this stuff all helps with making run data plots
