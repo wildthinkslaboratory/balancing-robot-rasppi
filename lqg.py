@@ -4,7 +4,7 @@ from datetime import datetime
 from InterruptTimer import InterruptTimer
 from motors import BRMotors
 from imu import ImuSensor
-from segway import lqgBot as bb
+from segway import lqgdBot as bb
 from utilities import output_data, clip, countdown
 from builds import SegwayConstants
 

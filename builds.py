@@ -72,7 +72,7 @@ class SegwayConstants:
         self.balance_point = 0.04
 
         self.Q = np.diag([1,1,1,1])
-        self.R = np.diag([7])
+        self.R = np.diag([100])
 
         self.Q_kf = np.diag([1,1,1,1]) / 10000
         self.R_kf = np.diag([0.004,0.00015,0.0000025])

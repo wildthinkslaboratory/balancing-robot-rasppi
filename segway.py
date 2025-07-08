@@ -78,16 +78,16 @@ C = np.array([[1, 0, 0, 0], \
               [0, 0, 1, 0],
             [0, 0, 0, 1]]) 
 
-lqrBot = LQRModel(state, 
-                RHS, 
-                u, 
-                constants, 
-                constant_values, 
-                sc.dt,
-                state_names=sc.state_names,
-                name='balancing robot LQR')
+# lqrBot = LQRModel(state, 
+#                 RHS, 
+#                 u, 
+#                 constants, 
+#                 constant_values, 
+#                 sc.dt,
+#                 state_names=sc.state_names,
+#                 name='balancing robot LQR')
 
-lqrBot.set_up_K(sc.Q, sc.R, goal_state, goal_u)
+# lqrBot.set_up_K(sc.Q, sc.R, goal_state, goal_u)
 
 lqgBot = LQGModel(state, 
                 RHS, 
@@ -108,7 +108,7 @@ lqgdBot = LQGDModel(state,
                 constant_values, 
                 sc.dt,
                 state_names=sc.state_names,
-                name='balancing robot LQG')
+                name='balancing robot LQGD')
 
 lqgdBot.set_up_K(sc.Q, sc.R, goal_state, goal_u)
 lqgdBot.set_up_kalman_filter(C, sc.Q_kf, sc.R_kf)
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     simulator.run()
 
     variances = np.array([0.004, 0.000015,0.0000025])
-    simulator = NoisySimulator(lqgBot, x0, u0, sim_length, noise=variances, nudge=0.0)
+    simulator = NoisySimulator(lqgdBot, x0, u0, sim_length, noise=variances, nudge=0.0)
     simulator.run()
 
     # run_data = import_data('data.json')
