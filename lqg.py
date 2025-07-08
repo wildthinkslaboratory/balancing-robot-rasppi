@@ -88,6 +88,7 @@ if output_data_to_file:
     t = datetime.now().strftime("%Y-%m-%d%H:%M:%S")
     log['time'] = t
     log['constants'] = mc.dictionary()
+    log['model'] = bb.dictionary()
 
     notes = input('Enter any runtime notes: ')
     log['notes'] = notes
