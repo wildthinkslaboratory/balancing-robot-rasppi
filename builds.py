@@ -61,7 +61,7 @@ class SegwayConstants:
 
         self.dt = 0.01
         self.g = 9.81                # gravity m / s^2
-        self.R = 0.0325               # wheel radius m
+        self.r = 0.0325               # wheel radius m
         self.M = 0.25435            # mass of body kg
         self.m = 0.757536             # mass of wheels kg
         self.L = 0.085                 # length from COM body and wheel axis m
@@ -77,13 +77,19 @@ class SegwayConstants:
         self.Q_kf = np.diag([1,1,1,1]) / 10000
         self.R_kf = np.diag([0.004,0.00015,0.0000025])
 
+        # this stuff all helps with making run data plots
+        # I made latex names for my states. They look nice in the simulation plots
+        self.state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ', 'u', '$x$ s', '$\\theta$ s','$\\dot{\\theta}$ s']
+        self.state_structure = [4, 1, 3]  # this means there are 4 states, 1 input and 3 sensor readings
+        self.sensor_indexes = [0, 2, 3]
+
     def dictionary(self):
         d = {}
         d['dt'] = self.dt
         d['timeout'] = self.timeout
         d['balance_point'] = self.balance_point
         d['g'] = self.g
-        d['R'] = self.R
+        d['r'] = self.r
         d['M'] = self.M
         d['m'] = self.m
         d['L'] = self.L
@@ -94,5 +100,9 @@ class SegwayConstants:
         d['R'] = self.R.diagonal().tolist()
         d['Q_kf'] = self.Q_kf.diagonal().tolist()
         d['R_kf'] = self.R_kf.diagonal().tolist()
+        d['state_names'] = self.state_names
+        d['state_structure'] = self.state_structure
+        d['sensor_indexes'] = self.sensor_indexes
+
         return d
 

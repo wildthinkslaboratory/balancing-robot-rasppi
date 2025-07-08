@@ -20,11 +20,11 @@ I_b = ca.MX.sym('I_b')
 I_w = ca.MX.sym('I_w') 
 L = ca.MX.sym('L')
 g = ca.MX.sym('g')
-R = ca.MX.sym('R')
+r = ca.MX.sym('r')
 ST = ca.MX.sym('ST')
 
-constants = ca.vertcat( M, m, I_b, I_w, L, g, R, ST)
-constant_values = [sc.M, sc.m, sc.I_b, sc.I_w, sc.L, sc.g, sc.R, sc.ST]
+constants = ca.vertcat( M, m, I_b, I_w, L, g, r, ST)
+constant_values = [sc.M, sc.m, sc.I_b, sc.I_w, sc.L, sc.g, sc.r, sc.ST]
 
 # We create Casadi symbolic variables for the state
 # Note that our angle theta is 0 when the robot is vertical
@@ -42,13 +42,12 @@ state = ca.vertcat(
     thetadot,
 )
 
-# I made latex names for my states. They look nice in the simulation plots
-my_state_names = ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ']
+
 
 # Now we build some shortcuts for building up the equations
 s_1 = I_b + m * L**2 
 s_2 = m * L
-s_3 = I_w / R**2 + M + M
+s_3 = I_w / r**2 + M + M
 
 # T = u * ST
 # model for the motor torque
@@ -57,7 +56,7 @@ s_3 = I_w / R**2 + M + M
 T = (0.821 * u + 0.00439) * 9.81 * 0.09
 
 t_1 = -T + g * s_2 * sin(theta)
-t_2 = T / R + s_2 * thetadot**2 * sin(theta)
+t_2 = T / r + s_2 * thetadot**2 * sin(theta)
 
 # Determinant of our matrix M(theta)
 detM = s_1 * s_3 - s_2**2 * (cos(theta))**2
@@ -85,7 +84,7 @@ lqrBot = LQRModel(state,
                 constants, 
                 constant_values, 
                 sc.dt,
-                state_names=my_state_names,
+                state_names=sc.state_names,
                 name='balancing robot LQR')
 
 lqrBot.set_up_K(sc.Q, sc.R, goal_state, goal_u)
@@ -96,7 +95,7 @@ lqgBot = LQGModel(state,
                 constants, 
                 constant_values, 
                 sc.dt,
-                state_names=my_state_names,
+                state_names=sc.state_names,
                 name='balancing robot LQG')
 
 lqgBot.set_up_K(sc.Q, sc.R, goal_state, goal_u)
@@ -108,7 +107,7 @@ lqgdBot = LQGDModel(state,
                 constants, 
                 constant_values, 
                 sc.dt,
-                state_names=my_state_names,
+                state_names=sc.state_names,
                 name='balancing robot LQG')
 
 lqgdBot.set_up_K(sc.Q, sc.R, goal_state, goal_u)
