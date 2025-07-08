@@ -62,7 +62,7 @@ def loop_iteration():
 
     # constrain the input to the allowed motor speeds
     # divide the torque between the wheels
-    u_unclipped = bb.control_input(x)
+    u_unclipped = bb.control_input(x) * 1.5
     u[0] = clip(u_unclipped[0], -2, 2)
     motors.run(u[0]/2)
     
