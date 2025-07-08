@@ -10,12 +10,9 @@ notes = log['notes']
 constants = log['constants']
 data = log['rundata']
 
-# state_structure = constants['state_structure']
-# state_names = constants['state_names']
-# sensor_indexes = constants['sensor_indexes']
-state_structure = [4, 1, 3]
-state_names =  ['$x$ ','$\\dot{x}$ ','$\\theta$ ','$\\dot{\\theta}$ ', 'u', '$x$ s', '$\\theta$ s','$\\dot{\\theta}$ s']
-sensor_indexes = [0, 2, 3]
+state_structure = constants['state_structure']
+state_names = constants['state_names']
+sensor_indexes = constants['sensor_indexes']
 
 # first we print out the run constants
 print('Reviewing run from ', time)
