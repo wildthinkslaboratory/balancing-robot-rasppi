@@ -68,11 +68,11 @@ class SegwayConstants:
         self.I_b =  0.008553260629             # inertia of body kg m^2
         self.I_w = 0.000062147      # inertia of wheel kg m^2
         self.ST = 0.45               # stall torque
-        self.timeout = 1            # how many seconds the robot will run
+        self.timeout = 3            # how many seconds the robot will run
         self.balance_point = 0.04
 
         self.Q = np.diag([1,1,1,1])
-        self.R = np.diag([100])
+        self.R = np.diag([10])
 
         self.Q_kf = np.diag([1,1,1,1]) / 10000
         self.R_kf = np.diag([0.004,0.00015,0.0000025])
