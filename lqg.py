@@ -54,6 +54,7 @@ def loop_iteration():
 
 
     y[0] = motors.position()
+    print('position', y[0])
     y[1] = imu_sensor.raw_angle_rad()  # this needs to be with pi in the up position
     y[2] = imu_sensor.raw_angular_velocity_rad()
 
@@ -84,7 +85,7 @@ if output_data_to_file:
         sleep(dT)
     
     motors.stop()
-    
+
     # log data with tuning parameters and constants
     log = {}
     t = datetime.now().strftime("%Y-%m-%d%H:%M:%S")

@@ -79,6 +79,7 @@ C = np.array([[1, 0, 0, 0], \
               [0, 0, 1, 0],
             [0, 0, 0, 1]]) 
 
+
 # lqrBot = LQRModel(state, 
 #                 RHS, 
 #                 u, 
